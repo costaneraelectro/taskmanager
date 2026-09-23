@@ -48,6 +48,13 @@
   --verdeT:rgba(48,209,88,.14);
   --azulT:rgba(100,210,255,.09);
 
+  /* Prioridad: rojo lo que no espera, índigo lo que se planifica,
+     menta lo que pasa a otro. Solo marcan: una franja, un punto, el
+     aro del círculo. El fondo sigue neutro. */
+  --urg:#FF453A;   --urgT:rgba(255,69,58,.13);
+  --plan:#7D7AFF;  --planT:rgba(125,122,255,.14);
+  --dele:#63E6BE;  --deleT:rgba(99,230,190,.12);
+
   --display:Archivo, system-ui, -apple-system, sans-serif;
   --cuerpo:system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --cifra:'IBM Plex Mono', ui-monospace, monospace;
@@ -89,6 +96,9 @@
     --rojoT:rgba(215,0,21,.1);
     --verdeT:rgba(24,137,59,.1);
     --azulT:rgba(10,126,164,.09);
+    --urg:#D70015;  --urgT:rgba(215,0,21,.09);
+    --plan:#5856D6; --planT:rgba(88,86,214,.1);
+    --dele:#0C8A6A; --deleT:rgba(12,138,106,.1);
   }
 }
 :root[data-tema="oscuro"]{color-scheme:dark}
@@ -102,6 +112,9 @@
   --ambar:#C77700; --rojo:#D70015; --verde:#18893B; --azul:#0A7EA4;
   --ambarT:rgba(199,119,0,.12); --rojoT:rgba(215,0,21,.1);
   --verdeT:rgba(24,137,59,.1); --azulT:rgba(10,126,164,.09);
+  --urg:#D70015; --urgT:rgba(215,0,21,.09);
+  --plan:#5856D6; --planT:rgba(88,86,214,.1);
+  --dele:#0C8A6A; --deleT:rgba(12,138,106,.1);
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -323,7 +336,7 @@ button.cuerpo{display:block;width:100%;text-align:left;cursor:pointer}
 /* ── calendario ── */
 .cal-nav{display:flex;align-items:center;gap:.35rem;padding-bottom:.15rem}
 .redondo{width:2.5rem;height:2.5rem;border-radius:50%;display:grid;place-items:center;color:var(--tinta2);background:var(--borde2)}
-.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;background:var(--sup);border-radius:var(--r-ta);padding:.5rem .4rem .6rem}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;background:var(--sup);border-radius:var(--r-ta);padding:.5rem .4rem .6rem}
 .cal-dn{text-align:center;font-family:var(--cifra);font-size:.62rem;font-weight:600;color:var(--tinta4);padding:.2rem 0 .35rem}
 .cal-d{
   display:flex;flex-direction:column;align-items:center;gap:.2rem;
@@ -338,6 +351,23 @@ button.cuerpo{display:block;width:100%;text-align:left;cursor:pointer}
 .puntos i{width:5px;height:5px;border-radius:50%}
 .puntos .az{background:var(--azul)}
 .puntos .am{background:var(--ambar)}
+.puntos i[class*="p-"]{background:var(--pc)}
+.cal-modos{margin-bottom:.8rem}
+/* apilada: cada día muestra lo suyo, cortado a una línea */
+.cal.apilada .cal-d{min-height:5.6rem;align-items:stretch;gap:2px;padding:.25rem .15rem;min-width:0;justify-content:flex-start}
+.cal.apilada .num{align-self:center;width:1.6rem;height:1.6rem;font-size:.8rem}
+.cal-it{display:block;font-size:.6rem;line-height:1.35;padding:0 .2rem;border-radius:.25rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left}
+.cal-it.ev{background:var(--azulT);color:var(--azul);font-weight:600}
+.cal-it.ev.ext{background:none;color:var(--azul)}
+.cal-it.ta{background:var(--pcT);color:var(--pc);font-weight:600}
+.cal-it.virtual{opacity:.6}
+.cal-it b{font-weight:700}
+.cal-mas{font-size:.58rem;color:var(--tinta3);text-align:center}
+.cal-d.fuera .cal-it{opacity:.45}
+@media (min-width: 900px){
+  .cal.apilada .cal-d{min-height:7rem}
+  .cal-it{font-size:.7rem}
+}
 .ev-fila{background:var(--azulT);border-left:3px solid var(--azul);text-align:left;width:100%;align-items:center}
 .ev-h{flex:none;width:2.9rem;font-size:.72rem;color:var(--azul);line-height:1.2}
 .virtual{opacity:.62;text-align:left;width:100%;align-items:center}
@@ -353,11 +383,25 @@ button.cuerpo{display:block;width:100%;text-align:left;cursor:pointer}
 .ayuda{margin-top:.9rem;font-size:.82rem;color:var(--tinta2);line-height:1.5}
 .ayuda summary{cursor:pointer;color:var(--ambar);font-weight:600;min-height:2.25rem;display:flex;align-items:center}
 .ayuda p{margin:.5rem 0 0}
+.aj-p{margin:.8rem 0 0;font-size:.86rem;line-height:1.5;color:var(--tinta2)}
+.aj-p b{color:var(--tinta)}
+.marcador{min-height:2.1rem;margin:.35rem 0;cursor:grab}
 .seg.ancho{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;width:100%}
 .seg.ancho button{padding:0 .3rem}
-/* La prioridad elegida lleva su color: urgente es rojo porque es lo
-   que no puede esperar. */
-.prio button[data-c="urgente"][aria-pressed="true"]{color:var(--rojo)}
+/* ── color de prioridad ── */
+.p-urgente{--pc:var(--urg);--pcT:var(--urgT)}
+.p-planificar{--pc:var(--plan);--pcT:var(--planT)}
+.p-delegar{--pc:var(--dele);--pcT:var(--deleT)}
+.cara.fila[class*="p-"]{box-shadow:inset 3px 0 0 var(--pc)}
+[class*="p-"] .chk::before{border-color:var(--pc)}
+[class*="p-"] .chk[aria-pressed="true"]::before{border-color:var(--verde)}
+.grupo-cab .punto-p{width:.5rem;height:.5rem;border-radius:50%;background:var(--pc);align-self:center}
+.grupo-cab[class*="p-"] .rotulo{color:var(--pc)}
+.ficha.prio{background:var(--pcT);color:var(--pc)}
+.prio button[aria-pressed="true"]{background:var(--pcT);color:var(--pc);box-shadow:inset 0 0 0 1px var(--pc)}
+.prio button[data-c="urgente"]{--pc:var(--urg);--pcT:var(--urgT)}
+.prio button[data-c="planificar"]{--pc:var(--plan);--pcT:var(--planT)}
+.prio button[data-c="delegar"]{--pc:var(--dele);--pcT:var(--deleT)}
 .suave{text-transform:none;letter-spacing:0;font-family:var(--cuerpo);font-weight:500;color:var(--tinta4)}
 a.mini{display:inline-flex;align-items:center}
 
@@ -382,7 +426,11 @@ a.mini{display:inline-flex;align-items:center}
 .adj-otro audio{display:block;width:100%;height:2.2rem;margin-top:.4rem}
 .lupa{position:fixed;inset:0;z-index:95;background:rgba(0,0,0,.92);display:grid;place-items:center;padding:calc(var(--alto) + .5rem) .5rem calc(var(--bajo) + .5rem)}
 .lupa[hidden]{display:none}
-.lupa img{max-width:100%;max-height:100%;object-fit:contain;border-radius:.4rem}
+.lupa{grid-template-rows:1fr auto;gap:.8rem}
+.lupa img{max-width:100%;max-height:100%;object-fit:contain;border-radius:.4rem;align-self:center;justify-self:center;min-height:0}
+.lupa-barra{display:flex;gap:.6rem;justify-content:center}
+.lupa-barra .btn-sec{background:rgba(255,255,255,.14);color:#fff}
+.adj-bajar{position:absolute;bottom:.25rem;right:.25rem;width:1.7rem;height:1.7rem;border-radius:50%;display:grid;place-items:center;background:rgba(0,0,0,.55);color:#fff}
 @media (prefers-reduced-motion: reduce){.cargando{animation:none}}
 
 .vacio{padding:2.5rem 1rem;text-align:center;color:var(--tinta3);font-size:.9rem;line-height:1.5}
@@ -438,6 +486,14 @@ a.mini{display:inline-flex;align-items:center}
 .caso .marca.rojo{background:var(--rojo)}
 .caso .marca.ambar{background:var(--ambar)}
 .caso .id,.caso .desc{display:block}
+.id-fila{display:flex;align-items:center;gap:.35rem}
+.caso .id{cursor:text}
+.copiar{width:2rem;height:2rem;margin:-.5rem 0;border-radius:50%;display:grid;place-items:center;color:var(--tinta3)}
+.copiar:active{transform:scale(.9)}
+.caso .desc{text-align:left;width:100%;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.caso.abierto .desc{-webkit-line-clamp:unset;display:block}
+.caso .tx>.acc{margin-top:.75rem}
+.caso.abierto .acc-h{display:none}
 .caso .id{font-family:var(--cifra);font-size:.78rem;font-weight:600;color:var(--tinta3);letter-spacing:-.01em}
 .caso .desc{font-size:.95rem;font-weight:600;line-height:1.3;margin-top:.12rem}
 .meta{display:flex;gap:.35rem;flex-wrap:wrap;margin-top:.45rem}
@@ -627,6 +683,7 @@ a.mini{display:inline-flex;align-items:center}
   .cabeza{left:5.5rem;padding-inline:2rem}
   main{margin-left:5.5rem;padding-bottom:3rem}
   .env{padding-inline:2rem;max-width:56rem}
+  .env.ancha{max-width:none}
   .capturar{left:1.1rem;right:auto;bottom:1.5rem}
   /* En el Mac la hoja ocupa el centro: los avisos se van a la esquina
      para no taparla. */
@@ -658,7 +715,13 @@ a.mini{display:inline-flex;align-items:center}
   <div id="hoja-cuerpo"></div>
 </section>
 <div id="avisos" aria-live="polite"></div>
-<div id="lupa" class="lupa" hidden role="dialog" aria-label="Imagen adjunta"><img id="lupa-img" alt=""></div>
+<div id="lupa" class="lupa" hidden role="dialog" aria-label="Imagen adjunta">
+  <img id="lupa-img" alt="">
+  <div class="lupa-barra">
+    <button type="button" class="btn-sec" id="lupa-bajar">Descargar</button>
+    <button type="button" class="btn-sec" id="lupa-cerrar">Cerrar</button>
+  </div>
+</div>
 
 <div class="entrada" id="entrada" hidden>
   <div class="entrada-caja">
@@ -1196,6 +1259,8 @@ const ICO = {
   tareas:'<path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 5.5l1 1 2-2M4 11.5l1 1 2-2M4 17.5l1 1 2-2"/>',
   casos: '<path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>',
   x:     '<path d="M6 6l12 12M18 6L6 18"/>',
+  copiar:'<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 012-2h8"/>',
+  bajar: '<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>',
   evento:'<rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 10h18M8 2v4M16 2v4M12 13v5M9.5 15.5h5"/>'
 };
 function icono(n, tam, grosor){
@@ -1254,8 +1319,9 @@ function cabeza(titulo, rotulo, derecha){
       '<div class="tit" style="margin-top:.15rem">' + titulo + '</div>' +
     '</div>' + (derecha || '') + '</div>';
 }
-function grupo(titulo, n, cuerpo, extra){
-  return '<div class="grupo"><div class="grupo-cab"><span class="rotulo">' + titulo + '</span>' +
+function grupo(titulo, n, cuerpo, extra, prio){
+  return '<div class="grupo"><div class="grupo-cab' + (prio ? ' p-' + prio : '') + '">' +
+         (prio ? '<span class="punto-p"></span>' : '') + '<span class="rotulo">' + titulo + '</span>' +
          (n != null ? '<span class="n">' + n + '</span>' : '') + '<span style="flex:1"></span>' + (extra || '') + '</div>' +
          '<div class="pila">' + cuerpo + '</div></div>';
 }
@@ -1293,7 +1359,7 @@ function pintarHoy(){
   const paraHoy = ordenarTareas(vivas.filter(t => t.cat !== 'urgente' && t.venc && t.venc <= hoy && !(t.ini && t.venc === hoy)));
   const casos = casosOrdenados().filter(c => c.estado !== 'EN ESPERA');
 
-  if(urgentes.length) h += grupo('Urgentes', urgentes.length, urgentes.map(t => filaTarea(t)).join(''));
+  if(urgentes.length) h += grupo('Urgentes', urgentes.length, urgentes.map(t => filaTarea(t)).join(''), '', 'urgente');
   if(paraHoy.length) h += grupo('Para hoy', paraHoy.length, paraHoy.map(t => filaTarea(t)).join(''));
   if(casos.length){
     const ver = casos.slice(0, 5);
@@ -1338,7 +1404,7 @@ function tramoDe(f){
       '<button type="button" class="tx" data-editar="' + esc(t.tid) + '">' +
         '<span style="display:block;font-weight:600">' + esc(t.text) + '</span>' +
         '<span class="meta">' +
-          (t.cat === 'urgente' ? '<span class="ficha roja">Urgente</span>' : '') +
+          '<span class="ficha prio p-' + t.cat + '">' + CATS[t.cat] + '</span>' +
           (t.caso ? '<span class="ficha gris cifra">' + esc(t.caso) + '</span>' : '') +
           (t.rep && REPS[t.rep] ? '<span class="ficha gris">' + REPS[t.rep] + '</span>' : '') +
         '</span>' +
@@ -1351,7 +1417,7 @@ function tramoDe(f){
    Azul es calendario (tuyo o de Outlook/Google); ámbar, tareas que
    vencen. Las tareas que se repiten se proyectan en sus días futuros.
    ══════════════════════════════════════════════════════════════════ */
-let calMes = null, calDia = null;
+let calMes = null, calDia = null, toqueDia = {};
 
 function ocurreEn(t, iso){
   if(!t.rep || !t.venc) return false;
@@ -1381,8 +1447,43 @@ function fechaLarga(iso){
   return n === 0 ? 'Hoy · ' + base : n === 1 ? 'Mañana · ' + base : base;
 }
 
+/* Tres vistas, como el Calendario de Apple: compacta (puntos),
+   apilada (cada día con sus cosas escritas) y lista (agenda). */
+function vistaCal(){ try{ return localStorage.getItem('dtm5-calvista') || 'compacta'; }catch(e){ return 'compacta'; } }
+
+function itemsDelDia(iso){
+  return eventosDelDia(iso).map(e => ({tipo:'ev', e}))
+    .concat(tareasDelDia(iso).map(t => ({tipo:'ta', t})));
+}
+function chipDia(x, conHora){
+  if(x.tipo === 'ev'){
+    return '<span class="cal-it ev' + (x.e.eid ? '' : ' ext') + '">' +
+      (conHora && x.e.hora ? '<b>' + esc(x.e.hora) + '</b> ' : '') + esc(x.e.t) + '</span>';
+  }
+  return '<span class="cal-it ta p-' + x.t.cat + (x.t.virtual ? ' virtual' : '') + '">' + esc(x.t.text) + '</span>';
+}
+function filaDia(x){
+  if(x.tipo === 'ev'){
+    const e = x.e, tag = e.eid ? 'button type="button" data-ev="' + esc(e.eid) + '"' : 'div';
+    return '<' + tag + ' class="fila ev-fila">' +
+      '<span class="cifra ev-h">' + (e.hora ? esc(e.hora) : 'todo<br>el día') + '</span>' +
+      '<span class="tx"><span style="display:block;font-weight:600">' + esc(e.t) + '</span>' +
+      '<span class="menor">' + (e.fin ? esc(e.hora) + '–' + esc(e.fin) : '') + (e.src ? (e.fin ? ' · ' : '') + esc(e.src) : '') + '</span></span>' +
+    '</' + tag.split(' ')[0] + '>';
+  }
+  const t = x.t;
+  return t.virtual
+    ? '<button type="button" class="fila virtual p-' + t.cat + '" data-editar="' + esc(t.tid) + '"><span class="chk-v"></span>' +
+        '<span class="tx">' + esc(t.text) + '<span class="meta"><span class="ficha gris">' + REPS[t.rep] + '</span></span></span></button>'
+    : filaTarea(t);
+}
+function botonesDia(iso){
+  return '<button type="button" class="mini" data-nuevo-ev="' + iso + '">+ Evento</button>' +
+         '<button type="button" class="mini" data-nueva-tarea="' + iso + '">+ Tarea</button>';
+}
+
 function pintarCalendario(){
-  const hoy = hoyISO();
+  const hoy = hoyISO(), modo = vistaCal();
   if(!calDia) calDia = hoy;
   if(!calMes) calMes = calDia.slice(0, 7);
   const [y, m] = calMes.split('-').map(Number);
@@ -1393,47 +1494,63 @@ function pintarCalendario(){
       '<button type="button" class="redondo" data-cal-mes="1" aria-label="Mes siguiente" style="transform:scaleX(-1)">' + icono('atras', 18, 2.4) + '</button>' +
     '</div>');
 
+  let h = '<section class="env ancha"><div class="seg ancho cal-modos" role="group" aria-label="Vista">' +
+    [['compacta','Compacta'],['apilada','Apilada'],['lista','Lista']].map(([k, t]) =>
+      '<button type="button" data-cal-vista="' + k + '" aria-pressed="' + (modo === k) + '">' + t + '</button>').join('') +
+  '</div>';
+
+  if(modo === 'lista'){
+    /* Agenda: desde hoy (o desde el mes elegido) los próximos 60 días
+       que tienen algo. */
+    const desde = calMes === hoy.slice(0, 7) ? hoy : calMes + '-01';
+    let l = '', dias = 0;
+    for(let i = 0; i < 60; i++){
+      const iso = sumarDias(desde, i), items = itemsDelDia(iso);
+      if(!items.length) continue;
+      dias++;
+      l += grupo(fechaLarga(iso), null, items.map(filaDia).join(''), botonesDia(iso));
+    }
+    h += l || '<div class="vacio">Nada en los próximos 60 días.</div>';
+    h += '</section>';
+    $('lienzo').innerHTML = h;
+    return;
+  }
+
   const primero = new Date(y, m-1, 1);
   const desfase = (primero.getDay() + 6) % 7;
   const inicio = sumarDias(hoyISO(primero), -desfase);
   const diasMes = new Date(y, m, 0).getDate();
   const celdas = Math.ceil((desfase + diasMes) / 7) * 7;
+  const apilada = modo === 'apilada';
+  const ancho = matchMedia('(min-width: 900px)').matches;
+  const cabe = ancho ? 4 : 3;
 
-  let g = '<div class="cal">' + ['L','M','M','J','V','S','D'].map(x => '<div class="cal-dn">' + x + '</div>').join('');
+  let g = '<div class="cal' + (apilada ? ' apilada' : '') + '">' + ['L','M','M','J','V','S','D'].map(x => '<div class="cal-dn">' + x + '</div>').join('');
   for(let i = 0; i < celdas; i++){
     const iso = sumarDias(inicio, i);
     const fuera = iso.slice(0, 7) !== calMes;
-    const ev = eventosDelDia(iso).length > 0;
-    const ta = tareasDelDia(iso).length > 0;
+    const items = itemsDelDia(iso);
+    let dentro;
+    if(apilada){
+      dentro = items.slice(0, cabe).map(x => chipDia(x, ancho)).join('') +
+        (items.length > cabe ? '<span class="cal-mas">+' + (items.length - cabe) + '</span>' : '');
+    }else{
+      const ev = items.some(x => x.tipo === 'ev'), ta = items.filter(x => x.tipo === 'ta');
+      dentro = '<span class="puntos">' + (ev ? '<i class="az"></i>' : '') +
+        [...new Set(ta.map(x => x.t.cat))].map(c => '<i class="p-' + c + '"></i>').join('') + '</span>';
+    }
     g += '<button type="button" class="cal-d' + (fuera ? ' fuera' : '') + (iso === hoy ? ' hoy' : '') + '" data-cal-dia="' + iso + '"' +
-         (iso === calDia ? ' aria-pressed="true"' : ' aria-pressed="false"') + ' aria-label="' + fechaLarga(iso) + '">' +
-         '<span class="num">' + Number(iso.slice(8)) + '</span>' +
-         '<span class="puntos">' + (ev ? '<i class="az"></i>' : '') + (ta ? '<i class="am"></i>' : '') + '</span>' +
-         '</button>';
+         ' aria-pressed="' + (iso === calDia) + '" aria-label="' + fechaLarga(iso) + (items.length ? ', ' + items.length + ' cosas' : '') + '">' +
+         '<span class="num">' + Number(iso.slice(8)) + '</span>' + dentro + '</button>';
   }
   g += '</div>';
 
-  const evs = eventosDelDia(calDia), tas = tareasDelDia(calDia);
-  let l = '';
-  for(const e of evs){
-    const tag = e.eid ? 'button type="button" data-ev="' + esc(e.eid) + '"' : 'div';
-    l += '<' + tag + ' class="fila ev-fila">' +
-      '<span class="cifra ev-h">' + (e.hora ? esc(e.hora) : 'todo<br>el día') + '</span>' +
-      '<span class="tx"><span style="display:block;font-weight:600">' + esc(e.t) + '</span>' +
-      '<span class="menor">' + (e.fin ? esc(e.hora) + '–' + esc(e.fin) : '') + (e.src ? (e.fin ? ' · ' : '') + esc(e.src) : '') + '</span></span>' +
-    '</' + tag.split(' ')[0] + '>';
-  }
-  for(const t of tas){
-    l += t.virtual
-      ? '<button type="button" class="fila virtual" data-editar="' + esc(t.tid) + '"><span class="chk-v"></span>' +
-          '<span class="tx">' + esc(t.text) + '<span class="meta"><span class="ficha gris">' + REPS[t.rep] + '</span></span></span></button>'
-      : filaTarea(t);
-  }
-  if(!l) l = '<div class="vacio" style="padding:1.2rem 1rem">Nada este día.</div>';
-
-  $('lienzo').innerHTML = '<section class="env">' + g +
-    grupo(fechaLarga(calDia), null, l, '<button type="button" class="mini" data-nuevo-ev="' + calDia + '">+ Evento</button>') +
-    '</section>';
+  const items = itemsDelDia(calDia);
+  h += g + grupo(fechaLarga(calDia), null,
+    items.length ? items.map(filaDia).join('') : '<div class="vacio" style="padding:1.2rem 1rem">Nada este día.</div>',
+    botonesDia(calDia));
+  h += '</section>';
+  $('lienzo').innerHTML = h;
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -1483,6 +1600,22 @@ function pintarMas(){
       '<p><b>Google:</b> en calendar.google.com, Configuración, tu calendario, «Dirección secreta en formato iCal».</p>' +
       '<p><b>iPhone (iCloud):</b> app Calendario, (i) junto al calendario, Calendario público, Compartir enlace. Cambia <i>webcal://</i> por <i>https://</i>.</p>' +
       '<p>Los eventos se leen cada 15 minutos. Son de solo lectura: se cambian en su calendario de origen.</p>' +
+    '</details>');
+
+  const base = location.origin + location.pathname;
+  const marcador = "javascript:(()=>{const s=String(getSelection()).trim();window.open('" + base +
+    "?texto='+encodeURIComponent(s||prompt('¿Qué anoto?')||''),'tareas')})()";
+  h += tarjeta('Desde otras apps',
+    '<p class="aj-p"><b>Pegar.</b> Copia un número de caso, un texto o una imagen en cualquier app y, con esta abierta, pega (⌘V o Ctrl+V). Un número abre un caso nuevo con él; un texto, una tarea; una imagen se adjunta. Dentro de una tarea o un caso, pegar una imagen la adjunta ahí.</p>' +
+    '<p class="aj-p"><b>En el computador.</b> Arrastra este botón a la barra de favoritos: ' +
+      '<a class="btn-sec marcador" href="' + esc(marcador) + '" data-marcador>+ Tareas</a><br>' +
+      'Después, en cualquier página, selecciona el número de caso y toca el favorito: se abre la app con el número puesto.</p>' +
+    '<details class="ayuda"><summary>En el iPhone, desde el botón Compartir</summary>' +
+      '<p>1. App Atajos, <b>+</b>, «Agregar acción», busca <b>URL</b> y escribe:<br><span class="cifra sel" style="word-break:break-all">' + esc(base) + '?texto=</span></p>' +
+      '<p>2. Toca el final de esa URL y elige la variable <b>Entrada del atajo</b>.</p>' +
+      '<p>3. Agrega la acción <b>Abrir URL</b>.</p>' +
+      '<p>4. En los detalles del atajo, activa <b>Mostrar en hoja para compartir</b> y ponle de nombre «Registrar en Tareas».</p>' +
+      '<p>Desde ahí, al seleccionar un texto y tocar Compartir, aparece «Registrar en Tareas».</p>' +
     '</details>');
 
   const estadoAv = typeof Notification === 'undefined' ? 'no'
@@ -1935,7 +2068,7 @@ function chipsTarea(t){
 function filaTarea(t){
   return '<div class="desl" data-desliza data-id="' + esc(t.tid) + '" data-der="hecha" data-izq="manana">' +
     fondoFila(LADOS.hecha, LADOS.manana) +
-    '<div class="cara fila">' +
+    '<div class="cara fila p-' + (CATS[t.cat] ? t.cat : 'planificar') + '">' +
       '<button type="button" class="chk" data-hecha="' + esc(t.tid) + '" aria-pressed="false" aria-label="Marcar hecha"></button>' +
       '<button type="button" class="tx" data-editar="' + esc(t.tid) + '">' +
         '<span style="display:block">' + esc(t.text) + '</span>' +
@@ -1944,29 +2077,54 @@ function filaTarea(t){
     '</div></div>';
 }
 
+/* El número se puede seleccionar y copiar: vive fuera de cualquier
+   botón. Tocar el detalle lo despliega entero con sus acciones; el
+   número queda quieto donde estaba. */
+let casoDesplegado = null;
 function filaCaso(c){
   const q = diasDesde(c.act) || 0, tono = tonoCaso(c), espera = c.estado === 'EN ESPERA';
   const nT = S.tareas.filter(t => !t.done && t.caso === c.id).length;
+  const abierto = casoDesplegado === c.id;
   const quieto = espera ? '<span class="ficha gris">En espera</span>'
     : q === 0 ? '<span class="ficha gris">Movido hoy</span>'
     : '<span class="ficha cifra' + (tono === 'rojo' ? ' roja' : tono === 'ambar' ? '' : ' gris') + '">' + enDias(q) + ' quieto</span>';
-  return '<div class="desl caso" data-desliza data-id="' + esc(c.id) + '" data-fila-caso="' + esc(c.id) + '" data-der="avance" data-izq="espera">' +
+  return '<div class="desl caso' + (abierto ? ' abierto' : '') + '" data-desliza data-id="' + esc(c.id) + '" data-fila-caso="' + esc(c.id) + '" data-der="avance" data-izq="espera">' +
     fondoFila(LADOS.avance, espera ? LADOS.retomar : LADOS.espera) +
     '<div class="cara fila">' +
       '<span class="marca ' + tono + '"></span>' +
-      '<button type="button" class="tx" data-ficha="' + esc(c.id) + '">' +
-        '<span class="id">' + esc(c.id) + '</span>' +
-        '<span class="desc">' + esc(c.desc) + '</span>' +
+      '<div class="tx">' +
+        '<div class="id-fila"><span class="id sel">' + esc(c.id) + '</span>' +
+          '<button type="button" class="copiar" data-copiar="' + esc(c.id) + '" aria-label="Copiar el número ' + esc(c.id) + '">' + icono('copiar', 14, 2.2) + '</button>' +
+        '</div>' +
+        '<button type="button" class="desc" data-desplegar="' + esc(c.id) + '" aria-expanded="' + abierto + '">' + esc(c.desc) + '</button>' +
         '<span class="meta">' + quieto +
           (nT ? '<span class="ficha gris">' + nT + (nT === 1 ? ' tarea' : ' tareas') + '</span>' : '') +
           (c.adj && c.adj.length ? '<span class="ficha gris">' + icono('clip', 11, 2.2) + c.adj.length + '</span>' : '') +
         '</span>' +
-      '</button>' +
+        (abierto
+          ? '<div class="acc">' +
+              '<button type="button" class="btn-sec" data-ficha="' + esc(c.id) + '">Abrir caso</button>' +
+              '<button type="button" class="btn-sec" data-avance="' + esc(c.id) + '">Avance</button>' +
+              '<button type="button" class="btn-sec" data-finalizar="' + esc(c.id) + '">Finalizar</button>' +
+            '</div>'
+          : '') +
+      '</div>' +
       '<div class="acc-h">' +
         '<button type="button" class="mini" data-avance="' + esc(c.id) + '">Avance</button>' +
         '<button type="button" class="mini" data-espera="' + esc(c.id) + '">' + (espera ? 'Retomar' : 'Esperar') + '</button>' +
       '</div>' +
     '</div></div>';
+}
+
+/* Copiar al portapapeles, con el aviso de que se hizo. */
+async function copiar(texto){
+  try{ await navigator.clipboard.writeText(texto); aviso('Copiado: ' + texto); }
+  catch(e){
+    const t = document.createElement('textarea');
+    t.value = texto; document.body.appendChild(t); t.select();
+    try{ document.execCommand('copy'); aviso('Copiado: ' + texto); }catch(e2){ aviso('No se pudo copiar'); }
+    t.remove();
+  }
 }
 
 function pintarDobles(lista){
@@ -2005,7 +2163,7 @@ function pintarTareas(){
   if(dup.length) h += pintarDobles(dup);
   for(const k of CAT_ORDEN){
     const l = ordenarTareas(vivas.filter(t => t.cat === k));
-    if(l.length) h += grupo(CATS[k], l.length, l.map(t => filaTarea(t)).join(''));
+    if(l.length) h += grupo(CATS[k], l.length, l.map(t => filaTarea(t)).join(''), '', k);
   }
   if(!vivas.length) h += '<div class="vacio">Sin tareas pendientes.<br>Crea una con <b>+</b>.</div>';
   h += '</section>';
@@ -2014,7 +2172,8 @@ function pintarTareas(){
 
 /* ══════════════════════════════════════════════════════════════════
    CASOS — del más quieto al más fresco; en espera al final. Tocar un
-   caso abre su ficha: detalle, bitácora, tareas y adjuntos.
+   caso despliega su detalle; "Abrir caso" lleva a la ficha con sus
+   tareas y adjuntos.
    ══════════════════════════════════════════════════════════════════ */
 function pintarCasos(){
   const casos = casosOrdenados(), frios = enfriandose().length;
@@ -2035,7 +2194,7 @@ function terminarCaso(id){
   S.cerrados.unshift(c);
   if(S.cerrados.length > 400) S.cerrados.length = 400;
   aplicar();
-  aviso(c.id + ' cerrado', () => {
+  aviso(c.id + ' finalizado', () => {
     S.cerrados = S.cerrados.filter(x => x !== c);
     delete c.cerrado; c.hist.shift();
     S.casos.splice(Math.min(i, S.casos.length), 0, c);
@@ -2150,7 +2309,7 @@ function interpretar(entrada){
    LA HOJA — una sola, con varios contenidos:
      nueva     capturar una tarea o un caso
      editar    una tarea existente, con sus adjuntos
-     ficha     un caso: detalle, estado, bitácora, tareas y adjuntos
+     ficha     un caso: detalle, estado, tareas y adjuntos
      evento    crear o cambiar un evento propio
    Y tres pasos que se abren desde cualquiera: boceto, grabadora y
    evento. "Volver" regresa al contenido de origen.
@@ -2177,14 +2336,18 @@ function abrirCaptura(op){
   CAP = t
     ? {modo:'editar', tipo:'tarea', paso:'texto', tid:t.tid, texto:t.text, cat:t.cat, venc:t.venc, ini:t.ini,
        rep:t.rep, caso:t.caso, notas:t.notas, tocado:{cat:1, venc:1, ini:1, caso:1, rep:1}, soltar:false, volver:op.volver || null}
-    : {modo:'nueva', tipo:op.tipo || 'tarea', paso:'texto', tid:null, texto:'', cat:op.cat || 'planificar',
-       venc:'', ini:'', rep:'', caso:op.caso || '', notas:'', tocado:op.caso ? {caso:1} : {}, soltar:false,
-       num:'', det:'', volver:op.volver || null};
+    : {modo:'nueva', tipo:op.tipo || 'tarea', paso:'texto', tid:null, texto:op.texto || '', cat:op.cat || 'planificar',
+       venc:op.venc || '', ini:'', rep:'', caso:op.caso || '', notas:'',
+       tocado:Object.assign(op.caso ? {caso:1} : {}, op.venc ? {venc:1} : {}), soltar:false,
+       num:op.num || '', det:op.det || '', volver:op.volver || null};
   abrirHoja(op.instantaneo);
   /* El foco tiene que ir dentro del mismo toque: iOS solo levanta el
      teclado si el foco nace de un gesto del usuario. Al editar no se
      levanta: primero se mira. */
-  if(!t){ const f = $(CAP.tipo === 'caso' ? 'cap-num' : 'cap-tx'); if(f) f.focus({preventScroll:true}); }
+  if(!t){
+    const f = $(CAP.tipo === 'caso' ? (CAP.num ? 'cap-det' : 'cap-num') : 'cap-tx');
+    if(f){ f.focus({preventScroll:true}); if(f.value) f.setSelectionRange(f.value.length, f.value.length); }
+  }
 }
 function abrirFicha(id, op){
   const c = casoPorId(id); if(!c) return;
@@ -2284,7 +2447,8 @@ function htmlTexto(){
         campo('Número de caso', '<input type="text" id="cap-num" class="cifra" autocomplete="off" autocapitalize="characters" enterkeyhint="next" placeholder="70129397" value="' + esc(CAP.num) + '">') +
         campo('Detalle del caso', '<textarea id="cap-det" class="cap-notas sel" rows="4" placeholder="Línea inactiva de Nicol, plan WOM internet">' + esc(CAP.det) + '</textarea>') +
       '</div>' +
-      '<div id="cap-lectura"></div>';
+      '<div id="cap-lectura"></div>' +
+      htmlAcciones('Adjuntar al caso');
   }
   const t = editando ? tareaPorId(CAP.tid) : null;
   return h +
@@ -2387,7 +2551,7 @@ function lecturaCaso(){
   const num = (CAP.num || '').trim();
   const existe = num ? casoPorId(num) : null;
   if(existe) return '<div class="detec"><b>Ya tienes el caso <span class="cifra">' + esc(num) + '</span></b> · ' + esc(corto(existe.desc, 60)) +
-    '<br>Guardar anota el detalle en su bitácora en vez de crear otro igual.</div>';
+    '<div class="acc"><button type="button" class="btn-sec" data-ficha="' + esc(existe.id) + '">Abrir ese caso</button></div></div>';
   if(!num && (CAP.det || '').trim()) return '<div class="menor" style="margin-top:.7rem">Sin número le pongo uno provisorio; lo cambias después en la ficha.</div>';
   return '';
 }
@@ -2420,14 +2584,8 @@ function guardarCasoCaptura(){
   const num = (CAP.num || '').trim(), det = (CAP.det || '').trim();
   if(!num && !det){ $('cap-num').focus(); return; }
   const existe = num ? casoPorId(num) : null;
-  if(existe){
-    const antes = existe.act;
-    anotar(existe, det || 'Movimiento registrado');
-    existe.act = hoyISO();
-    terminarHoja(); aplicar();
-    aviso('Anotado en la bitácora de ' + existe.id, () => { existe.hist.shift(); existe.act = antes; aplicar(); });
-    return;
-  }
+  /* Si el caso ya existe no se duplica: se abre el que hay. */
+  if(existe){ abrirFicha(existe.id); aviso('Ese caso ya existía'); return; }
   const id = num || 'CASO-' + Date.now().toString().slice(-6);
   const c = {id, desc:det || '(sin detalle)', estado:'EN PROGRESO', act:hoyISO(), rec:'', adj:[], notas:'',
              hist:[{f:hoyISO(), t:'Caso creado'}]};
@@ -2459,13 +2617,13 @@ function htmlFicha(){
     '</div>' +
     '<div class="acc" style="margin-top:1rem">' +
       '<button type="button" class="btn-sec" data-avance="' + esc(c.id) + '">' + icono('visto', 16, 2.4) + 'Registrar avance</button>' +
-      '<button type="button" class="btn-sec" data-fi-cerrar>Cerrar caso</button>' +
+      '<button type="button" class="btn-sec" data-fi-cerrar>Finalizar caso</button>' +
     '</div>' +
 
     '<div class="rotulo" style="margin-top:1.4rem">Tareas · ' + tareas.length + '</div>' +
     '<div class="pila" style="margin-top:.55rem">' +
       tareas.map(t =>
-        '<div class="fila" style="background:var(--hueco)">' +
+        '<div class="fila p-' + t.cat + '" style="background:var(--hueco)">' +
           '<button type="button" class="chk" data-hecha="' + esc(t.tid) + '" aria-pressed="false" aria-label="Marcar hecha"></button>' +
           '<button type="button" class="tx" data-editar="' + esc(t.tid) + '"><span style="display:block">' + esc(t.text) + '</span>' +
           '<span class="meta">' + chipsTarea(Object.assign({}, t, {caso:''})) + '</span></button>' +
@@ -2473,28 +2631,8 @@ function htmlFicha(){
       '<button type="button" class="plegar" data-fi-tarea style="margin-top:0">+ Tarea para este caso</button>' +
     '</div>' +
 
-    '<div class="rotulo" style="margin-top:1.2rem">Bitácora</div>' +
-    '<div class="fila-op" style="margin-top:.55rem">' +
-      '<input type="text" id="fi-nota" class="campo-in" placeholder="Anotar lo que pasó…" enterkeyhint="done" style="flex:1">' +
-      '<button type="button" class="btn-sec" data-fi-anotar>Anotar</button>' +
-    '</div>' +
-    '<div class="bitacora">' +
-      (c.hist.length ? c.hist.map(x => '<div class="bit"><span class="f">' + (x.f ? fechaCorta(x.f) : '') + '</span><span class="sel">' + esc(x.t) + '</span></div>').join('')
-                     : '<div class="menor">Todavía sin anotaciones.</div>') +
-    '</div>' +
-
     '<div id="cap-adjuntos">' + htmlAdjuntos(c) + '</div>' +
     htmlAcciones('Adjuntar al caso');
-}
-function anotarEnFicha(){
-  const c = casoPorId(CAP.caso), el = $('fi-nota');
-  const tx = el ? el.value.trim() : '';
-  if(!c || !tx){ if(el) el.focus(); return; }
-  const antes = c.act;
-  anotar(c, tx);
-  c.act = hoyISO();
-  aplicar(); pintarHoja();
-  aviso('Anotado en ' + c.id, () => { c.hist.shift(); c.act = antes; aplicar(); });
 }
 
 /* ── pasos: la hoja cambia de contenido sin cerrarse ── */
@@ -2601,17 +2739,84 @@ function duenoVisible(){
 function duenoAdjunto(nombre){
   const visto = duenoVisible();
   if(visto) return {obj:visto, nuevo:false};
+  /* Escribiendo un caso nuevo: el caso nace con lo escrito y la hoja
+     pasa a su ficha, donde queda el adjunto. */
+  if(CAP && CAP.modo === 'nueva' && CAP.tipo === 'caso'){
+    const num = (CAP.num || '').trim(), det = (CAP.det || '').trim();
+    let c = num ? casoPorId(num) : null, nace = !c;
+    if(!c){
+      c = {id:num || 'CASO-' + Date.now().toString().slice(-6), desc:det || nombre, estado:'EN PROGRESO', act:hoyISO(),
+           rec:'', adj:[], notas:'', hist:[{f:hoyISO(), t:'Caso creado'}]};
+      S.casos.push(c);
+    }
+    CAP = {modo:'ficha', paso:'ficha', caso:c.id};
+    return {obj:c, nuevo:nace ? 'un caso nuevo' : false};
+  }
   const r = CAP ? leerCaptura() : null;
   const t = nuevaTarea(r && r.texto ? r : {texto:nombre});
   S.tareas.push(t);
   if(CAP) Object.assign(CAP, {modo:'editar', tid:t.tid, tipo:'tarea', texto:t.text, cat:t.cat, venc:t.venc, ini:t.ini,
                               rep:t.rep, caso:t.caso, notas:'', tocado:{cat:1, venc:1, ini:1, caso:1, rep:1}});
-  return {obj:t, nuevo:true};
+  return {obj:t, nuevo:'una tarea nueva'};
 }
 function trasAdjuntar(n, que, nuevo){
   aplicar();
   if(CAP){ CAP.paso = pasoDeOrigen(); pintarHoja(); }
-  aviso((n === 1 ? que : n + ' adjuntos guardados') + (nuevo ? ' en una tarea nueva' : ''));
+  aviso((n === 1 ? que : n + ' adjuntos guardados') + (nuevo ? ' en ' + nuevo : ''));
+}
+
+/* ── pegar ──
+   Una imagen pegada (captura de pantalla, foto copiada) se adjunta a
+   lo que está abierto, o a una tarea nueva. Un texto pegado con la app
+   en reposo abre la captura con él: si es solo un número, como caso. */
+function imagenesDe(dt){ return [...((dt && dt.files) || [])].filter(f => /^image\//.test(f.type)); }
+async function pegarImagenes(files){
+  if(!ref){ aviso(SIN_NUBE); return; }
+  const {obj, nuevo} = duenoAdjunto('Imagen pegada');
+  let ok = 0;
+  for(const f of files){
+    try{
+      const g = await guardarAdjunto({tipo:'img', img:await comprimir(f, false), nombre:'imagen-pegada.jpg'});
+      if(g){ obj.adj.push(g); ok++; }
+    }catch(e){ aviso('No pude guardar la imagen: ' + e.message); }
+  }
+  if(ok) trasAdjuntar(ok, 'Imagen pegada', nuevo);
+}
+function pareceNumeroDeCaso(txt){ return /^[A-Z]*-?\d{5,14}$/i.test(txt.trim()); }
+function abrirDesdeTexto(txt){
+  txt = txt.trim();
+  if(pareceNumeroDeCaso(txt)) abrirCaptura({tipo:'caso', num:txt});
+  else abrirCaptura({texto:txt});
+}
+document.addEventListener('paste', e => {
+  const imgs = imagenesDe(e.clipboardData);
+  const enHoja = CAP && hoja && hoja.abierta;
+  if(imgs.length){
+    e.preventDefault();
+    if(!enHoja) abrirCaptura({});
+    pegarImagenes(imgs);
+    return;
+  }
+  if(enHoja) return;
+  const a = document.activeElement;
+  if(a && /INPUT|TEXTAREA|SELECT/.test(a.tagName)) return;
+  const txt = (e.clipboardData && e.clipboardData.getData('text')) || '';
+  if(!txt.trim()) return;
+  e.preventDefault();
+  abrirDesdeTexto(txt);
+});
+
+/* ── desde otras apps ──
+   ?texto=… (favorito del navegador, atajo del iPhone, compartir en
+   Android) o ?caso=…&detalle=… abren la captura con eso escrito. */
+function leerEnlaceEntrante(){
+  const q = new URLSearchParams(location.search);
+  const caso = q.get('caso');
+  const txt = [q.get('titulo'), q.get('texto'), q.get('enlace')].filter(Boolean).join(' ').trim();
+  if(!caso && !txt) return;
+  history.replaceState(null, '', location.pathname);
+  if(caso) abrirCaptura({tipo:'caso', num:caso, det:q.get('detalle') || ''});
+  else abrirDesdeTexto(txt);
 }
 
 function htmlAdjuntos(obj){
@@ -2619,12 +2824,13 @@ function htmlAdjuntos(obj){
   if(!l.length) return '';
   const imgs = l.filter(a => !a.tipo || a.tipo === 'img'), otros = l.filter(a => a.tipo && a.tipo !== 'img');
   const quitar = a => '<button type="button" class="adj-x" data-quitar-adj="' + esc(a.aid) + '" aria-label="Quitar adjunto">' + icono('x', 14, 2.6) + '</button>';
+  const bajar = a => '<button type="button" class="adj-bajar" data-bajar-adj="' + esc(a.aid) + '" aria-label="Descargar">' + icono('bajar', 15, 2.4) + '</button>';
   return '<div class="rotulo" style="margin-top:1.3rem">Adjuntos · ' + l.length + '</div>' +
     (imgs.length ? '<div class="adj-fotos">' + imgs.map(a => {
       const src = adjCache[a.aid];
       return '<div class="adj-foto">' +
         '<button type="button" class="adj-ver" data-ver-adj="' + esc(a.aid) + '" aria-label="Ver ' + esc(a.nombre || 'imagen') + '">' +
-          (src ? '<img src="' + src + '" alt="">' : '<span class="cargando"></span>') + '</button>' + quitar(a) + '</div>';
+          (src ? '<img src="' + src + '" alt="">' : '<span class="cargando"></span>') + '</button>' + quitar(a) + (src ? bajar(a) : '') + '</div>';
     }).join('') + '</div>' : '') +
     otros.map(a => {
       const src = adjCache[a.aid], audio = a.tipo === 'audio';
@@ -2635,7 +2841,7 @@ function htmlAdjuntos(obj){
           '<span class="menor">' + (a.peso ? pesoTxt(a.peso) : '') + (src ? '' : ' · cargando…') + '</span>' +
           (audio && src ? '<audio controls preload="none" src="' + src + '"></audio>' : '') +
         '</span>' +
-        (!audio && src ? '<a class="mini" href="' + src + '" download="' + esc(a.nombre || 'archivo') + '">Descargar</a>' : '') +
+        (src ? '<button type="button" class="mini" data-bajar-adj="' + esc(a.aid) + '">Descargar</button>' : '') +
         quitar(a) +
       '</div>';
     }).join('');
@@ -2671,7 +2877,30 @@ function quitarAdjunto(aid){
 function verAdjunto(aid){
   const src = adjCache[aid]; if(!src) return;
   $('lupa-img').src = src;
+  $('lupa').dataset.aid = aid;
   $('lupa').hidden = false;
+}
+/* En el teléfono, la hoja de compartir: desde ahí "Guardar imagen" o
+   "Guardar en Archivos", que es lo que el sistema permite. En el
+   computador, una descarga normal. */
+async function descargarAdjunto(aid){
+  const src = adjCache[aid];
+  if(!src){ aviso('Todavía se está cargando'); return; }
+  let a = null;
+  for(const o of S.tareas.concat(S.casos, S.tareasCerradas, S.cerrados)) if(o.adj){ a = o.adj.find(x => x.aid === aid); if(a) break; }
+  const blob = await (await fetch(src)).blob();
+  const ext = ({'image/jpeg':'.jpg','image/png':'.png','audio/mp4':'.m4a','audio/webm':'.webm','audio/ogg':'.ogg','application/pdf':'.pdf'})[blob.type] || '';
+  let nombre = (a && a.nombre) || 'adjunto';
+  if(ext && !/\.[a-z0-9]{2,4}$/i.test(nombre)) nombre += ext;
+  const archivo = new File([blob], nombre, {type:blob.type});
+  if(matchMedia('(pointer: coarse)').matches && navigator.canShare && navigator.canShare({files:[archivo]})){
+    try{ await navigator.share({files:[archivo]}); return; }
+    catch(e){ if(e.name === 'AbortError') return; }
+  }
+  const url = URL.createObjectURL(blob), enlace = document.createElement('a');
+  enlace.href = url; enlace.download = nombre;
+  document.body.appendChild(enlace); enlace.click(); enlace.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
 }
 
 async function recibirArchivos(input, modo){
@@ -2943,8 +3172,10 @@ function clicEnHoja(e){
   if((b = q('[data-grab-alternar]'))){ grabAlternar(); return; }
   if((b = q('[data-grab-guardar]'))){ guardarGrabacion(); return; }
   if((b = q('[data-ver-adj]'))){ verAdjunto(b.dataset.verAdj); return; }
+  if((b = q('[data-bajar-adj]'))){ descargarAdjunto(b.dataset.bajarAdj); return; }
   if((b = q('[data-quitar-adj]'))){ quitarAdjunto(b.dataset.quitarAdj); return; }
   /* ficha */
+  if((b = q('[data-ficha]'))){ abrirFicha(b.dataset.ficha); return; }
   if((b = q('[data-ficha-listo]'))){ hoja.cerrar(); return; }
   if((b = q('[data-fi-estado]'))){
     const c = casoPorId(CAP.caso);
@@ -2952,7 +3183,6 @@ function clicEnHoja(e){
     return;
   }
   if((b = q('[data-fi-cerrar]'))){ const id = CAP.caso; hoja.cerrar(); terminarCaso(id); return; }
-  if((b = q('[data-fi-anotar]'))){ anotarEnFicha(); return; }
   if((b = q('[data-fi-tarea]'))){ abrirCaptura({caso:CAP.caso, volver:CAP.caso}); return; }
 }
 
@@ -3012,12 +3242,14 @@ function prepararCaptura(){
     if(id === 'cap-tx' && !e.shiftKey){ e.preventDefault(); guardarCaptura(); }
     else if(id === 'cap-num'){ e.preventDefault(); $('cap-det').focus(); }
     else if(id === 'ev-t'){ e.preventDefault(); guardarEvento(); }
-    else if(id === 'fi-nota'){ e.preventDefault(); anotarEnFicha(); }
   });
   $('in-camara').addEventListener('change', e => recibirArchivos(e.target, 'camara'));
   $('in-escanear').addEventListener('change', e => recibirArchivos(e.target, 'escanear'));
   $('in-archivo').addEventListener('change', e => recibirArchivos(e.target, 'archivo'));
-  $('lupa').addEventListener('click', () => { $('lupa').hidden = true; });
+  $('lupa').addEventListener('click', e => {
+    if(e.target.id === 'lupa-bajar'){ descargarAdjunto($('lupa').dataset.aid); return; }
+    $('lupa').hidden = true;
+  });
   document.addEventListener('keydown', e => {
     if(e.key === 'Escape' && !$('lupa').hidden){ $('lupa').hidden = true; e.stopPropagation(); }
   }, true);
@@ -3037,7 +3269,10 @@ function guardarCacheICS(){ try{ localStorage.setItem('dtm5-ics', JSON.stringify
 
 function viasDe(url){
   const e = encodeURIComponent(url);
+  /* Outlook no deja leer su calendario desde otra página, así que el
+     directo casi nunca sirve; r.jina.ai es el que responde hoy. */
   return [
+    {n:'jina',       u:'https://r.jina.ai/' + url},
     {n:'directo',    u:url},
     {n:'corsproxy',  u:'https://corsproxy.io/?url=' + e},
     {n:'cors.lol',   u:'https://api.cors.lol/?url=' + e},
@@ -3072,7 +3307,18 @@ function desescapar(v){ return v.replace(/\\n/gi, ' ').replace(/\\([,;\\])/g, '$
 /* Hora de una zona con nombre (America/Santiago) a hora local. Outlook
    usa nombres de Windows que el navegador no conoce; ahí se toma la
    hora tal cual, que para un calendario de Chile es lo correcto. */
+/* Los nombres de zona que usa Outlook (de Windows) y su equivalente. */
+const ZONAS_WIN = {
+  'Pacific SA Standard Time':'America/Santiago', 'Argentina Standard Time':'America/Argentina/Buenos_Aires',
+  'SA Pacific Standard Time':'America/Bogota', 'SA Western Standard Time':'America/La_Paz',
+  'SA Eastern Standard Time':'America/Cayenne', 'E. South America Standard Time':'America/Sao_Paulo',
+  'Pacific Standard Time':'America/Los_Angeles', 'Mountain Standard Time':'America/Denver',
+  'Central Standard Time':'America/Chicago', 'Eastern Standard Time':'America/New_York',
+  'Central Standard Time (Mexico)':'America/Mexico_City', 'Romance Standard Time':'Europe/Paris',
+  'W. Europe Standard Time':'Europe/Berlin', 'GMT Standard Time':'Europe/London', 'UTC':'UTC'
+};
 function desdeZona(y, mo, d, h, mi, tz){
+  tz = ZONAS_WIN[tz] || tz;
   const guess = Date.UTC(y, mo, d, h, mi);
   try{
     const f = new Intl.DateTimeFormat('en-US', {timeZone:tz, hourCycle:'h23', year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit'});
@@ -3436,14 +3682,27 @@ document.addEventListener('click', e => {
   if((b = q('[data-ir]'))){ irA(b.dataset.ir); return; }
   if((b = q('[data-hecha]'))){ marcarHecha(b); return; }
   if((b = q('[data-editar]'))){ abrirCaptura({tid:b.dataset.editar, volver: CAP && CAP.paso === 'ficha' ? CAP.caso : null}); return; }
+  if((b = q('[data-marcador]'))){ e.preventDefault(); aviso('Arrástralo a la barra de favoritos del navegador'); return; }
   if((b = q('[data-ficha]'))){ abrirFicha(b.dataset.ficha); return; }
+  if((b = q('[data-copiar]'))){ copiar(b.dataset.copiar); return; }
+  if((b = q('[data-desplegar]'))){ casoDesplegado = casoDesplegado === b.dataset.desplegar ? null : b.dataset.desplegar; pintar(); return; }
+  if((b = q('[data-finalizar]'))){ casoDesplegado = null; terminarCaso(b.dataset.finalizar); return; }
   if((b = q('[data-ev]'))){ abrirEvento({eid:b.dataset.ev}); return; }
   if((b = q('[data-nuevo-ev]'))){ abrirEvento({d:b.dataset.nuevoEv}); return; }
-  if((b = q('[data-cal-dia]'))){ calDia = b.dataset.calDia; calMes = calDia.slice(0, 7); pintar(); return; }
+  if((b = q('[data-cal-dia]'))){
+    /* Dos toques seguidos en el mismo día: evento nuevo ese día. El
+       dblclick del navegador no sirve: el primer toque repinta. */
+    const d = b.dataset.calDia, t = performance.now();
+    if(toqueDia.d === d && t - toqueDia.t < 400){ toqueDia = {}; abrirEvento({d}); return; }
+    toqueDia = {d, t};
+    calDia = d; calMes = d.slice(0, 7); pintar(); return;
+  }
   if((b = q('[data-cal-mes]'))){
     const [y, m] = calMes.split('-').map(Number), d = new Date(y, m - 1 + (+b.dataset.calMes), 1);
     calMes = hoyISO(d).slice(0, 7); pintar(); return;
   }
+  if((b = q('[data-cal-vista]'))){ try{ localStorage.setItem('dtm5-calvista', b.dataset.calVista); }catch(err){} pintar(); return; }
+  if((b = q('[data-nueva-tarea]'))){ abrirCaptura({venc:b.dataset.nuevaTarea}); return; }
   if((b = q('[data-cal-hoy]'))){ calDia = hoyISO(); calMes = calDia.slice(0, 7); pintar(); return; }
   if((b = q('[data-ics-agregar]'))){ agregarICS(); return; }
   if((b = q('[data-ics-quitar]'))){ quitarICS(+b.dataset.icsQuitar); return; }
@@ -3500,6 +3759,7 @@ pintar();
 relojEnMarcha();
 arrancarNube();
 actualizarTodosICS();
+leerEnlaceEntrante();
 if(avisosActivos()) registrarSW().then(revisarAvisos);
 /* Los calendarios se releen cada 15 minutos y al volver a la app. */
 setInterval(actualizarTodosICS, 15 * 60 * 1000);

@@ -4,11 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Hoy">
+<meta name="apple-mobile-web-app-title" content="Tareas">
 <meta name="theme-color" content="#0B0F14" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#FBFBFD" media="(prefers-color-scheme: light)">
 <title>Daily Task Manager</title>
-<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="apple-touch-icon" href="icon-180.png?v=5">
+<link rel="icon" href="icono.svg?v=5" type="image/svg+xml">
+<link rel="icon" href="favicon-32.png?v=5" sizes="32x32" type="image/png">
 <link rel="manifest" href="manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -237,7 +239,7 @@ main{
   padding:.25rem 0;position:relative;color:var(--tinta3);
 }
 .dest[aria-current="page"]{color:var(--ambar)}
-.dest span{font-size:.62rem;font-weight:700;letter-spacing:.04em}
+.dest span{font-size:.58rem;font-weight:700;letter-spacing:.03em}
 .dest .glob{
   position:absolute;top:-2px;right:calc(50% - 1.6rem);
   min-width:1.05rem;height:1.05rem;border-radius:.6rem;
@@ -245,6 +247,7 @@ main{
   font-family:var(--cifra);font-size:.6rem;font-weight:700;
   display:flex;align-items:center;justify-content:center;padding:0 .25rem;
 }
+.dest .glob.gris{background:var(--tinta3)}
 
 /* El botón de capturar flota sobre la barra, no dentro de ella. */
 .capturar{
@@ -312,11 +315,75 @@ main{
   width:8px;height:8px;border-radius:50%;background:var(--ambar);
 }
 
-/* ── banda de presión ── */
-.presion{display:flex;gap:.55rem}
-.presion>*{flex:1;min-width:0;padding:.75rem .8rem;border-radius:var(--r-ta)}
-.pres-r{background:rgba(255,69,58,.11);border:1px solid rgba(255,69,58,.3)}
-.pres-a{background:rgba(255,159,10,.1);border:1px solid rgba(255,159,10,.28)}
+
+/* un evento o una tarea de la columna se tocan para abrirlos */
+button.cuerpo{display:block;width:100%;text-align:left;cursor:pointer}
+.bloque .tx{font-size:.94rem}
+
+/* ── calendario ── */
+.cal-nav{display:flex;align-items:center;gap:.35rem;padding-bottom:.15rem}
+.redondo{width:2.5rem;height:2.5rem;border-radius:50%;display:grid;place-items:center;color:var(--tinta2);background:var(--borde2)}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;background:var(--sup);border-radius:var(--r-ta);padding:.5rem .4rem .6rem}
+.cal-dn{text-align:center;font-family:var(--cifra);font-size:.62rem;font-weight:600;color:var(--tinta4);padding:.2rem 0 .35rem}
+.cal-d{
+  display:flex;flex-direction:column;align-items:center;gap:.2rem;
+  min-height:2.9rem;padding:.35rem 0 .3rem;border-radius:.7rem;color:var(--tinta);
+}
+.cal-d .num{font-size:.9rem;font-weight:600;width:1.9rem;height:1.9rem;display:grid;place-items:center;border-radius:50%;font-variant-numeric:tabular-nums}
+.cal-d.fuera{color:var(--tinta4)}
+.cal-d.hoy .num{color:var(--ambar)}
+.cal-d[aria-pressed="true"] .num{background:var(--tinta);color:var(--fondo)}
+.cal-d.hoy[aria-pressed="true"] .num{background:var(--ambar);color:var(--fondo)}
+.puntos{display:flex;gap:3px;height:5px}
+.puntos i{width:5px;height:5px;border-radius:50%}
+.puntos .az{background:var(--azul)}
+.puntos .am{background:var(--ambar)}
+.ev-fila{background:var(--azulT);border-left:3px solid var(--azul);text-align:left;width:100%;align-items:center}
+.ev-h{flex:none;width:2.9rem;font-size:.72rem;color:var(--azul);line-height:1.2}
+.virtual{opacity:.62;text-align:left;width:100%;align-items:center}
+.chk-v{width:1.3rem;height:1.3rem;border-radius:50%;border:1.8px dashed var(--aro);flex:none}
+
+/* ── más ── */
+.ajuste{padding:.3rem 1.05rem .9rem}
+.aj-fila{display:flex;align-items:center;gap:.6rem;padding:.75rem 0;border-bottom:1px solid var(--borde2)}
+.aj-fila:last-child{border-bottom:none}
+.aj-fila.sub{padding-left:.7rem}
+.aj-tx{flex:1;min-width:0;font-size:.9rem;line-height:1.35}
+.ajuste>.campo:first-child{margin-top:.75rem}
+.ayuda{margin-top:.9rem;font-size:.82rem;color:var(--tinta2);line-height:1.5}
+.ayuda summary{cursor:pointer;color:var(--ambar);font-weight:600;min-height:2.25rem;display:flex;align-items:center}
+.ayuda p{margin:.5rem 0 0}
+.seg.ancho{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;width:100%}
+.seg.ancho button{padding:0 .3rem}
+/* La prioridad elegida lleva su color: urgente es rojo porque es lo
+   que no puede esperar. */
+.prio button[data-c="urgente"][aria-pressed="true"]{color:var(--rojo)}
+.suave{text-transform:none;letter-spacing:0;font-family:var(--cuerpo);font-weight:500;color:var(--tinta4)}
+a.mini{display:inline-flex;align-items:center}
+
+/* ── ficha de caso ── */
+.bitacora{margin-top:.6rem;display:flex;flex-direction:column}
+.bit{display:flex;gap:.7rem;padding:.55rem 0;border-top:1px solid var(--borde2);font-size:.86rem;line-height:1.4}
+.bit:first-child{border-top:none}
+.bit .f{flex:none;width:3.6rem;font-family:var(--cifra);font-size:.7rem;color:var(--tinta3);padding-top:.1rem}
+.campo-in{min-height:2.5rem;padding:0 .7rem;border-radius:.7rem;border:1px solid var(--borde);background:var(--hueco);font-size:.92rem;min-width:0}
+
+/* ── adjuntos ── */
+.adj-fotos{display:grid;grid-template-columns:repeat(auto-fill,minmax(5.2rem,1fr));gap:.45rem;margin-top:.6rem}
+.adj-foto{position:relative;aspect-ratio:1;border-radius:.8rem;overflow:hidden;background:var(--hueco)}
+.adj-ver{display:block;width:100%;height:100%}
+.adj-ver img{width:100%;height:100%;object-fit:cover;display:block}
+.cargando{display:block;width:100%;height:100%;background:linear-gradient(90deg,var(--hueco),var(--borde2),var(--hueco));background-size:200% 100%;animation:brillo 1.2s linear infinite}
+@keyframes brillo{to{background-position:-200% 0}}
+.adj-x{position:absolute;top:.25rem;right:.25rem;width:1.7rem;height:1.7rem;border-radius:50%;display:grid;place-items:center;background:rgba(0,0,0,.55);color:#fff}
+.adj-otro{position:relative;display:flex;align-items:center;gap:.65rem;margin-top:.5rem;padding:.65rem 2.4rem .65rem .75rem;border-radius:var(--r-fi);background:var(--hueco)}
+.adj-otro .adj-x{top:50%;transform:translateY(-50%);right:.5rem;background:var(--borde);color:var(--tinta2)}
+.adj-ico{width:2.2rem;height:2.2rem;border-radius:.6rem;display:grid;place-items:center;background:var(--borde2);color:var(--tinta2);flex:none}
+.adj-otro audio{display:block;width:100%;height:2.2rem;margin-top:.4rem}
+.lupa{position:fixed;inset:0;z-index:95;background:rgba(0,0,0,.92);display:grid;place-items:center;padding:calc(var(--alto) + .5rem) .5rem calc(var(--bajo) + .5rem)}
+.lupa[hidden]{display:none}
+.lupa img{max-width:100%;max-height:100%;object-fit:contain;border-radius:.4rem}
+@media (prefers-reduced-motion: reduce){.cargando{animation:none}}
 
 .vacio{padding:2.5rem 1rem;text-align:center;color:var(--tinta3);font-size:.9rem;line-height:1.5}
 
@@ -370,6 +437,7 @@ main{
 .caso .marca{width:3px;align-self:stretch;border-radius:2px;background:var(--borde);flex:none;margin:.1rem 0}
 .caso .marca.rojo{background:var(--rojo)}
 .caso .marca.ambar{background:var(--ambar)}
+.caso .id,.caso .desc{display:block}
 .caso .id{font-family:var(--cifra);font-size:.78rem;font-weight:600;color:var(--tinta3);letter-spacing:-.01em}
 .caso .desc{font-size:.95rem;font-weight:600;line-height:1.3;margin-top:.12rem}
 .meta{display:flex;gap:.35rem;flex-wrap:wrap;margin-top:.45rem}
@@ -590,6 +658,7 @@ main{
   <div id="hoja-cuerpo"></div>
 </section>
 <div id="avisos" aria-live="polite"></div>
+<div id="lupa" class="lupa" hidden role="dialog" aria-label="Imagen adjunta"><img id="lupa-img" alt=""></div>
 
 <div class="entrada" id="entrada" hidden>
   <div class="entrada-caja">
@@ -800,30 +869,31 @@ function saludo(h){
 /* ══════════════════════════════════════════════════════════════════
    DATOS
 
-   Misma forma que v4, pero v5 tiene su propio proyecto de Firebase
-   (taskmanager-ebec9) y su propia copia en este equipo: parte en
-   blanco y los datos viejos se traspasan a mano.
+   Un documento por persona en Firestore (taskmanager-ebec9), con una
+   copia en este equipo para abrir al instante y seguir sin conexión.
 
      tarea  {tid, done, text, cat, notas, adj[], venc, rep, rec, ck[], creado}
      caso   {id, desc, estado, act, rec, adj[], notas, hist[]}
 
-   Nuevo en v5, y solo esto:
+   Además:
      tarea.caso   número de caso al que pertenece la tarea
-     tarea.ini    hora de inicio, para poder ponerla en la columna
-     tarea.dur    minutos que se estima que toma
+     tarea.ini    hora, si la tarea tiene una; la pone en la columna de Hoy
+     ajustes      {ics:[{url, nombre}]}: calendarios externos, viajan
+                  con la cuenta para que estén en todos los equipos
    ══════════════════════════════════════════════════════════════════ */
 const CLAVE_LOCAL = 'dtm5-data';        /* propia: no arrastra lo de v4 */
 const CID = Math.random().toString(36).slice(2);
 
-let S = {tareas:[], tareasCerradas:[], casos:[], cerrados:[], agenda:[], enlaces:[], focos:[]};
+let S = {tareas:[], tareasCerradas:[], casos:[], cerrados:[], agenda:[], enlaces:[], focos:[], ajustes:{ics:[]}};
 let ref = null, guardando = 0;
 
 function normalizar(){
   S.tareas = (S.tareas||[]).map(t => Object.assign({
     tid:'t'+Math.random().toString(36).slice(2),
     done:false, text:'', cat:'', notas:'', adj:[], venc:'', rep:'', rec:'',
-    ck:[], creado:hoyISO(), caso:'', ini:'', dur:0
+    ck:[], creado:hoyISO(), caso:'', ini:''
   }, t));
+  S.tareas.forEach(t => { delete t.dur; });
   S.tareas.forEach(t => { if(!CATS[t.cat]) t.cat = 'planificar'; });
   /* Los estados son los de v4, tal cual: EN PROGRESO y EN ESPERA. Un
      caso cerrado no tiene estado, se muda a S.cerrados. */
@@ -837,10 +907,19 @@ function normalizar(){
     if(!Array.isArray(c.adj)) c.adj = [];
   });
   S.focos = S.focos || [];
+  S.ajustes = Object.assign({ics:[]}, S.ajustes || {});
+  if(!Array.isArray(S.ajustes.ics)) S.ajustes.ics = [];
   S.agenda  = S.agenda  || [];
   S.enlaces = S.enlaces || [];
   S.cerrados = S.cerrados || [];
   S.tareasCerradas = S.tareasCerradas || [];
+}
+
+/* Lo que dejaron las versiones anteriores en este equipo ya no sirve. */
+function limpiarAntiguo(){
+  try{
+    Object.keys(localStorage).filter(k => /^dtm4-/.test(k)).forEach(k => localStorage.removeItem(k));
+  }catch(e){}
 }
 
 function cargarLocal(){
@@ -858,12 +937,11 @@ function guardar(){
   guardando = setTimeout(() => {
     ref.set({
       tareas:S.tareas, tareasCerradas:S.tareasCerradas, casos:S.casos, cerrados:S.cerrados,
-      agenda:S.agenda, enlaces:S.enlaces, focos:S.focos,
+      agenda:S.agenda, enlaces:S.enlaces, focos:S.focos, ajustes:S.ajustes,
       by:CID, upd:new Date().toISOString()
     }).catch(e => aviso('No se pudo guardar en la nube: ' + e.message));
   }, 420);
 }
-function aplicar(){ pintar(); guardar(); }
 
 /* ══════════════════════════════════════════════════════════════════
    LECTURA DEL DÍA
@@ -890,7 +968,7 @@ function tareasDeHoy(){
 }
 function eventosDeHoy(){
   const h = hoyISO();
-  return (S.agenda||[]).filter(e => e.d === h).sort((a,b) => (a.hora||'').localeCompare(b.hora||''));
+  return (S.agenda||[]).filter(e => e.d === h).concat(externosDe(h)).sort((a,b) => (a.hora||'').localeCompare(b.hora||''));
 }
 
 /* Lo que va en la columna de tiempo: eventos con hora, más tareas que
@@ -928,7 +1006,7 @@ function duracionDe(f){
     const a = minutosDe(f.dato.hora), b = minutosDe(f.dato.fin);
     return (a != null && b != null && b > a) ? b - a : 30;
   }
-  return f.dato.dur || 45;
+  return 30;
 }
 function comoHora(min){ return dosCifras(Math.floor(min/60)) + ':' + dosCifras(min % 60); }
 
@@ -945,7 +1023,11 @@ function enHoras(min){
    AVISOS — confirmación con deshacer. Un error se arregla soltando,
    no confirmando antes de cada acción.
    ══════════════════════════════════════════════════════════════════ */
+/* Dos a la vez como mucho: el tercero despide al más viejo. Una pila
+   de avisos tapa justo lo que se está haciendo. */
+const avisosVivos = [];
 function aviso(texto, deshacer){
+  while(avisosVivos.length >= 2) avisosVivos.shift()();
   const n = document.createElement('div');
   n.className = 'aviso';
   n.innerHTML = '<span class="txt"></span>';
@@ -968,8 +1050,11 @@ function aviso(texto, deshacer){
   let fuera = setTimeout(cerrar, deshacer ? 6000 : 3200);
   function cerrar(){
     clearTimeout(fuera);
+    const i = avisosVivos.indexOf(cerrar);
+    if(i >= 0) avisosVivos.splice(i, 1);
     op.a(0, {respuesta:.3, alLlegar: () => n.remove()});
   }
+  avisosVivos.push(cerrar);
   return cerrar;
 }
 
@@ -1108,6 +1193,9 @@ const ICO = {
   archivo:'<path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5"/>',
   boceto:'<path d="M4 20l4-1 11-11a2.1 2.1 0 00-3-3L5 16z"/><path d="M14 7l3 3"/>',
   grabadora:'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/>',
+  tareas:'<path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 5.5l1 1 2-2M4 11.5l1 1 2-2M4 17.5l1 1 2-2"/>',
+  casos: '<path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>',
+  x:     '<path d="M6 6l12 12M18 6L6 18"/>',
   evento:'<rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 10h18M8 2v4M16 2v4M12 13v5M9.5 15.5h5"/>'
 };
 function icono(n, tam, grosor){
@@ -1117,14 +1205,16 @@ function icono(n, tam, grosor){
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   NAVEGACIÓN — nombres que dicen qué hay dentro. "Inicio" no dice
-   nada; "Hoy", "Semana" y "Todo" sí.
+   NAVEGACIÓN — cinco destinos con nombre propio. Cada uno contesta
+   una sola pregunta: qué pasa hoy, qué hay en el calendario, qué hay
+   que hacer, cómo van los casos, y el resto.
    ══════════════════════════════════════════════════════════════════ */
 const VISTAS = [
-  {id:'hoy',    rotulo:'HOY',    ico:'hoy'},
-  {id:'semana', rotulo:'SEMANA', ico:'semana'},
-  {id:'todo',   rotulo:'TODO',   ico:'todo'},
-  {id:'mas',    rotulo:'MÁS',    ico:'mas'}
+  {id:'hoy',        rotulo:'HOY',        ico:'hoy'},
+  {id:'calendario', rotulo:'CALENDARIO', ico:'semana'},
+  {id:'tareas',     rotulo:'TAREAS',     ico:'tareas'},
+  {id:'casos',      rotulo:'CASOS',      ico:'casos'},
+  {id:'mas',        rotulo:'MÁS',        ico:'mas'}
 ];
 let vista = 'hoy';
 
@@ -1136,20 +1226,19 @@ function irA(id){
 }
 
 function pintarBarra(){
-  const detenidos = enfriandose().length;
+  const frios = enfriandose().length;
+  const urg = S.tareas.filter(t => !t.done && t.cat === 'urgente').length;
+  const globo = {casos:frios, tareas:urg};
   $('barra').innerHTML = VISTAS.map(v =>
     '<button type="button" class="dest" data-ir="' + v.id + '"' +
       (vista === v.id ? ' aria-current="page"' : '') + '>' +
       icono(v.ico) +
-      (v.id === 'todo' && detenidos ? '<span class="glob">' + detenidos + '</span>' : '') +
+      (globo[v.id] ? '<span class="glob' + (v.id === 'tareas' ? ' gris' : '') + '">' + globo[v.id] + '</span>' : '') +
       '<span>' + v.rotulo + '</span>' +
     '</button>'
   ).join('');
 }
 
-/* ══════════════════════════════════════════════════════════════════
-   HOY — el día es una columna de tiempo, no una lista de cosas.
-   ══════════════════════════════════════════════════════════════════ */
 /* La cabecera es translúcida y de alto variable: cambia con el tamaño
    de letra y con la muesca del teléfono. Medirla es la única forma de
    que el contenido empiece justo debajo y no a un palmo. */
@@ -1158,67 +1247,63 @@ function medirCabeza(){
   if(!c) return;
   document.documentElement.style.setProperty('--tope', c.offsetHeight + 'px');
 }
+function cabeza(titulo, rotulo, derecha){
+  $('cabeza').innerHTML =
+    '<div class="cabeza-fila"><div>' +
+      (rotulo ? '<div class="rotulo">' + rotulo + '</div>' : '') +
+      '<div class="tit" style="margin-top:.15rem">' + titulo + '</div>' +
+    '</div>' + (derecha || '') + '</div>';
+}
+function grupo(titulo, n, cuerpo, extra){
+  return '<div class="grupo"><div class="grupo-cab"><span class="rotulo">' + titulo + '</span>' +
+         (n != null ? '<span class="n">' + n + '</span>' : '') + '<span style="flex:1"></span>' + (extra || '') + '</div>' +
+         '<div class="pila">' + cuerpo + '</div></div>';
+}
 
+/* ══════════════════════════════════════════════════════════════════
+   HOY — arriba el día como columna de tiempo: eventos y tareas con
+   hora. Abajo lo que está pendiente y no tiene hora: lo urgente, lo
+   que vence hoy y los casos, del más quieto al más fresco.
+   ══════════════════════════════════════════════════════════════════ */
 function pintarCabezaHoy(){
   const d = new Date();
-  $('cabeza').innerHTML =
-    '<div class="cabeza-fila">' +
-      '<div>' +
-        '<div class="rotulo">' + DIAS[d.getDay()] + ' ' + d.getDate() + ' de ' + MESES[d.getMonth()] + '</div>' +
-        '<div class="tit" style="margin-top:.15rem">' + saludo() + '</div>' +
-      '</div>' +
-      '<div class="reloj" id="reloj">' + hhmm() + '</div>' +
-    '</div>';
+  cabeza(saludo(), DIAS[d.getDay()] + ' ' + d.getDate() + ' de ' + MESES[d.getMonth()],
+         '<div class="reloj" id="reloj">' + hhmm() + '</div>');
 }
 
 function pintarHoy(){
   pintarCabezaHoy();
-
-  const frios = enfriandose();
-  let h = '';
-
-  if(frios.length){
-    const dos = frios.slice(0,2);
-    h += '<section class="env" style="padding-bottom:1rem">' +
-      '<div style="display:flex;align-items:center;gap:.45rem;margin-bottom:.55rem">' +
-        '<span style="color:var(--rojo);display:flex">' + icono('alerta',13,2.2) + '</span>' +
-        '<span class="rotulo" style="color:var(--rojo)">Se están enfriando</span>' +
-        '<span style="flex:1"></span>' +
-        '<button type="button" class="menor toque" data-ir="todo">ver ' + frios.length + '</button>' +
-      '</div>' +
-      '<div class="presion">' +
-        dos.map(c =>
-          '<button type="button" class="' + (c.quieto >= 3 ? 'pres-r' : 'pres-a') + '" ' +
-            'data-caso="' + esc(c.id) + '" style="text-align:left">' +
-            '<div class="cifra" style="font-size:.82rem;font-weight:600;color:var(--' + (c.quieto>=3?'rojo':'ambar') + ')">' + esc(c.id) + '</div>' +
-            '<div style="font-size:.78rem;color:var(--tinta2);margin-top:.25rem;line-height:1.35;' +
-              'display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">' + esc(c.desc) + '</div>' +
-            '<div class="cifra" style="font-size:.7rem;font-weight:600;margin-top:.45rem;color:var(--' + (c.quieto>=3?'rojo':'ambar') + ')">' +
-              enDias(c.quieto) + ' quieto</div>' +
-          '</button>'
-        ).join('') +
-      '</div>' +
-    '</section>';
-  }
-
   const columna = columnaDelDia();
   const ahora = new Date().getHours()*60 + new Date().getMinutes();
   let puesta = false;
 
-  h += '<section class="env">';
+  let h = '<section class="env">';
   if(!columna.length){
-    h += '<div class="vacio">Nada con hora para hoy.<br>Lo que no tiene hora vive en <b>Todo</b>.</div>';
+    h += '<div class="vacio" style="padding:1.4rem 1rem">Nada con hora para hoy.</div>';
   }
   for(const f of columna){
-    if(!puesta && f.min > ahora){
-      h += lineaDeAhora();
-      puesta = true;
-    }
+    if(!puesta && f.min > ahora){ h += lineaDeAhora(); puesta = true; }
     h += tramoDe(f);
   }
   if(!puesta && columna.length) h += lineaDeAhora();
-  h += '</section>';
 
+  const hoy = hoyISO();
+  const vivas = S.tareas.filter(t => !t.done);
+  const urgentes = ordenarTareas(vivas.filter(t => t.cat === 'urgente' && !(t.ini && t.venc === hoy) && (!t.venc || t.venc <= hoy)));
+  const paraHoy = ordenarTareas(vivas.filter(t => t.cat !== 'urgente' && t.venc && t.venc <= hoy && !(t.ini && t.venc === hoy)));
+  const casos = casosOrdenados().filter(c => c.estado !== 'EN ESPERA');
+
+  if(urgentes.length) h += grupo('Urgentes', urgentes.length, urgentes.map(t => filaTarea(t)).join(''));
+  if(paraHoy.length) h += grupo('Para hoy', paraHoy.length, paraHoy.map(t => filaTarea(t)).join(''));
+  if(casos.length){
+    const ver = casos.slice(0, 5);
+    h += grupo('Casos pendientes', casos.length, ver.map(c => filaCaso(c)).join(''),
+               casos.length > 5 ? '<button type="button" class="menor toque" data-ir="casos">ver los ' + casos.length + '</button>' : '');
+  }
+  if(!urgentes.length && !paraHoy.length && !casos.length && columna.length){
+    h += '<div class="vacio" style="padding:1.6rem 1rem">Nada urgente pendiente.</div>';
+  }
+  h += '</section>';
   $('lienzo').innerHTML = h;
 }
 
@@ -1232,56 +1317,247 @@ function tramoDe(f){
       '<div class="hora">' + comoHora(f.min) + '</div>' +
       '<div class="cuerpo libre">' +
         '<div style="font-size:.88rem">Libre · ' + enHoras(f.largo) + '</div>' +
-        '<div style="font-size:.76rem;color:var(--tinta4);margin-top:.15rem">Sin nada encima</div>' +
       '</div></div>';
   }
   if(f.tipo === 'evento'){
     const e = f.dato;
+    const tag = e.eid ? 'button type="button" data-ev="' + esc(e.eid) + '"' : 'div';
     return '<div class="tramo">' +
       '<div class="hora">' + esc(e.hora) + '</div>' +
-      '<div class="cuerpo ev sel">' +
+      '<' + tag + ' class="cuerpo ev">' +
         '<div style="font-size:.9rem;font-weight:600;line-height:1.3">' + esc(e.t) + '</div>' +
         '<div class="cuando">' + esc(e.hora) + (e.fin ? '–' + esc(e.fin) : '') +
           (e.src ? ' · ' + esc(e.src) : '') + '</div>' +
-      '</div></div>';
+      '</' + tag.split(' ')[0] + '></div>';
   }
   const t = f.dato;
   return '<div class="tramo">' +
     '<div class="hora">' + esc(t.ini) + '</div>' +
-    '<div class="cuerpo bloque">' +
-      '<div style="display:flex;align-items:center;gap:.5rem">' +
-        '<span style="width:7px;height:7px;border-radius:50%;background:var(--ambar);flex:none"></span>' +
-        '<span class="rotulo" style="color:var(--ambar);letter-spacing:.09em">Bloque de trabajo</span>' +
-      '</div>' +
-      '<div class="sel" style="font-size:.94rem;font-weight:600;margin-top:.45rem;line-height:1.3">' + esc(t.text) + '</div>' +
-      '<div style="display:flex;gap:.35rem;margin-top:.55rem;flex-wrap:wrap">' +
-        (t.caso ? '<span class="ficha roja cifra">' + esc(t.caso) + '</span>' : '') +
-        (t.dur ? '<span class="ficha gris">' + t.dur + ' min</span>' : '') +
-      '</div>' +
-    '</div></div>';
+    '<div class="cuerpo bloque"><div class="fila" style="padding:0;background:none">' +
+      '<button type="button" class="chk" data-hecha="' + esc(t.tid) + '" aria-pressed="false" aria-label="Marcar hecha"></button>' +
+      '<button type="button" class="tx" data-editar="' + esc(t.tid) + '">' +
+        '<span style="display:block;font-weight:600">' + esc(t.text) + '</span>' +
+        '<span class="meta">' +
+          (t.cat === 'urgente' ? '<span class="ficha roja">Urgente</span>' : '') +
+          (t.caso ? '<span class="ficha gris cifra">' + esc(t.caso) + '</span>' : '') +
+          (t.rep && REPS[t.rep] ? '<span class="ficha gris">' + REPS[t.rep] + '</span>' : '') +
+        '</span>' +
+      '</button>' +
+    '</div></div></div>';
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   LAS OTRAS DOS — armazón puesto, contenido en camino.
+   CALENDARIO — el mes entero con puntos, y abajo el día elegido.
+   Azul es calendario (tuyo o de Outlook/Google); ámbar, tareas que
+   vencen. Las tareas que se repiten se proyectan en sus días futuros.
    ══════════════════════════════════════════════════════════════════ */
-function pintarSimple(titulo, cuerpo){
-  $('cabeza').innerHTML = '<div class="tit">' + titulo + '</div>';
-  $('lienzo').innerHTML = '<section class="env">' + cuerpo + '</section>';
+let calMes = null, calDia = null;
+
+function ocurreEn(t, iso){
+  if(!t.rep || !t.venc) return false;
+  const n = difDias(iso, t.venc);
+  if(n <= 0) return false;
+  const d = new Date(iso + 'T00:00:00');
+  if(t.rep === 'diaria') return true;
+  if(t.rep === 'laboral') return d.getDay() !== 0 && d.getDay() !== 6;
+  if(t.rep === 'semanal') return n % 7 === 0;
+  if(t.rep === 'quincenal') return n % 14 === 0;
+  if(t.rep === 'mensual') return d.getDate() === new Date(t.venc + 'T00:00:00').getDate();
+  return false;
+}
+function eventosDelDia(iso){
+  return S.agenda.filter(e => e.d === iso).concat(externosDe(iso))
+    .sort((a,b) => (a.hora||'').localeCompare(b.hora||''));
+}
+function tareasDelDia(iso){
+  const vivas = S.tareas.filter(t => !t.done);
+  return ordenarTareas(vivas.filter(t => t.venc === iso))
+    .concat(vivas.filter(t => ocurreEn(t, iso)).map(t => Object.assign({}, t, {virtual:true})));
+}
+function fechaLarga(iso){
+  const d = new Date(iso + 'T00:00:00');
+  const n = difDias(iso, hoyISO());
+  const base = DIAS[d.getDay()] + ' ' + d.getDate() + ' de ' + MESES[d.getMonth()];
+  return n === 0 ? 'Hoy · ' + base : n === 1 ? 'Mañana · ' + base : base;
 }
 
-function pintarSemana(){ pintarSimple('Semana', '<div class="vacio">El planificador llega en el siguiente tramo.</div>'); }
+function pintarCalendario(){
+  const hoy = hoyISO();
+  if(!calDia) calDia = hoy;
+  if(!calMes) calMes = calDia.slice(0, 7);
+  const [y, m] = calMes.split('-').map(Number);
+  cabeza(MESES[m-1][0].toUpperCase() + MESES[m-1].slice(1), String(y),
+    '<div class="cal-nav">' +
+      '<button type="button" class="redondo" data-cal-mes="-1" aria-label="Mes anterior">' + icono('atras', 18, 2.4) + '</button>' +
+      '<button type="button" class="mini" data-cal-hoy>Hoy</button>' +
+      '<button type="button" class="redondo" data-cal-mes="1" aria-label="Mes siguiente" style="transform:scaleX(-1)">' + icono('atras', 18, 2.4) + '</button>' +
+    '</div>');
+
+  const primero = new Date(y, m-1, 1);
+  const desfase = (primero.getDay() + 6) % 7;
+  const inicio = sumarDias(hoyISO(primero), -desfase);
+  const diasMes = new Date(y, m, 0).getDate();
+  const celdas = Math.ceil((desfase + diasMes) / 7) * 7;
+
+  let g = '<div class="cal">' + ['L','M','M','J','V','S','D'].map(x => '<div class="cal-dn">' + x + '</div>').join('');
+  for(let i = 0; i < celdas; i++){
+    const iso = sumarDias(inicio, i);
+    const fuera = iso.slice(0, 7) !== calMes;
+    const ev = eventosDelDia(iso).length > 0;
+    const ta = tareasDelDia(iso).length > 0;
+    g += '<button type="button" class="cal-d' + (fuera ? ' fuera' : '') + (iso === hoy ? ' hoy' : '') + '" data-cal-dia="' + iso + '"' +
+         (iso === calDia ? ' aria-pressed="true"' : ' aria-pressed="false"') + ' aria-label="' + fechaLarga(iso) + '">' +
+         '<span class="num">' + Number(iso.slice(8)) + '</span>' +
+         '<span class="puntos">' + (ev ? '<i class="az"></i>' : '') + (ta ? '<i class="am"></i>' : '') + '</span>' +
+         '</button>';
+  }
+  g += '</div>';
+
+  const evs = eventosDelDia(calDia), tas = tareasDelDia(calDia);
+  let l = '';
+  for(const e of evs){
+    const tag = e.eid ? 'button type="button" data-ev="' + esc(e.eid) + '"' : 'div';
+    l += '<' + tag + ' class="fila ev-fila">' +
+      '<span class="cifra ev-h">' + (e.hora ? esc(e.hora) : 'todo<br>el día') + '</span>' +
+      '<span class="tx"><span style="display:block;font-weight:600">' + esc(e.t) + '</span>' +
+      '<span class="menor">' + (e.fin ? esc(e.hora) + '–' + esc(e.fin) : '') + (e.src ? (e.fin ? ' · ' : '') + esc(e.src) : '') + '</span></span>' +
+    '</' + tag.split(' ')[0] + '>';
+  }
+  for(const t of tas){
+    l += t.virtual
+      ? '<button type="button" class="fila virtual" data-editar="' + esc(t.tid) + '"><span class="chk-v"></span>' +
+          '<span class="tx">' + esc(t.text) + '<span class="meta"><span class="ficha gris">' + REPS[t.rep] + '</span></span></span></button>'
+      : filaTarea(t);
+  }
+  if(!l) l = '<div class="vacio" style="padding:1.2rem 1rem">Nada este día.</div>';
+
+  $('lienzo').innerHTML = '<section class="env">' + g +
+    grupo(fechaLarga(calDia), null, l, '<button type="button" class="mini" data-nuevo-ev="' + calDia + '">+ Evento</button>') +
+    '</section>';
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   MÁS — cuenta, calendarios, avisos, apariencia y archivo.
+   ══════════════════════════════════════════════════════════════════ */
+let verArchivo = null;
+
+function tarjeta(titulo, cuerpo){
+  return '<div class="grupo"><div class="grupo-cab"><span class="rotulo">' + titulo + '</span></div>' +
+         '<div class="tarjeta ajuste">' + cuerpo + '</div></div>';
+}
+
 function pintarMas(){
-  pintarSimple('Más',
-    '<div class="tarjeta" style="padding:1rem 1.05rem;display:flex;align-items:center;gap:.8rem">' +
-      '<div style="flex:1;min-width:0">' +
-        '<div class="rotulo">Cuenta</div>' +
-        '<div style="font-size:.92rem;font-weight:600;margin-top:.2rem;overflow:hidden;text-overflow:ellipsis">' +
-          (USUARIO ? esc(USUARIO.email || USUARIO.displayName || 'Sesión iniciada') : 'Modo local, sin sesión') + '</div>' +
-        '<div class="menor" style="margin-top:.15rem">' + (ref ? 'Guardando en la nube' : 'Solo en este equipo') + '</div>' +
+  cabeza('Más');
+  let h = '<section class="env">';
+
+  h += tarjeta('Cuenta',
+    '<div class="aj-fila"><div class="aj-tx">' +
+      '<div style="font-weight:600;overflow:hidden;text-overflow:ellipsis">' +
+        (USUARIO ? esc(USUARIO.email || USUARIO.displayName || 'Sesión iniciada') : 'Sin sesión') + '</div>' +
+      '<div class="menor">' + (ref ? 'Todo se guarda en la nube' : 'Solo en este equipo') + '</div>' +
+    '</div>' + (USUARIO ? '<button type="button" class="btn-sec" data-salir>Cerrar sesión</button>' : '') + '</div>');
+
+  const cals = S.ajustes.ics;
+  h += tarjeta('Calendarios',
+    (cals.length ? cals.map((c, i) => {
+      const st = ICS[c.url] || {};
+      const estado = st.estado === 'ok' ? (st.n + ' eventos · al día')
+        : st.estado === 'error' ? 'No se pudo leer: ' + esc(st.error || '')
+        : 'Cargando…';
+      return '<div class="aj-fila"><div class="aj-tx">' +
+          '<div style="font-weight:600">' + esc(c.nombre) + '</div>' +
+          '<div class="menor" style="' + (st.estado === 'error' ? 'color:var(--rojo)' : '') + '">' + estado + '</div>' +
+        '</div>' +
+        '<button type="button" class="mini" data-ics-recargar="' + i + '">Recargar</button>' +
+        '<button type="button" class="mini" data-ics-quitar="' + i + '">Quitar</button></div>';
+    }).join('') : '') +
+    '<div class="campo" style="margin-top:' + (cals.length ? '.9rem' : '0') + '">' +
+      '<input type="url" id="ics-url" placeholder="https://…/calendar.ics" autocomplete="off" autocapitalize="none" aria-label="Enlace del calendario">' +
+      '<div class="fila-op">' +
+        '<input type="text" id="ics-nombre" placeholder="Nombre (Outlook, Google…)" style="flex:1" aria-label="Nombre del calendario">' +
+        '<button type="button" class="btn-pri" data-ics-agregar>Agregar</button>' +
       '</div>' +
-      (USUARIO ? '<button type="button" class="btn-sec" data-salir>Cerrar sesión</button>' : '') +
     '</div>' +
-    '<div class="vacio">Ajustes, biblioteca, métricas y archivo llegan en el siguiente tramo.</div>');
+    '<details class="ayuda"><summary>¿Dónde saco el enlace?</summary>' +
+      '<p><b>Outlook:</b> Configuración, Calendario, Calendarios compartidos, Publicar un calendario. Elige tu calendario, «Puede ver todos los detalles», Publicar, y copia el enlace <b>ICS</b>.</p>' +
+      '<p><b>Google:</b> en calendar.google.com, Configuración, tu calendario, «Dirección secreta en formato iCal».</p>' +
+      '<p><b>iPhone (iCloud):</b> app Calendario, (i) junto al calendario, Calendario público, Compartir enlace. Cambia <i>webcal://</i> por <i>https://</i>.</p>' +
+      '<p>Los eventos se leen cada 15 minutos. Son de solo lectura: se cambian en su calendario de origen.</p>' +
+    '</details>');
+
+  const estadoAv = typeof Notification === 'undefined' ? 'no'
+    : Notification.permission === 'denied' ? 'bloqueado' : avisosActivos() ? 'si' : 'apagado';
+  h += tarjeta('Avisos',
+    '<div class="aj-fila"><div class="aj-tx">' +
+      '<div style="font-weight:600">' + (estadoAv === 'si' ? 'Activados en este equipo' : 'Avisos') + '</div>' +
+      '<div class="menor">' + ({
+        no:'Este navegador no permite avisos. En iPhone, agrega la app a la pantalla de inicio (Compartir, «Agregar a inicio») y ábrela desde ahí.',
+        bloqueado:'Bloqueaste los avisos. Actívalos en los ajustes del navegador para este sitio.',
+        si:'10 minutos antes de cada evento, a la hora de cada tarea y un resumen en la mañana.',
+        apagado:'10 minutos antes de cada evento, a la hora de cada tarea y un resumen en la mañana.'
+      })[estadoAv] + '</div>' +
+    '</div>' +
+    (estadoAv === 'si' ? '<button type="button" class="btn-sec" data-avisos="off">Apagar</button>'
+      : estadoAv === 'apagado' ? '<button type="button" class="btn-pri" data-avisos="on">Activar</button>' : '') +
+    '</div>' +
+    '<p class="menor" style="margin-top:.7rem;line-height:1.45">Llegan mientras la app está abierta o en segundo plano. Con la app cerrada del todo hace falta un servidor que los envíe; eso queda para después.</p>');
+
+  const tema = prefs().tema, tam = prefs().tamano;
+  h += tarjeta('Apariencia',
+    '<div class="campo"><span class="rotulo">Tema</span><div class="seg ancho" role="group" aria-label="Tema">' +
+      [['auto','Automático'],['claro','Claro'],['oscuro','Oscuro']].map(([k,t]) =>
+        '<button type="button" data-tema="' + k + '" aria-pressed="' + (tema === k) + '">' + t + '</button>').join('') +
+    '</div></div>' +
+    '<div class="campo" style="margin-top:.9rem"><span class="rotulo">Tamaño de letra</span><div class="seg ancho" role="group" aria-label="Tamaño de letra">' +
+      Object.keys(TAMANOS).map(k =>
+        '<button type="button" data-tamano="' + k + '" aria-pressed="' + (tam === k) + '">' + TAMANOS[k].t + '</button>').join('') +
+    '</div></div>');
+
+  const cc = S.cerrados, tc = S.tareasCerradas;
+  h += tarjeta('Archivo',
+    '<div class="aj-fila"><div class="aj-tx"><div style="font-weight:600">Casos cerrados</div><div class="menor">' + cc.length + '</div></div>' +
+      (cc.length ? '<button type="button" class="mini" data-archivo="casos">' + (verArchivo === 'casos' ? 'Ocultar' : 'Ver') + '</button>' : '') + '</div>' +
+    (verArchivo === 'casos' ? cc.slice(0, 60).map((c, i) =>
+      '<div class="aj-fila sub"><div class="aj-tx"><div class="cifra" style="font-size:.8rem;color:var(--tinta3)">' + esc(c.id) + ' · cerrado ' + (c.cerrado ? fechaCorta(c.cerrado) : '') + '</div>' +
+      '<div>' + esc(c.desc) + '</div></div><button type="button" class="mini" data-reabrir-caso="' + i + '">Reabrir</button></div>').join('') : '') +
+    '<div class="aj-fila"><div class="aj-tx"><div style="font-weight:600">Tareas hechas</div><div class="menor">' + tc.length + '</div></div>' +
+      (tc.length ? '<button type="button" class="mini" data-archivo="tareas">' + (verArchivo === 'tareas' ? 'Ocultar' : 'Ver') + '</button>' : '') + '</div>' +
+    (verArchivo === 'tareas' ? tc.slice(0, 60).map((t, i) =>
+      '<div class="aj-fila sub"><div class="aj-tx"><div class="menor">' + (t.cerrado ? fechaCorta(t.cerrado) : '') + '</div>' +
+      '<div>' + esc(t.text) + '</div></div><button type="button" class="mini" data-reabrir-tarea="' + i + '">Reabrir</button></div>').join('') : ''));
+
+  h += '</section>';
+  $('lienzo').innerHTML = h;
+}
+
+/* ── preferencias de este equipo: tema y tamaño ── */
+const TAMANOS = {chico:{t:'Chico', px:'14.5px'}, normal:{t:'Normal', px:'16px'}, grande:{t:'Grande', px:'17.5px'}, enorme:{t:'Enorme', px:'19px'}};
+function prefs(){
+  let tema = 'auto', tamano = 'normal';
+  try{ tema = localStorage.getItem('dtm5-tema') || 'auto'; tamano = localStorage.getItem('dtm5-tamano') || 'normal'; }catch(e){}
+  return {tema, tamano: TAMANOS[tamano] ? tamano : 'normal'};
+}
+function aplicarPrefs(){
+  const p = prefs();
+  document.documentElement.style.setProperty('--base', TAMANOS[p.tamano].px);
+  if(p.tema === 'auto') delete document.documentElement.dataset.tema;
+  else document.documentElement.dataset.tema = p.tema;
+}
+function guardarPref(k, v){ try{ localStorage.setItem(k, v); }catch(e){} aplicarPrefs(); pintar(); }
+
+function reabrirCaso(i){
+  const c = S.cerrados.splice(i, 1)[0]; if(!c) return;
+  delete c.cerrado;
+  S.casos.push(Object.assign(c, {estado:'EN PROGRESO', act:hoyISO()}));
+  anotar(c, 'Reabierto');
+  aplicar(); aviso(c.id + ' reabierto');
+}
+function reabrirTarea(i){
+  const t = S.tareasCerradas.splice(i, 1)[0]; if(!t) return;
+  delete t.doneAt; delete t.cerrado;
+  t.done = false;
+  S.tareas.push(t);
+  aplicar(); aviso('Tarea reabierta');
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -1295,7 +1571,6 @@ const corto = (s, n) => { s = String(s||''); n = n || 42; return s.length > n ? 
 const CATS = {urgente:'Urgente', planificar:'Planificar', delegar:'Delegar'};
 const CAT_ORDEN = ['urgente','planificar','delegar'];
 const REPS = {diaria:'cada día', laboral:'días de semana', semanal:'cada semana', quincenal:'cada 2 semanas', mensual:'cada mes'};
-const DURACIONES = [15,30,45,60,90];
 
 function sumarDias(iso, n){ const d = new Date(iso + 'T00:00:00'); d.setDate(d.getDate() + n); return hoyISO(d); }
 function difDias(a, b){ return Math.round((new Date(a + 'T00:00:00') - new Date(b + 'T00:00:00')) / 86400000); }
@@ -1388,7 +1663,7 @@ function anotar(c, texto){
 function nuevaTarea(r){
   return {tid:uid(), done:false, text:r.texto, cat:CATS[r.cat] ? r.cat : 'planificar', notas:'', adj:[],
           venc:r.venc||'', rep:r.rep||'', rec:'', ck:[], creado:hoyISO(),
-          caso:r.caso||'', ini:r.ini||'', dur:r.dur||0};
+          caso:r.caso||'', ini:r.ini||''};
 }
 
 /* Una tarea repetitiva no se cierra: vuelve con la fecha siguiente. */
@@ -1403,7 +1678,7 @@ function regenerar(t){
   };
   let sig = avanzar(t.venc || hoyISO()), guarda = 0;
   while(difDias(sig, hoyISO()) < 0 && guarda++ < 400) sig = avanzar(sig);
-  const n = Object.assign(nuevaTarea({texto:t.text, cat:t.cat, venc:sig, rep:t.rep, caso:t.caso, ini:t.ini, dur:t.dur}),
+  const n = Object.assign(nuevaTarea({texto:t.text, cat:t.cat, venc:sig, rep:t.rep, caso:t.caso, ini:t.ini}),
                           {notas:t.notas, ck:(t.ck||[]).map(c => ({t:c.t, d:false}))});
   S.tareas.push(n);
   return n;
@@ -1619,8 +1894,8 @@ function deslizable(el){
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   TODO — donde se elige. Casos primero, del más frío al más fresco,
-   con sus tareas colgando; después lo suelto, por prioridad.
+   TAREAS — lo que hay que hacer, por prioridad. Arriba, si hay algo
+   anotado dos veces, la tarjeta para ordenarlo.
    ══════════════════════════════════════════════════════════════════ */
 let verTodosDobles = false;
 
@@ -1642,7 +1917,7 @@ function ordenarTareas(l){
     String(a.creado||'').localeCompare(String(b.creado||'')));
 }
 
-function chipsTarea(t, colgada){
+function chipsTarea(t){
   const hoy = hoyISO();
   let h = '';
   if(t.venc){
@@ -1650,28 +1925,28 @@ function chipsTarea(t, colgada){
     h += '<span class="ficha' + (n < 0 ? ' roja' : n === 0 ? '' : ' gris') + '">' +
          (n < 0 ? 'venció ' + fechaCorta(t.venc) : fechaCorta(t.venc)) + '</span>';
   }
-  if(t.ini) h += '<span class="ficha cifra' + (!t.venc || t.venc === hoy ? '' : ' gris') + '">' + esc(t.ini) + '</span>';
-  if(t.dur) h += '<span class="ficha gris">' + enHoras(t.dur) + '</span>';
+  if(t.ini) h += '<span class="ficha cifra' + (t.venc === hoy ? '' : ' gris') + '">' + esc(t.ini) + '</span>';
   if(t.rep && REPS[t.rep]) h += '<span class="ficha gris">' + REPS[t.rep] + '</span>';
-  if(!colgada && t.caso) h += '<span class="ficha gris cifra">' + esc(t.caso) + '</span>';
+  if(t.caso) h += '<span class="ficha gris cifra">' + esc(t.caso) + '</span>';
   if(t.adj && t.adj.length) h += '<span class="ficha gris">' + icono('clip', 11, 2.2) + t.adj.length + '</span>';
   return h;
 }
 
-function filaTarea(t, colgada){
+function filaTarea(t){
   return '<div class="desl" data-desliza data-id="' + esc(t.tid) + '" data-der="hecha" data-izq="manana">' +
     fondoFila(LADOS.hecha, LADOS.manana) +
     '<div class="cara fila">' +
       '<button type="button" class="chk" data-hecha="' + esc(t.tid) + '" aria-pressed="false" aria-label="Marcar hecha"></button>' +
       '<button type="button" class="tx" data-editar="' + esc(t.tid) + '">' +
         '<span style="display:block">' + esc(t.text) + '</span>' +
-        '<span class="meta">' + chipsTarea(t, colgada) + '</span>' +
+        '<span class="meta">' + chipsTarea(t) + '</span>' +
       '</button>' +
     '</div></div>';
 }
 
 function filaCaso(c){
   const q = diasDesde(c.act) || 0, tono = tonoCaso(c), espera = c.estado === 'EN ESPERA';
+  const nT = S.tareas.filter(t => !t.done && t.caso === c.id).length;
   const quieto = espera ? '<span class="ficha gris">En espera</span>'
     : q === 0 ? '<span class="ficha gris">Movido hoy</span>'
     : '<span class="ficha cifra' + (tono === 'rojo' ? ' roja' : tono === 'ambar' ? '' : ' gris') + '">' + enDias(q) + ' quieto</span>';
@@ -1679,13 +1954,14 @@ function filaCaso(c){
     fondoFila(LADOS.avance, espera ? LADOS.retomar : LADOS.espera) +
     '<div class="cara fila">' +
       '<span class="marca ' + tono + '"></span>' +
-      '<div class="tx">' +
-        '<div class="id">' + esc(c.id) + '</div>' +
-        '<div class="desc">' + esc(c.desc) + '</div>' +
-        '<div class="meta">' + quieto +
+      '<button type="button" class="tx" data-ficha="' + esc(c.id) + '">' +
+        '<span class="id">' + esc(c.id) + '</span>' +
+        '<span class="desc">' + esc(c.desc) + '</span>' +
+        '<span class="meta">' + quieto +
+          (nT ? '<span class="ficha gris">' + nT + (nT === 1 ? ' tarea' : ' tareas') + '</span>' : '') +
           (c.adj && c.adj.length ? '<span class="ficha gris">' + icono('clip', 11, 2.2) + c.adj.length + '</span>' : '') +
-        '</div>' +
-      '</div>' +
+        '</span>' +
+      '</button>' +
       '<div class="acc-h">' +
         '<button type="button" class="mini" data-avance="' + esc(c.id) + '">Avance</button>' +
         '<button type="button" class="mini" data-espera="' + esc(c.id) + '">' + (espera ? 'Retomar' : 'Esperar') + '</button>' +
@@ -1721,54 +1997,66 @@ function pintarDobles(lista){
   '</div>';
 }
 
-function grupo(titulo, n, cuerpo){
-  return '<div class="grupo"><div class="grupo-cab"><span class="rotulo">' + titulo + '</span><span class="n">' + n + '</span></div>' +
-         '<div class="pila">' + cuerpo + '</div></div>';
-}
-
-function pintarTodo(){
-  const casos = casosOrdenados();
-  const ids = new Set(casos.map(c => c.id));
-  const colg = {}, sueltas = [];
+function pintarTareas(){
   const vivas = S.tareas.filter(t => !t.done);
-  for(const t of vivas){
-    if(t.caso && ids.has(t.caso)) (colg[t.caso] = colg[t.caso] || []).push(t);
-    else sueltas.push(t);
-  }
-  $('cabeza').innerHTML =
-    '<div class="cabeza-fila"><div>' +
-      '<div class="rotulo">' + casos.length + (casos.length === 1 ? ' caso' : ' casos') + ' · ' +
-        vivas.length + (vivas.length === 1 ? ' tarea' : ' tareas') + '</div>' +
-      '<div class="tit" style="margin-top:.15rem">Todo</div>' +
-    '</div></div>';
-
+  cabeza('Tareas', vivas.length + (vivas.length === 1 ? ' pendiente' : ' pendientes'));
   let h = '<section class="env">';
   const dup = dobles();
   if(dup.length) h += pintarDobles(dup);
-  if(casos.length){
-    h += grupo('Casos', casos.length, casos.map(c =>
-      filaCaso(c) + (colg[c.id] ? '<div class="colgadas">' + ordenarTareas(colg[c.id]).map(t => filaTarea(t, true)).join('') + '</div>' : '')
-    ).join(''));
-  }
   for(const k of CAT_ORDEN){
-    const l = ordenarTareas(sueltas.filter(t => t.cat === k));
-    if(l.length) h += grupo(CATS[k], l.length, l.map(t => filaTarea(t, false)).join(''));
+    const l = ordenarTareas(vivas.filter(t => t.cat === k));
+    if(l.length) h += grupo(CATS[k], l.length, l.map(t => filaTarea(t)).join(''));
   }
-  if(!casos.length && !vivas.length) h += '<div class="vacio">Nada pendiente.<br>Lo que llegue, captúralo con <b>+</b>.</div>';
+  if(!vivas.length) h += '<div class="vacio">Sin tareas pendientes.<br>Crea una con <b>+</b>.</div>';
   h += '</section>';
   $('lienzo').innerHTML = h;
-  document.querySelectorAll('#lienzo [data-desliza]').forEach(deslizable);
 }
 
-/* Desde Hoy, tocar un caso que se enfría lleva a su fila en Todo. */
-function irACaso(id){
-  vista = 'todo';
-  pintar();
-  const f = document.querySelector('[data-fila-caso="' + CSS.escape(id) + '"]');
-  if(!f) return;
-  f.scrollIntoView({block:'center', behavior: REDUCIDO ? 'auto' : 'smooth'});
-  f.classList.add('resalta');
+/* ══════════════════════════════════════════════════════════════════
+   CASOS — del más quieto al más fresco; en espera al final. Tocar un
+   caso abre su ficha: detalle, bitácora, tareas y adjuntos.
+   ══════════════════════════════════════════════════════════════════ */
+function pintarCasos(){
+  const casos = casosOrdenados(), frios = enfriandose().length;
+  cabeza('Casos', casos.length + (casos.length === 1 ? ' abierto' : ' abiertos') + (frios ? ' · ' + frios + ' quietos' : ''));
+  let h = '<section class="env">';
+  h += casos.length ? '<div class="pila">' + casos.map(c => filaCaso(c)).join('') + '</div>'
+                    : '<div class="vacio">Sin casos abiertos.<br>Crea uno con <b>+</b> y elige «Caso».</div>';
+  if(S.cerrados.length) h += '<button type="button" class="plegar" data-ver-cerrados>Casos cerrados · ' + S.cerrados.length + '</button>';
+  h += '</section>';
+  $('lienzo').innerHTML = h;
 }
+
+function terminarCaso(id){
+  const i = S.casos.findIndex(c => c.id === id); if(i < 0) return;
+  const c = S.casos.splice(i, 1)[0];
+  anotar(c, 'Caso cerrado');
+  c.cerrado = hoyISO();
+  S.cerrados.unshift(c);
+  if(S.cerrados.length > 400) S.cerrados.length = 400;
+  aplicar();
+  aviso(c.id + ' cerrado', () => {
+    S.cerrados = S.cerrados.filter(x => x !== c);
+    delete c.cerrado; c.hist.shift();
+    S.casos.splice(Math.min(i, S.casos.length), 0, c);
+    aplicar();
+  });
+}
+function renombrarCaso(viejo, nuevo){
+  nuevo = String(nuevo || '').trim();
+  const c = casoPorId(viejo);
+  if(!c || !nuevo || nuevo === viejo) return true;
+  if(casoPorId(nuevo)){ aviso('Ya tienes un caso ' + nuevo); return false; }
+  c.id = nuevo;
+  S.tareas.forEach(t => { if(t.caso === viejo) t.caso = nuevo; });
+  anotar(c, 'Número cambiado de ' + viejo + ' a ' + nuevo);
+  if(CAP && CAP.caso === viejo) CAP.caso = nuevo;
+  aplicar();
+  return true;
+}
+
+/* Desde Hoy o una notificación: la ficha del caso. */
+function irACaso(id){ abrirFicha(id); }
 
 /* El círculo se llena primero y la fila se va después: sin esa pausa
    no se ve qué se marcó. */
@@ -1859,55 +2147,75 @@ function interpretar(entrada){
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   HOJA DE CAPTURA
+   LA HOJA — una sola, con varios contenidos:
+     nueva     capturar una tarea o un caso
+     editar    una tarea existente, con sus adjuntos
+     ficha     un caso: detalle, estado, bitácora, tareas y adjuntos
+     evento    crear o cambiar un evento propio
+   Y tres pasos que se abren desde cualquiera: boceto, grabadora y
+   evento. "Volver" regresa al contenido de origen.
 
-   Un campo, y lo que se entendió aparece debajo mientras escribes.
-   Si lo que escribes ya existe como caso, la hoja lo dice antes de
-   guardar: ahí se corta la doble anotación, en la entrada.
-
-   Abajo, las seis acciones de Evernote: cámara, escanear, archivo,
-   boceto, grabadora y evento. Si hay texto escrito, lo que adjuntes
-   se cuelga de esa tarea; si no, nace una tarea con el nombre del
-   adjunto.
-
-   La misma hoja edita una tarea existente: tocar una fila en Todo
-   la abre con los campos puestos.
+   Al escribir una tarea, lo que se entiende del texto ("mañana 15:00
+   !urgente") llena los campos en vivo. Si lo que escribes ya existe
+   como caso, la hoja lo dice antes de guardar.
    ══════════════════════════════════════════════════════════════════ */
 let CAP = null;
 let hoja = null;
 
-const SIN_NUBE = 'Los adjuntos viven en la nube y esta versión todavía no inicia sesión. Por ahora, adjunta desde v4.';
+const SIN_NUBE = 'Los adjuntos se guardan en la nube: inicia sesión para adjuntar.';
+
+function abrirHoja(instantaneo){
+  pintarHoja();
+  if(!hoja.abierta) hoja.abrir(instantaneo);
+  else{ hoja.medirGesto(); $('hoja').scrollTop = 0; }
+}
 
 function abrirCaptura(op){
   op = op || {};
   const t = op.tid ? tareaPorId(op.tid) : null;
-  CAP = {
-    tid: t ? t.tid : null, tipo:'tarea', paso:'texto',
-    texto: t ? t.text : '', cat: t ? t.cat : 'planificar', venc: t ? t.venc : '', ini: t ? t.ini : '',
-    dur: t ? t.dur : 0, rep: t ? t.rep : '', caso: t ? t.caso : (op.caso || ''), notas: t ? t.notas : '',
-    tocado: t ? {cat:1, venc:1, ini:1, caso:1} : (op.caso ? {caso:1} : {}),
-    soltar:false, detalles: !!t
-  };
-  pintarHoja();
-  hoja.abrir(op.instantaneo);
+  if(op.tid && !t) return;
+  CAP = t
+    ? {modo:'editar', tipo:'tarea', paso:'texto', tid:t.tid, texto:t.text, cat:t.cat, venc:t.venc, ini:t.ini,
+       rep:t.rep, caso:t.caso, notas:t.notas, tocado:{cat:1, venc:1, ini:1, caso:1, rep:1}, soltar:false, volver:op.volver || null}
+    : {modo:'nueva', tipo:op.tipo || 'tarea', paso:'texto', tid:null, texto:'', cat:op.cat || 'planificar',
+       venc:'', ini:'', rep:'', caso:op.caso || '', notas:'', tocado:op.caso ? {caso:1} : {}, soltar:false,
+       num:'', det:'', volver:op.volver || null};
+  abrirHoja(op.instantaneo);
   /* El foco tiene que ir dentro del mismo toque: iOS solo levanta el
      teclado si el foco nace de un gesto del usuario. Al editar no se
      levanta: primero se mira. */
-  if(!t) $('cap-tx').focus({preventScroll:true});
+  if(!t){ const f = $(CAP.tipo === 'caso' ? 'cap-num' : 'cap-tx'); if(f) f.focus({preventScroll:true}); }
+}
+function abrirFicha(id, op){
+  const c = casoPorId(id); if(!c) return;
+  CAP = {modo:'ficha', paso:'ficha', caso:c.id};
+  abrirHoja(op && op.instantaneo);
+}
+function abrirEvento(op){
+  op = op || {};
+  CAP = {modo:'evento', paso:'evento', eid:op.eid || null, d:op.d || hoyISO(), texto:'', venc:'', ini:''};
+  abrirHoja(op.instantaneo);
+}
+/* Después de guardar: si se vino desde la ficha de un caso, se vuelve
+   a ella; si no, la hoja se cierra. */
+function terminarHoja(){
+  if(CAP && CAP.volver && casoPorId(CAP.volver)) abrirFicha(CAP.volver);
+  else hoja.cerrar();
 }
 
 function leerCaptura(){
-  if(CAP.tid) return {texto:CAP.texto.trim(), cat:CAP.cat, venc:CAP.venc, ini:CAP.ini, dur:CAP.dur, rep:CAP.rep, caso:CAP.caso, det:null};
+  if(CAP.modo !== 'nueva') return {texto:(CAP.texto||'').trim(), cat:CAP.cat, venc:CAP.venc, ini:CAP.ini, rep:CAP.rep, caso:CAP.caso, det:null};
   const p = interpretar(CAP.texto), toc = CAP.tocado;
   const r = {
     texto:p.texto,
     cat: toc.cat ? CAP.cat : (p.marcoCat ? p.cat : CAP.cat),
     venc: toc.venc ? CAP.venc : p.venc,
     ini: toc.ini ? CAP.ini : p.hora,
-    dur:CAP.dur, rep:p.rep, caso:CAP.caso, det:null
+    rep: toc.rep ? CAP.rep : p.rep,
+    caso:CAP.caso, det:null
   };
-  /* Una hora sin día es para hoy; si no, saldría en Hoy todos los días. */
-  if(r.ini && !r.venc && !toc.venc) r.venc = hoyISO();
+  /* Una hora o una repetición sin día parten hoy. */
+  if((r.ini || r.rep) && !r.venc && !toc.venc) r.venc = hoyISO();
   if(!CAP.texto.trim()) return r;
   const casos = casosAbiertos();
   const exacto = casoPorNumero(CAP.texto, casos);
@@ -1924,19 +2232,14 @@ function leerCaptura(){
   }
   return r;
 }
-function leerCaso(){
-  const tx = CAP.texto.trim();
-  const n = numerosDe(tx)[0] || '';
-  const desc = (n ? tx.replace(n, '') : tx).replace(/^[\s,.;:–-]+/, '').replace(/\s+/g, ' ').trim();
-  return {id:n, desc, existe: n ? casoPorId(n) : null};
-}
 
-/* ── pintado ── */
+/* ── piezas ── */
 function campo(titulo, cuerpo){ return '<div class="campo"><span class="rotulo">' + titulo + '</span>' + cuerpo + '</div>'; }
 function op(attr, txt, on){ return '<button type="button" class="op" ' + attr + ' aria-pressed="' + !!on + '">' + txt + '</button>'; }
 function cabPaso(titulo, attr, habil){
   return '<div class="hoja-cab paso">' +
-    '<button type="button" class="atras" data-cap-paso="texto">' + icono('atras', 18, 2.4) + 'Volver</button>' +
+    '<button type="button" class="atras" data-cap-volver>' + icono('atras', 18, 2.4) +
+      (CAP.modo === 'evento' ? 'Cancelar' : 'Volver') + '</button>' +
     '<div class="tit-s" id="hoja-tit">' + titulo + '</div>' +
     '<button type="button" class="btn-pri" ' + attr + (habil === false ? ' disabled' : '') + '>Guardar</button>' +
   '</div>';
@@ -1949,34 +2252,48 @@ const ACCIONES = [
   {k:'grabadora', t:'Audio'},
   {k:'evento',    t:'Evento'}
 ];
+function htmlAcciones(titulo){
+  return (titulo ? '<div class="rotulo" style="margin-top:1.3rem">' + titulo + '</div>' : '') +
+    '<div class="acc6"' + (titulo ? ' style="margin-top:.55rem"' : '') + '>' +
+      ACCIONES.map(a => {
+        const sinNube = !ref && ['camara','escanear','archivo'].includes(a.k);
+        return '<button type="button" data-cap-accion="' + a.k + '"' + (sinNube ? ' aria-disabled="true"' : '') + '>' +
+          icono(a.k, 22, 1.8) + '<span>' + a.t + '</span></button>';
+      }).join('') +
+    '</div>';
+}
 
+/* ── contenido: tarea (nueva o editar) y caso nuevo ── */
 function htmlTexto(){
-  const editando = !!CAP.tid;
+  const editando = CAP.modo === 'editar';
+  const volver = CAP.volver ? '<button type="button" class="atras" data-cap-a-ficha>' + icono('atras', 18, 2.4) + esc(CAP.volver) + '</button>' : '';
+  let h = '<div class="hoja-cab">' + volver +
+    (editando
+      ? '<div class="rotulo" id="hoja-tit">Tarea</div>'
+      : '<div class="seg" role="group" aria-label="Qué es" id="hoja-tit">' +
+          '<button type="button" data-cap-tipo="tarea" aria-pressed="' + (CAP.tipo === 'tarea') + '">Tarea</button>' +
+          '<button type="button" data-cap-tipo="caso" aria-pressed="' + (CAP.tipo === 'caso') + '">Caso</button>' +
+        '</div>') +
+    '<span style="flex:1"></span>' +
+    '<button type="button" class="btn-pri" data-cap-guardar>' + (editando ? 'Listo' : 'Guardar') + '</button>' +
+  '</div>';
+
+  if(CAP.tipo === 'caso'){
+    return h +
+      '<div class="detalles" style="margin-top:.3rem">' +
+        campo('Número de caso', '<input type="text" id="cap-num" class="cifra" autocomplete="off" autocapitalize="characters" enterkeyhint="next" placeholder="70129397" value="' + esc(CAP.num) + '">') +
+        campo('Detalle del caso', '<textarea id="cap-det" class="cap-notas sel" rows="4" placeholder="Línea inactiva de Nicol, plan WOM internet">' + esc(CAP.det) + '</textarea>') +
+      '</div>' +
+      '<div id="cap-lectura"></div>';
+  }
   const t = editando ? tareaPorId(CAP.tid) : null;
-  const nAdj = t && t.adj ? t.adj.length : 0;
-  return '<div class="hoja-cab">' +
-      (editando
-        ? '<div class="rotulo" id="hoja-tit">Tarea' + (nAdj ? ' · ' + nAdj + (nAdj === 1 ? ' adjunto' : ' adjuntos') : '') + '</div>'
-        : '<div class="seg" role="group" aria-label="Qué es" id="hoja-tit">' +
-            '<button type="button" data-cap-tipo="tarea" aria-pressed="' + (CAP.tipo === 'tarea') + '">Tarea</button>' +
-            '<button type="button" data-cap-tipo="caso" aria-pressed="' + (CAP.tipo === 'caso') + '">Caso</button>' +
-          '</div>') +
-      '<span style="flex:1"></span>' +
-      '<button type="button" class="btn-pri" data-cap-guardar>' + (editando ? 'Listo' : 'Guardar') + '</button>' +
-    '</div>' +
-    '<textarea id="cap-tx" class="cap-tx sel" rows="1" enterkeyhint="done" autocomplete="off" aria-label="Qué hay que hacer"></textarea>' +
+  return h +
+    '<textarea id="cap-tx" class="cap-tx sel" rows="1" enterkeyhint="done" autocomplete="off" aria-label="Qué hay que hacer" ' +
+      'placeholder="Llamar a Gelen mañana 15:00 !urgente"></textarea>' +
     '<div id="cap-lectura"></div>' +
     '<div id="cap-detalles"></div>' +
-    '<div id="cap-acciones"' + (CAP.tipo === 'caso' ? ' hidden' : '') + '>' +
-      (editando ? '<div class="rotulo" style="margin-top:1.3rem">Añadir a esta tarea</div>' : '') +
-      '<div class="acc6"' + (editando ? ' style="margin-top:.55rem"' : '') + '>' +
-        ACCIONES.map(a => {
-          const sinNube = !ref && ['camara','escanear','archivo'].includes(a.k);
-          return '<button type="button" data-cap-accion="' + a.k + '"' + (sinNube ? ' aria-disabled="true"' : '') + '>' +
-            icono(a.k, 22, 1.8) + '<span>' + a.t + '</span></button>';
-        }).join('') +
-      '</div>' +
-    '</div>' +
+    '<div id="cap-adjuntos">' + (t ? htmlAdjuntos(t) : '') + '</div>' +
+    htmlAcciones(editando ? 'Añadir a esta tarea' : '') +
     (editando
       ? '<div class="pie-edit">' +
           '<button type="button" class="btn-sec" data-cap-eliminar>Eliminar</button>' +
@@ -1988,42 +2305,31 @@ function htmlTexto(){
 
 function pintarHoja(){
   const cu = $('hoja-cuerpo');
-  if(CAP.paso === 'evento')        cu.innerHTML = htmlEvento();
-  else if(CAP.paso === 'boceto'){  cu.innerHTML = htmlBoceto(); prepararBoceto(); }
+  if(CAP.paso === 'evento')         cu.innerHTML = htmlEvento();
+  else if(CAP.paso === 'boceto'){   cu.innerHTML = htmlBoceto(); prepararBoceto(); }
   else if(CAP.paso === 'grabadora') cu.innerHTML = htmlGrabadora();
+  else if(CAP.paso === 'ficha')     cu.innerHTML = htmlFicha();
   else{
     cu.innerHTML = htmlTexto();
     const tx = $('cap-tx');
-    tx.value = CAP.texto;
-    ponerPlaceholder();
-    ajustarAlto(tx);
+    if(tx){ tx.value = CAP.texto; ajustarAlto(tx); }
     pintarLectura();
   }
+  const dueno = duenoVisible();
+  if(dueno) cargarAdjuntosDe(dueno);
   if(hoja && hoja.abierta) hoja.medirGesto();
-}
-function ponerPlaceholder(){
-  const tx = $('cap-tx'); if(!tx) return;
-  tx.placeholder = CAP.tipo === 'caso' ? '70129397 Línea inactiva Nicol' : 'Llamar a Gelen mañana 15:00 !urgente';
 }
 function ajustarAlto(tx){ tx.style.height = 'auto'; tx.style.height = tx.scrollHeight + 'px'; }
 
 /* Lo que depende del texto se repinta en cada tecla; el campo no, para
    no perder el foco ni el cursor. */
 function pintarLectura(){
-  const el = $('cap-lectura'), det = $('cap-detalles');
-  if(!el) return;
-  if(CAP.tipo === 'caso'){ el.innerHTML = lecturaCaso(); det.innerHTML = ''; return; }
+  const el = $('cap-lectura'); if(!el) return;
+  if(CAP.tipo === 'caso'){ el.innerHTML = lecturaCaso(); return; }
   const r = leerCaptura();
-  let chips = '';
-  if(!CAP.tid){
-    if(r.venc) chips += '<span class="ficha">' + fechaCorta(r.venc) + '</span>';
-    if(r.ini) chips += '<span class="ficha cifra">' + esc(r.ini) + '</span>';
-    if(r.rep) chips += '<span class="ficha gris">' + REPS[r.rep] + '</span>';
-    if(r.cat !== 'planificar') chips += '<span class="ficha gris">' + CATS[r.cat] + '</span>';
-    if(r.caso) chips += '<span class="ficha gris cifra">caso ' + esc(r.caso) + '</span>';
-  }
-  el.innerHTML = (chips ? '<div class="meta lectura">' + chips + '</div>' : '') + deteccionHTML(r);
-  det.innerHTML = detallesHTML(r);
+  el.innerHTML = deteccionHTML(r);
+  const det = $('cap-detalles');
+  if(det) det.innerHTML = detallesHTML(r);
 }
 
 function deteccionHTML(r){
@@ -2039,67 +2345,70 @@ function deteccionHTML(r){
   }
   if(d.tipo === 'huerfano'){
     return '<div class="detec"><b class="cifra">' + esc(d.n) + '</b> parece un número de caso y no está entre tus casos abiertos.' +
-      '<div class="acc"><button type="button" class="btn-sec" data-cap-tipo="caso">Crearlo como caso</button></div></div>';
+      '<div class="acc"><button type="button" class="btn-sec" data-cap-a-caso="' + esc(d.n) + '">Crearlo como caso</button></div></div>';
   }
   return '<div class="detec">¿Es del caso <b class="cifra">' + esc(d.c.id) + '</b> · ' + esc(corto(d.c.desc, 44)) +
     '? Los dos hablan de «' + esc(d.palabra) + '».' +
     '<div class="acc"><button type="button" class="btn-sec" data-cap-colgar="' + esc(d.c.id) + '">Colgarla de ese caso</button></div></div>';
 }
 
+const REP_OPCIONES = [['', 'No se repite'], ['semanal', 'Cada semana'], ['diaria', 'Cada día'], ['laboral', 'Días hábiles'], ['mensual', 'Cada mes']];
+
 function detallesHTML(r){
-  if(!CAP.detalles){
-    const res = [CATS[r.cat], r.dur ? enHoras(r.dur) : ''].filter(Boolean).join(' · ');
-    return '<button type="button" class="plegar" data-cap-detalles aria-expanded="false">Detalles' +
-      '<span class="res">' + esc(res) + '</span>' + icono('abajo', 16, 2.2) + '</button>';
-  }
   const hoy = hoyISO(), man = sumarDias(hoy, 1);
   const casos = casosOrdenados();
   const opcCaso = casos.map(c => '<option value="' + esc(c.id) + '"' + (r.caso === c.id ? ' selected' : '') + '>' +
     esc(c.id) + ' · ' + esc(corto(c.desc, 38)) + '</option>').join('') +
     (r.caso && !casos.some(c => c.id === r.caso) ? '<option value="' + esc(r.caso) + '" selected>' + esc(r.caso) + ' · cerrado</option>' : '');
+  const diaRep = r.rep === 'semanal' ? 'Todos los ' + DIAS[new Date((r.venc || hoy) + 'T00:00:00').getDay()]
+    : r.rep === 'mensual' ? 'El ' + Number((r.venc || hoy).slice(8)) + ' de cada mes' : '';
   return '<div class="detalles">' +
-    campo('Prioridad', '<div class="seg" role="group" aria-label="Prioridad" style="align-self:flex-start">' + CAT_ORDEN.map(k =>
-      '<button type="button" data-cap-cat="' + k + '" aria-pressed="' + (r.cat === k) + '">' + CATS[k] + '</button>').join('') + '</div>') +
+    campo('Prioridad', '<div class="seg ancho prio" role="group" aria-label="Prioridad">' + CAT_ORDEN.map(k =>
+      '<button type="button" data-cap-cat="' + k + '" data-c="' + k + '" aria-pressed="' + (r.cat === k) + '">' + CATS[k] + '</button>').join('') + '</div>') +
     campo('Cuándo', '<div class="fila-op">' +
       op('data-cap-venc="' + hoy + '"', 'Hoy', r.venc === hoy) +
       op('data-cap-venc="' + man + '"', 'Mañana', r.venc === man) +
       op('data-cap-venc=""', 'Sin fecha', !r.venc) +
       '<input type="date" id="cap-venc" value="' + esc(r.venc) + '" aria-label="Otra fecha">' +
     '</div>') +
-    campo('Hora y duración', '<div class="fila-op">' +
-      '<input type="time" id="cap-ini" value="' + esc(r.ini) + '" aria-label="Hora de inicio">' +
-      DURACIONES.map(m => op('data-cap-dur="' + m + '"', enHoras(m), r.dur === m)).join('') +
+    campo('Hora <span class="suave">· opcional, la pone en la columna de Hoy</span>', '<div class="fila-op">' +
+      '<input type="time" id="cap-ini" value="' + esc(r.ini) + '" aria-label="Hora">' +
+      (r.ini ? op('data-cap-ini=""', 'Sin hora', false) : '') +
     '</div>') +
-    campo('Caso', '<select id="cap-caso" aria-label="Caso"><option value="">Suelta, sin caso</option>' + opcCaso + '</select>') +
-    (CAP.tid ? campo('Notas', '<textarea id="cap-notas" class="cap-notas sel" rows="3">' + esc(CAP.notas) + '</textarea>') : '') +
+    campo('Repetir', '<div class="fila-op">' + REP_OPCIONES.map(([k, t]) =>
+      op('data-cap-rep="' + k + '"', t, (r.rep || '') === k)).join('') + '</div>' +
+      (diaRep ? '<div class="menor">' + diaRep + '</div>' : '')) +
+    campo('Caso', '<select id="cap-caso" aria-label="Caso"><option value="">Ninguno</option>' + opcCaso + '</select>') +
+    (CAP.modo === 'editar' ? campo('Notas', '<textarea id="cap-notas" class="cap-notas sel" rows="3">' + esc(CAP.notas) + '</textarea>') : '') +
   '</div>';
 }
 
 function lecturaCaso(){
-  if(!CAP.texto.trim()) return '<div class="menor lectura" style="margin-top:.4rem">El número primero y después de qué se trata. Sin número, le pongo uno provisorio.</div>';
-  const k = leerCaso();
-  let h = '<div class="meta lectura">' + (k.id ? '<span class="ficha gris cifra">N° ' + esc(k.id) + '</span>' : '<span class="ficha gris">sin número</span>') + '</div>';
-  if(k.existe) h += '<div class="detec"><b>Ya tienes el caso <span class="cifra">' + esc(k.id) + '</span></b> · ' + esc(corto(k.existe.desc, 60)) +
-    '<br>Guardar lo anota en su bitácora en vez de crear otro igual.</div>';
-  return h;
+  const num = (CAP.num || '').trim();
+  const existe = num ? casoPorId(num) : null;
+  if(existe) return '<div class="detec"><b>Ya tienes el caso <span class="cifra">' + esc(num) + '</span></b> · ' + esc(corto(existe.desc, 60)) +
+    '<br>Guardar anota el detalle en su bitácora en vez de crear otro igual.</div>';
+  if(!num && (CAP.det || '').trim()) return '<div class="menor" style="margin-top:.7rem">Sin número le pongo uno provisorio; lo cambias después en la ficha.</div>';
+  return '';
 }
 
 /* ── guardar ── */
 function guardarCaptura(){
   if(CAP.tipo === 'caso') return guardarCasoCaptura();
   const r = leerCaptura();
-  if(!r.texto){ $('cap-tx').focus(); return; }
-  if(CAP.tid){
+  if(!r.texto){ const f = $('cap-tx'); if(f) f.focus(); return; }
+  if(r.rep && !r.venc) r.venc = hoyISO();
+  if(CAP.modo === 'editar'){
     const t = tareaPorId(CAP.tid);
-    if(t) Object.assign(t, {text:r.texto, cat:r.cat, venc:r.venc, ini:r.ini, dur:r.dur, caso:r.caso, notas:CAP.notas});
-    hoja.cerrar(); aplicar();
+    if(t) Object.assign(t, {text:r.texto, cat:r.cat, venc:r.venc, ini:r.ini, rep:r.rep, caso:r.caso, notas:CAP.notas});
+    terminarHoja(); aplicar();
     aviso('Tarea guardada');
     return;
   }
   const t = nuevaTarea(r);
   S.tareas.push(t);
   if(t.caso){ const c = casoPorId(t.caso); if(c) anotar(c, 'Se colgó «' + corto(t.text, 60) + '»'); }
-  hoja.cerrar(); aplicar();
+  terminarHoja(); aplicar();
   const donde = t.caso ? ' en ' + t.caso : t.venc ? ' · ' + fechaCorta(t.venc) + (t.ini ? ' ' + t.ini : '') : '';
   aviso('Tarea creada' + donde, () => {
     S.tareas = S.tareas.filter(x => x !== t);
@@ -2108,31 +2417,94 @@ function guardarCaptura(){
   });
 }
 function guardarCasoCaptura(){
-  const k = leerCaso();
-  if(!CAP.texto.trim()){ $('cap-tx').focus(); return; }
-  if(k.existe){
-    const c = k.existe, antes = c.act;
-    anotar(c, k.desc || 'Movimiento registrado');
-    c.act = hoyISO();
-    hoja.cerrar(); aplicar();
-    aviso('Anotado en la bitácora de ' + c.id, () => { c.hist.shift(); c.act = antes; aplicar(); });
+  const num = (CAP.num || '').trim(), det = (CAP.det || '').trim();
+  if(!num && !det){ $('cap-num').focus(); return; }
+  const existe = num ? casoPorId(num) : null;
+  if(existe){
+    const antes = existe.act;
+    anotar(existe, det || 'Movimiento registrado');
+    existe.act = hoyISO();
+    terminarHoja(); aplicar();
+    aviso('Anotado en la bitácora de ' + existe.id, () => { existe.hist.shift(); existe.act = antes; aplicar(); });
     return;
   }
-  const id = k.id || 'CASO-' + Date.now().toString().slice(-6);
-  const c = {id, desc:k.desc || '(sin descripción)', estado:'EN PROGRESO', act:hoyISO(), rec:'', adj:[], notas:'',
+  const id = num || 'CASO-' + Date.now().toString().slice(-6);
+  const c = {id, desc:det || '(sin detalle)', estado:'EN PROGRESO', act:hoyISO(), rec:'', adj:[], notas:'',
              hist:[{f:hoyISO(), t:'Caso creado'}]};
   S.casos.push(c);
-  hoja.cerrar(); aplicar();
+  terminarHoja(); aplicar();
   aviso('Caso ' + id + ' creado', () => { S.casos = S.casos.filter(x => x !== c); aplicar(); });
+}
+
+/* ── ficha de caso ── */
+function htmlFicha(){
+  const c = casoPorId(CAP.caso);
+  if(!c) return '<div class="vacio">Ese caso ya no está abierto.</div>';
+  const q = diasDesde(c.act) || 0, espera = c.estado === 'EN ESPERA', tono = tonoCaso(c);
+  const tareas = ordenarTareas(S.tareas.filter(t => !t.done && t.caso === c.id));
+  return '<div class="hoja-cab">' +
+      '<div class="rotulo" id="hoja-tit">Caso</div>' +
+      (espera ? '<span class="ficha gris">En espera</span>'
+        : '<span class="ficha cifra' + (tono === 'rojo' ? ' roja' : tono === 'ambar' ? '' : ' gris') + '">' + (q ? enDias(q) + ' quieto' : 'movido hoy') + '</span>') +
+      '<span style="flex:1"></span>' +
+      '<button type="button" class="btn-pri" data-ficha-listo>Listo</button>' +
+    '</div>' +
+    '<div class="detalles" style="margin-top:.2rem">' +
+      campo('Número de caso', '<input type="text" id="fi-num" class="cifra" autocomplete="off" value="' + esc(c.id) + '">') +
+      campo('Detalle', '<textarea id="fi-det" class="cap-notas sel" rows="3">' + esc(c.desc) + '</textarea>') +
+      campo('Estado', '<div class="seg ancho" role="group" aria-label="Estado">' +
+        '<button type="button" data-fi-estado="EN PROGRESO" aria-pressed="' + !espera + '">En progreso</button>' +
+        '<button type="button" data-fi-estado="EN ESPERA" aria-pressed="' + espera + '">En espera</button>' +
+      '</div>') +
+    '</div>' +
+    '<div class="acc" style="margin-top:1rem">' +
+      '<button type="button" class="btn-sec" data-avance="' + esc(c.id) + '">' + icono('visto', 16, 2.4) + 'Registrar avance</button>' +
+      '<button type="button" class="btn-sec" data-fi-cerrar>Cerrar caso</button>' +
+    '</div>' +
+
+    '<div class="rotulo" style="margin-top:1.4rem">Tareas · ' + tareas.length + '</div>' +
+    '<div class="pila" style="margin-top:.55rem">' +
+      tareas.map(t =>
+        '<div class="fila" style="background:var(--hueco)">' +
+          '<button type="button" class="chk" data-hecha="' + esc(t.tid) + '" aria-pressed="false" aria-label="Marcar hecha"></button>' +
+          '<button type="button" class="tx" data-editar="' + esc(t.tid) + '"><span style="display:block">' + esc(t.text) + '</span>' +
+          '<span class="meta">' + chipsTarea(Object.assign({}, t, {caso:''})) + '</span></button>' +
+        '</div>').join('') +
+      '<button type="button" class="plegar" data-fi-tarea style="margin-top:0">+ Tarea para este caso</button>' +
+    '</div>' +
+
+    '<div class="rotulo" style="margin-top:1.2rem">Bitácora</div>' +
+    '<div class="fila-op" style="margin-top:.55rem">' +
+      '<input type="text" id="fi-nota" class="campo-in" placeholder="Anotar lo que pasó…" enterkeyhint="done" style="flex:1">' +
+      '<button type="button" class="btn-sec" data-fi-anotar>Anotar</button>' +
+    '</div>' +
+    '<div class="bitacora">' +
+      (c.hist.length ? c.hist.map(x => '<div class="bit"><span class="f">' + (x.f ? fechaCorta(x.f) : '') + '</span><span class="sel">' + esc(x.t) + '</span></div>').join('')
+                     : '<div class="menor">Todavía sin anotaciones.</div>') +
+    '</div>' +
+
+    '<div id="cap-adjuntos">' + htmlAdjuntos(c) + '</div>' +
+    htmlAcciones('Adjuntar al caso');
+}
+function anotarEnFicha(){
+  const c = casoPorId(CAP.caso), el = $('fi-nota');
+  const tx = el ? el.value.trim() : '';
+  if(!c || !tx){ if(el) el.focus(); return; }
+  const antes = c.act;
+  anotar(c, tx);
+  c.act = hoyISO();
+  aplicar(); pintarHoja();
+  aviso('Anotado en ' + c.id, () => { c.hist.shift(); c.act = antes; aplicar(); });
 }
 
 /* ── pasos: la hoja cambia de contenido sin cerrarse ── */
 let transPaso = null;
 function irPaso(p){
   if(CAP.paso === 'grabadora' && p !== 'grabadora') pararGrabacion(true);
-  const ida = p !== 'texto';
+  const ida = p !== 'texto' && p !== 'ficha';
   CAP.paso = p;
   pintarHoja();
+  $('hoja').scrollTop = 0;
   const cu = $('hoja-cuerpo');
   if(!transPaso) transPaso = Resorte(1, v => {
     cu.style.opacity = Math.min(1, v);
@@ -2142,24 +2514,32 @@ function irPaso(p){
   transPaso.fijar(0);
   transPaso.a(1, {respuesta:.3});
 }
+function pasoDeOrigen(){ return CAP.modo === 'ficha' ? 'ficha' : 'texto'; }
 
 function accionCaptura(k){
-  if(k === 'evento' || k === 'boceto' || k === 'grabadora'){
+  if(k === 'evento'){
+    const r = CAP.modo === 'ficha' ? {texto:'', venc:''} : leerCaptura();
+    CAP.evTexto = r.texto; CAP.evDia = r.venc; CAP.evIni = r.ini;
+    irPaso('evento'); return;
+  }
+  if(k === 'boceto' || k === 'grabadora'){
     if(k === 'grabadora') pararGrabacion(true);
-    irPaso(k);
-    return;
+    irPaso(k); return;
   }
   if(!ref){ aviso(SIN_NUBE); return; }
   $('in-' + k).click();
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   ADJUNTOS — igual que v4: cada adjunto es un documento propio en la
-   subcolección adjuntos/, porque un documento de Firestore no pasa de
-   1 MB. En la tarea solo queda su identificador y cuatro datos.
+   ADJUNTOS — cada uno es un documento propio en la subcolección
+   adjuntos/, porque un documento de Firestore no pasa de 1 MB. En la
+   tarea o el caso solo queda su identificador y cuatro datos. Se ven
+   en la hoja: fotos en cuadrícula, audio con reproductor, archivos
+   para descargar.
    ══════════════════════════════════════════════════════════════════ */
 const LIMITE_ADJ = 700 * 1024;
 const pesoTxt = b => b >= 1048576 ? (b/1048576).toFixed(1).replace('.', ',') + ' MB' : Math.round(b/1024) + ' KB';
+const adjCache = {}, adjPidiendo = {};
 
 function leerDataURL(file){
   return new Promise((res, rej) => {
@@ -2197,33 +2577,101 @@ function comprimir(file, escaneo){
 }
 async function guardarAdjunto(a){
   if(!ref){ aviso(SIN_NUBE); return null; }
-  if(a.img.length > 980000){ aviso('Ese adjunto pesa demasiado. Súbelo a Drive y guarda el enlace.'); return null; }
+  if(a.img.length > 980000){ aviso('Ese adjunto pesa demasiado. Súbelo a Drive y guarda el enlace en las notas.'); return null; }
   const aid = uid();
   try{
     await ref.collection('adjuntos').doc(aid).set({
       img:a.img, tipo:a.tipo, nombre:a.nombre||'', mime:a.mime||'', creado:new Date().toISOString()
     });
   }catch(e){ aviso('No se pudo subir el adjunto: ' + e.message); return null; }
+  adjCache[aid] = a.img;
   return {aid, tipo:a.tipo, nombre:a.nombre||'', mime:a.mime||'', peso:a.peso||a.img.length};
 }
 
-/* De quién cuelga el adjunto: la tarea que se edita; si no, la que se
-   está escribiendo, que nace en ese momento; y si no hay nada escrito,
-   una tarea con el nombre del adjunto. La hoja queda abierta sobre
-   esa tarea para seguir. */
+/* De quién es lo que se ve en la hoja ahora. */
+function duenoVisible(){
+  if(!CAP) return null;
+  if(CAP.modo === 'ficha') return casoPorId(CAP.caso);
+  if(CAP.tid) return tareaPorId(CAP.tid);
+  return null;
+}
+/* De quién cuelga un adjunto nuevo: el caso de la ficha, la tarea que
+   se edita, o la que se está escribiendo, que nace en ese momento. Si
+   no hay nada escrito, nace una tarea con el nombre del adjunto. */
 function duenoAdjunto(nombre){
-  if(CAP && CAP.tid){ const t = tareaPorId(CAP.tid); if(t) return {obj:t, nuevo:false}; }
+  const visto = duenoVisible();
+  if(visto) return {obj:visto, nuevo:false};
   const r = CAP ? leerCaptura() : null;
   const t = nuevaTarea(r && r.texto ? r : {texto:nombre});
   S.tareas.push(t);
-  if(CAP) Object.assign(CAP, {tid:t.tid, tipo:'tarea', texto:t.text, cat:t.cat, venc:t.venc, ini:t.ini, dur:t.dur,
-                              rep:t.rep, caso:t.caso, notas:'', tocado:{cat:1, venc:1, ini:1, caso:1}, detalles:true});
+  if(CAP) Object.assign(CAP, {modo:'editar', tid:t.tid, tipo:'tarea', texto:t.text, cat:t.cat, venc:t.venc, ini:t.ini,
+                              rep:t.rep, caso:t.caso, notas:'', tocado:{cat:1, venc:1, ini:1, caso:1, rep:1}});
   return {obj:t, nuevo:true};
 }
 function trasAdjuntar(n, que, nuevo){
   aplicar();
-  if(CAP){ CAP.paso = 'texto'; pintarHoja(); }
+  if(CAP){ CAP.paso = pasoDeOrigen(); pintarHoja(); }
   aviso((n === 1 ? que : n + ' adjuntos guardados') + (nuevo ? ' en una tarea nueva' : ''));
+}
+
+function htmlAdjuntos(obj){
+  const l = (obj && obj.adj) || [];
+  if(!l.length) return '';
+  const imgs = l.filter(a => !a.tipo || a.tipo === 'img'), otros = l.filter(a => a.tipo && a.tipo !== 'img');
+  const quitar = a => '<button type="button" class="adj-x" data-quitar-adj="' + esc(a.aid) + '" aria-label="Quitar adjunto">' + icono('x', 14, 2.6) + '</button>';
+  return '<div class="rotulo" style="margin-top:1.3rem">Adjuntos · ' + l.length + '</div>' +
+    (imgs.length ? '<div class="adj-fotos">' + imgs.map(a => {
+      const src = adjCache[a.aid];
+      return '<div class="adj-foto">' +
+        '<button type="button" class="adj-ver" data-ver-adj="' + esc(a.aid) + '" aria-label="Ver ' + esc(a.nombre || 'imagen') + '">' +
+          (src ? '<img src="' + src + '" alt="">' : '<span class="cargando"></span>') + '</button>' + quitar(a) + '</div>';
+    }).join('') + '</div>' : '') +
+    otros.map(a => {
+      const src = adjCache[a.aid], audio = a.tipo === 'audio';
+      return '<div class="adj-otro">' +
+        '<span class="adj-ico">' + icono(audio ? 'grabadora' : 'archivo', 18, 2) + '</span>' +
+        '<span class="aj-tx"><span style="display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' +
+          esc(a.nombre || (audio ? 'Nota de voz' : 'Archivo')) + '</span>' +
+          '<span class="menor">' + (a.peso ? pesoTxt(a.peso) : '') + (src ? '' : ' · cargando…') + '</span>' +
+          (audio && src ? '<audio controls preload="none" src="' + src + '"></audio>' : '') +
+        '</span>' +
+        (!audio && src ? '<a class="mini" href="' + src + '" download="' + esc(a.nombre || 'archivo') + '">Descargar</a>' : '') +
+        quitar(a) +
+      '</div>';
+    }).join('');
+}
+function cargarAdjuntosDe(obj){
+  if(!ref || !obj || !obj.adj) return;
+  obj.adj.forEach(a => { if(!adjCache[a.aid]) traerAdjunto(a.aid); });
+}
+async function traerAdjunto(aid){
+  if(adjPidiendo[aid]) return;
+  adjPidiendo[aid] = true;
+  try{
+    const snap = await ref.collection('adjuntos').doc(aid).get();
+    const d = snap.data();
+    if(d && d.img){ adjCache[aid] = d.img; refrescarAdjuntos(); }
+  }catch(e){}
+  adjPidiendo[aid] = false;
+}
+function refrescarAdjuntos(){
+  const el = $('cap-adjuntos'), d = duenoVisible();
+  if(el && d) el.innerHTML = htmlAdjuntos(d);
+}
+function quitarAdjunto(aid){
+  const d = duenoVisible(); if(!d) return;
+  const i = d.adj.findIndex(a => a.aid === aid); if(i < 0) return;
+  const a = d.adj.splice(i, 1)[0];
+  aplicar(); refrescarAdjuntos();
+  let deshecho = false;
+  aviso('Adjunto quitado', () => { deshecho = true; d.adj.splice(Math.min(i, d.adj.length), 0, a); aplicar(); refrescarAdjuntos(); });
+  /* El documento se borra cuando ya no se puede deshacer. */
+  setTimeout(() => { if(!deshecho && ref) ref.collection('adjuntos').doc(aid).delete().catch(() => {}); }, 7000);
+}
+function verAdjunto(aid){
+  const src = adjCache[aid]; if(!src) return;
+  $('lupa-img').src = src;
+  $('lupa').hidden = false;
 }
 
 async function recibirArchivos(input, modo){
@@ -2239,7 +2687,7 @@ async function recibirArchivos(input, modo){
       if(/^image\//.test(f.type)){
         g = await guardarAdjunto({tipo:'img', img:await comprimir(f, modo === 'escanear'), nombre:f.name || 'foto.jpg'});
       }else if(f.size > LIMITE_ADJ){
-        aviso('«' + f.name + '» pesa ' + pesoTxt(f.size) + ' y el máximo es ' + pesoTxt(LIMITE_ADJ) + '. Súbelo a Drive y guarda el enlace.');
+        aviso('«' + f.name + '» pesa ' + pesoTxt(f.size) + ' y el máximo es ' + pesoTxt(LIMITE_ADJ) + '. Súbelo a Drive y guarda el enlace en las notas.');
       }else{
         g = await guardarAdjunto({tipo:'file', img:await leerDataURL(f), nombre:f.name, mime:f.type || 'application/octet-stream', peso:f.size});
       }
@@ -2395,74 +2843,117 @@ async function guardarGrabacion(){
   trasAdjuntar(1, 'Grabación guardada', nuevo);
 }
 
-/* ── evento ── */
+/* ── evento: crear desde la captura o el calendario, o cambiar uno ── */
 function htmlEvento(){
-  const r = leerCaptura();
+  const ev = CAP.eid ? S.agenda.find(e => e.eid === CAP.eid) : null;
   const ahora = new Date().getHours() * 60 + new Date().getMinutes();
-  const ini = r.ini || comoHora(Math.min(23 * 60, Math.ceil((ahora + 1) / 30) * 30));
-  const fin = comoHora(Math.min(23 * 60 + 59, minutosDe(ini) + 60));
-  return cabPaso('Evento', 'data-ev-guardar') +
+  const t = ev ? ev.t : (CAP.evTexto || '');
+  const d = ev ? ev.d : (CAP.evDia || CAP.d || hoyISO());
+  const ini = ev ? ev.hora : (CAP.evIni || comoHora(Math.min(23 * 60, Math.ceil((ahora + 1) / 30) * 30)));
+  const fin = ev ? ev.fin : comoHora(Math.min(23 * 60 + 59, (minutosDe(ini) || 0) + 60));
+  return cabPaso(ev ? 'Evento' : 'Nuevo evento', 'data-ev-guardar') +
     '<div class="detalles" style="margin-top:.4rem">' +
-      campo('Título', '<input type="text" id="ev-t" enterkeyhint="done" value="' + esc(r.texto) + '" placeholder="Reunión con Raimundo">') +
-      campo('Día', '<input type="date" id="ev-d" value="' + esc(r.venc || hoyISO()) + '">') +
+      campo('Título', '<input type="text" id="ev-t" enterkeyhint="done" value="' + esc(t) + '" placeholder="Reunión con Raimundo">') +
+      campo('Día', '<input type="date" id="ev-d" value="' + esc(d) + '">') +
       '<div class="dos">' +
-        campo('Desde', '<input type="time" id="ev-h" value="' + ini + '">') +
-        campo('Hasta', '<input type="time" id="ev-f" value="' + fin + '">') +
+        campo('Desde', '<input type="time" id="ev-h" value="' + esc(ini || '') + '">') +
+        campo('Hasta', '<input type="time" id="ev-f" value="' + esc(fin || '') + '">') +
       '</div>' +
     '</div>' +
-    '<p class="menor" style="margin-top:.9rem">Queda en tu agenda y aparece en la columna de Hoy.</p>';
+    (ev ? '<div class="pie-edit"><button type="button" class="btn-sec" data-ev-eliminar>Eliminar evento</button></div>'
+        : '<p class="menor" style="margin-top:.9rem">Queda en tu calendario y en la columna de Hoy.</p>');
 }
 function guardarEvento(){
   const t = $('ev-t').value.trim(), d = $('ev-d').value || hoyISO(), hora = $('ev-h').value, fin = $('ev-f').value;
   if(!t){ $('ev-t').focus(); aviso('El evento necesita un título'); return; }
   if(hora && fin && minutosDe(fin) <= minutosDe(hora)){ aviso('La hora de término va después del inicio'); return; }
-  const ev = {eid:uid(), t, d, hora, fin, color:'info'};
-  S.agenda.push(ev);
+  const ev = CAP.eid ? S.agenda.find(e => e.eid === CAP.eid) : null;
+  if(ev){
+    Object.assign(ev, {t, d, hora, fin});
+    hoja.cerrar(); aplicar(); aviso('Evento guardado');
+    return;
+  }
+  const nuevo = {eid:uid(), t, d, hora, fin, color:'info'};
+  S.agenda.push(nuevo);
+  calDia = d; calMes = d.slice(0, 7);
   hoja.cerrar(); aplicar();
-  aviso('Evento · ' + fechaCorta(d) + (hora ? ' ' + hora : ''), () => { S.agenda = S.agenda.filter(x => x !== ev); aplicar(); });
+  aviso('Evento · ' + fechaCorta(d) + (hora ? ' ' + hora : ''), () => { S.agenda = S.agenda.filter(x => x !== nuevo); aplicar(); });
+}
+function eliminarEvento(){
+  const i = S.agenda.findIndex(e => e.eid === CAP.eid); if(i < 0) return;
+  const ev = S.agenda.splice(i, 1)[0];
+  hoja.cerrar(); aplicar();
+  aviso('Evento eliminado', () => { S.agenda.splice(i, 0, ev); aplicar(); });
 }
 
 /* ── oyentes de la hoja ── */
 function clicEnHoja(e){
   const q = s => e.target.closest(s);
   let b;
-  if((b = q('[data-cap-guardar]'))){ guardarCaptura(); return true; }
+  if((b = q('[data-cap-guardar]'))){ guardarCaptura(); return; }
   if((b = q('[data-cap-tipo]'))){
+    if(CAP.tipo === b.dataset.capTipo) return;
     CAP.tipo = b.dataset.capTipo;
-    /* Sin repintar el campo: repintarlo bajaría el teclado. */
-    document.querySelectorAll('[data-cap-tipo]').forEach(x => x.setAttribute('aria-pressed', x.dataset.capTipo === CAP.tipo));
-    $('cap-acciones').hidden = CAP.tipo === 'caso';
-    ponerPlaceholder();
-    pintarLectura();
-    hoja.medirGesto();
-    return true;
+    if(CAP.tipo === 'caso' && !CAP.det && CAP.texto) CAP.det = CAP.texto;
+    pintarHoja();
+    const f = $(CAP.tipo === 'caso' ? 'cap-num' : 'cap-tx'); if(f) f.focus({preventScroll:true});
+    return;
   }
-  if((b = q('[data-cap-soltar]'))){ CAP.soltar = true; CAP.caso = ''; CAP.tocado.caso = 1; pintarLectura(); return true; }
-  if((b = q('[data-cap-colgar]'))){ CAP.soltar = false; CAP.caso = b.dataset.capColgar; CAP.tocado.caso = 1; pintarLectura(); return true; }
-  if((b = q('[data-cap-detalles]'))){ CAP.detalles = true; pintarLectura(); hoja.medirGesto(); return true; }
-  if((b = q('[data-cap-cat]'))){ CAP.cat = b.dataset.capCat; CAP.tocado.cat = 1; pintarLectura(); return true; }
-  if((b = q('[data-cap-venc]'))){ CAP.venc = b.dataset.capVenc; CAP.tocado.venc = 1; pintarLectura(); return true; }
-  if((b = q('[data-cap-dur]'))){ const m = +b.dataset.capDur; CAP.dur = CAP.dur === m ? 0 : m; pintarLectura(); return true; }
-  if((b = q('[data-cap-accion]'))){ accionCaptura(b.dataset.capAccion); return true; }
-  if((b = q('[data-cap-paso]'))){ irPaso(b.dataset.capPaso); return true; }
-  if((b = q('[data-cap-eliminar]'))){ const tid = CAP.tid; hoja.cerrar(); eliminarTarea(tid); return true; }
-  if((b = q('[data-cap-hecha]'))){ const tid = CAP.tid; hoja.cerrar(); cerrarTarea(tid); return true; }
-  if((b = q('[data-ev-guardar]'))){ guardarEvento(); return true; }
-  if((b = q('[data-bo-guardar]'))){ guardarBoceto(); return true; }
-  if((b = q('[data-bo-limpiar]'))){ limpiarBoceto(); return true; }
+  if((b = q('[data-cap-a-caso]'))){
+    const n = b.dataset.capACaso;
+    CAP.tipo = 'caso'; CAP.num = n;
+    CAP.det = CAP.texto.replace(n, '').replace(/^[\s,.;:–-]+/, '').replace(/\s+/g, ' ').trim();
+    pintarHoja();
+    const f = $('cap-det'); if(f) f.focus({preventScroll:true});
+    return;
+  }
+  if((b = q('[data-cap-soltar]'))){ CAP.soltar = true; CAP.caso = ''; CAP.tocado.caso = 1; pintarLectura(); return; }
+  if((b = q('[data-cap-colgar]'))){ CAP.soltar = false; CAP.caso = b.dataset.capColgar; CAP.tocado.caso = 1; pintarLectura(); return; }
+  if((b = q('[data-cap-cat]'))){ CAP.cat = b.dataset.capCat; CAP.tocado.cat = 1; pintarLectura(); return; }
+  if((b = q('[data-cap-venc]'))){ CAP.venc = b.dataset.capVenc; CAP.tocado.venc = 1; pintarLectura(); return; }
+  if((b = q('[data-cap-ini]'))){ CAP.ini = ''; CAP.tocado.ini = 1; pintarLectura(); return; }
+  if((b = q('[data-cap-rep]'))){
+    CAP.rep = b.dataset.capRep; CAP.tocado.rep = 1;
+    if(CAP.rep && !leerCaptura().venc){ CAP.venc = hoyISO(); CAP.tocado.venc = 1; }
+    pintarLectura(); return;
+  }
+  if((b = q('[data-cap-accion]'))){ accionCaptura(b.dataset.capAccion); return; }
+  if((b = q('[data-cap-volver]'))){
+    if(CAP.modo === 'evento') hoja.cerrar();
+    else irPaso(pasoDeOrigen());
+    return;
+  }
+  if((b = q('[data-cap-a-ficha]'))){ abrirFicha(CAP.volver); return; }
+  if((b = q('[data-cap-eliminar]'))){ const tid = CAP.tid; terminarHoja(); eliminarTarea(tid); return; }
+  if((b = q('[data-cap-hecha]'))){ const tid = CAP.tid; terminarHoja(); cerrarTarea(tid); return; }
+  if((b = q('[data-ev-guardar]'))){ guardarEvento(); return; }
+  if((b = q('[data-ev-eliminar]'))){ eliminarEvento(); return; }
+  if((b = q('[data-bo-guardar]'))){ guardarBoceto(); return; }
+  if((b = q('[data-bo-limpiar]'))){ limpiarBoceto(); return; }
   if((b = q('[data-bo-color]'))){
     bo.color = b.dataset.boColor;
     document.querySelectorAll('[data-bo-color]').forEach(x => x.setAttribute('aria-pressed', x === b));
-    return true;
+    return;
   }
   if((b = q('[data-bo-grosor]'))){
     bo.grosor = +b.dataset.boGrosor;
     document.querySelectorAll('[data-bo-grosor]').forEach(x => x.setAttribute('aria-pressed', x === b));
-    return true;
+    return;
   }
-  if((b = q('[data-grab-alternar]'))){ grabAlternar(); return true; }
-  if((b = q('[data-grab-guardar]'))){ guardarGrabacion(); return true; }
-  return false;
+  if((b = q('[data-grab-alternar]'))){ grabAlternar(); return; }
+  if((b = q('[data-grab-guardar]'))){ guardarGrabacion(); return; }
+  if((b = q('[data-ver-adj]'))){ verAdjunto(b.dataset.verAdj); return; }
+  if((b = q('[data-quitar-adj]'))){ quitarAdjunto(b.dataset.quitarAdj); return; }
+  /* ficha */
+  if((b = q('[data-ficha-listo]'))){ hoja.cerrar(); return; }
+  if((b = q('[data-fi-estado]'))){
+    const c = casoPorId(CAP.caso);
+    if(c && c.estado !== b.dataset.fiEstado) esperaCaso(c.id);
+    return;
+  }
+  if((b = q('[data-fi-cerrar]'))){ const id = CAP.caso; hoja.cerrar(); terminarCaso(id); return; }
+  if((b = q('[data-fi-anotar]'))){ anotarEnFicha(); return; }
+  if((b = q('[data-fi-tarea]'))){ abrirCaptura({caso:CAP.caso, volver:CAP.caso}); return; }
 }
 
 function prepararCaptura(){
@@ -2477,12 +2968,20 @@ function prepararCaptura(){
      teclado baja a mitad de frase. Mientras se escribe, los botones de
      la hoja no se lo quitan al campo. */
   h.addEventListener('mousedown', e => {
-    if(document.activeElement && document.activeElement.id === 'cap-tx' && e.target.closest('button')) e.preventDefault();
+    const a = document.activeElement;
+    if(a && ['cap-tx','cap-num','cap-det'].includes(a.id) && e.target.closest('button')) e.preventDefault();
   });
   h.addEventListener('input', e => {
     if(!CAP) return;
-    if(e.target.id === 'cap-tx'){ CAP.texto = e.target.value; ajustarAlto(e.target); pintarLectura(); }
-    else if(e.target.id === 'cap-notas') CAP.notas = e.target.value;
+    const id = e.target.id;
+    if(id === 'cap-tx'){ CAP.texto = e.target.value; ajustarAlto(e.target); pintarLectura(); }
+    else if(id === 'cap-notas') CAP.notas = e.target.value;
+    else if(id === 'cap-num'){ CAP.num = e.target.value; pintarLectura(); }
+    else if(id === 'cap-det') CAP.det = e.target.value;
+    else if(id === 'fi-det'){
+      const c = casoPorId(CAP.caso);
+      if(c){ c.desc = e.target.value; guardar(); }
+    }
   });
   h.addEventListener('change', e => {
     if(!CAP) return;
@@ -2494,24 +2993,281 @@ function prepararCaptura(){
       pintarLectura();
     }
     else if(id === 'cap-caso'){ CAP.caso = e.target.value; CAP.tocado.caso = 1; CAP.soltar = !e.target.value; pintarLectura(); }
+    else if(id === 'fi-num'){ if(!renombrarCaso(CAP.caso, e.target.value)) e.target.value = CAP.caso; }
+    else if(id === 'fi-det'){ pintar(); }
   });
   h.addEventListener('keydown', e => {
     if(!CAP) return;
     const enter = e.key === 'Enter' && !e.isComposing;
+    if(!enter) return;
+    const id = e.target.id;
     /* Intro guarda; Mayús+Intro, salto de línea. Cmd+Intro guarda
        desde cualquier campo. */
-    if(enter && (e.metaKey || e.ctrlKey)){
+    if(e.metaKey || e.ctrlKey){
       e.preventDefault();
       if(CAP.paso === 'evento') guardarEvento();
       else if(CAP.paso === 'texto') guardarCaptura();
       return;
     }
-    if(enter && !e.shiftKey && e.target.id === 'cap-tx'){ e.preventDefault(); guardarCaptura(); }
-    if(enter && e.target.id === 'ev-t'){ e.preventDefault(); guardarEvento(); }
+    if(id === 'cap-tx' && !e.shiftKey){ e.preventDefault(); guardarCaptura(); }
+    else if(id === 'cap-num'){ e.preventDefault(); $('cap-det').focus(); }
+    else if(id === 'ev-t'){ e.preventDefault(); guardarEvento(); }
+    else if(id === 'fi-nota'){ e.preventDefault(); anotarEnFicha(); }
   });
   $('in-camara').addEventListener('change', e => recibirArchivos(e.target, 'camara'));
   $('in-escanear').addEventListener('change', e => recibirArchivos(e.target, 'escanear'));
   $('in-archivo').addEventListener('change', e => recibirArchivos(e.target, 'archivo'));
+  $('lupa').addEventListener('click', () => { $('lupa').hidden = true; });
+  document.addEventListener('keydown', e => {
+    if(e.key === 'Escape' && !$('lupa').hidden){ $('lupa').hidden = true; e.stopPropagation(); }
+  }, true);
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   CALENDARIOS EXTERNOS — el enlace ICS publicado de Outlook, Google o
+   iCloud. Solo lectura: se muestran en azul junto a los tuyos.
+
+   Un calendario publicado no permite leerse desde otra página (CORS),
+   así que se prueba directo y, si no, por intermediarios públicos. La
+   ruta que funcionó se recuerda para partir por ahí la próxima vez.
+   ══════════════════════════════════════════════════════════════════ */
+const ICS = {};
+function cargarCacheICS(){ try{ Object.assign(ICS, JSON.parse(localStorage.getItem('dtm5-ics') || '{}')); }catch(e){} }
+function guardarCacheICS(){ try{ localStorage.setItem('dtm5-ics', JSON.stringify(ICS)); }catch(e){} }
+
+function viasDe(url){
+  const e = encodeURIComponent(url);
+  return [
+    {n:'directo',    u:url},
+    {n:'corsproxy',  u:'https://corsproxy.io/?url=' + e},
+    {n:'cors.lol',   u:'https://api.cors.lol/?url=' + e},
+    {n:'allorigins', u:'https://api.allorigins.win/raw?url=' + e},
+    {n:'codetabs',   u:'https://api.codetabs.com/v1/proxy?quest=' + e}
+  ];
+}
+async function traerConLimite(u, ms){
+  const ctl = new AbortController();
+  const t = setTimeout(() => ctl.abort(), ms);
+  try{ return await fetch(u, {signal:ctl.signal}); }
+  finally{ clearTimeout(t); }
+}
+async function traerICS(url){
+  const vias = viasDe(url), pref = (ICS[url] || {}).via;
+  if(pref){ const i = vias.findIndex(v => v.n === pref); if(i > 0) vias.unshift(vias.splice(i, 1)[0]); }
+  let ultimo = 'ninguna ruta respondió';
+  for(const v of vias){
+    try{
+      const r = await traerConLimite(v.u, 15000);
+      if(!r.ok){ ultimo = 'HTTP ' + r.status; continue; }
+      const txt = await r.text();
+      if(!/BEGIN:VCALENDAR/.test(txt)){ ultimo = 'la respuesta no es un calendario'; continue; }
+      return {txt, via:v.n};
+    }catch(e){ ultimo = e.name === 'AbortError' ? 'tardó demasiado' : (e.message || 'falló'); }
+  }
+  throw new Error(ultimo);
+}
+
+/* ── lectura del formato ICS ── */
+function desescapar(v){ return v.replace(/\\n/gi, ' ').replace(/\\([,;\\])/g, '$1').trim(); }
+/* Hora de una zona con nombre (America/Santiago) a hora local. Outlook
+   usa nombres de Windows que el navegador no conoce; ahí se toma la
+   hora tal cual, que para un calendario de Chile es lo correcto. */
+function desdeZona(y, mo, d, h, mi, tz){
+  const guess = Date.UTC(y, mo, d, h, mi);
+  try{
+    const f = new Intl.DateTimeFormat('en-US', {timeZone:tz, hourCycle:'h23', year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit'});
+    const p = {};
+    f.formatToParts(new Date(guess)).forEach(x => { p[x.type] = x.value; });
+    const comoZona = Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour, +p.minute);
+    return new Date(guess - (comoZona - guess));
+  }catch(e){ return new Date(y, mo, d, h, mi); }
+}
+function fechaICS(v, p){
+  const m = /^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})?(Z)?)?/.exec(v || '');
+  if(!m) return null;
+  if(!m[4]) return {d:m[1] + '-' + m[2] + '-' + m[3], hora:'', ms:Date.UTC(+m[1], m[2]-1, +m[3])};
+  let d;
+  if(m[7]) d = new Date(Date.UTC(+m[1], m[2]-1, +m[3], +m[4], +m[5]));
+  else if(p && p.TZID) d = desdeZona(+m[1], m[2]-1, +m[3], +m[4], +m[5], p.TZID.replace(/^"|"$/g, ''));
+  else d = new Date(+m[1], m[2]-1, +m[3], +m[4], +m[5]);
+  return {d:hoyISO(d), hora:hhmm(d), ms:d.getTime()};
+}
+const DIA_ICS = {SU:0, MO:1, TU:2, WE:3, TH:4, FR:5, SA:6};
+
+function repeticiones(ev, desde, hasta){
+  const r = {};
+  ev.rrule.split(';').forEach(x => { const [k, v] = x.split('='); r[k] = v; });
+  const inter = +r.INTERVAL || 1, cuenta = r.COUNT ? +r.COUNT : Infinity;
+  const fin = r.UNTIL ? (fechaICS(r.UNTIL, {}) || {}).d || hasta : hasta;
+  const tope = fin < hasta ? fin : hasta;
+  const base = ev.ini.d, out = [];
+  let n = 0, guarda = 0;
+  if(r.FREQ === 'WEEKLY'){
+    const dias = (r.BYDAY ? r.BYDAY.split(',').map(x => DIA_ICS[x.slice(-2)]) : [new Date(base + 'T00:00:00').getDay()])
+      .filter(x => x != null).sort((a, b) => ((a + 6) % 7) - ((b + 6) % 7));
+    let semana = sumarDias(base, -((new Date(base + 'T00:00:00').getDay() + 6) % 7));
+    while(semana <= tope && n < cuenta && guarda++ < 800){
+      for(const wd of dias){
+        const d = sumarDias(semana, (wd + 6) % 7);
+        if(d < base || d > tope) continue;
+        if(++n > cuenta) break;
+        if(d >= desde) out.push(d);
+      }
+      semana = sumarDias(semana, 7 * inter);
+    }
+  }else{
+    let d = base;
+    while(d <= tope && n < cuenta && guarda++ < 2000){
+      n++;
+      if(d >= desde) out.push(d);
+      const x = new Date(d + 'T00:00:00');
+      if(r.FREQ === 'DAILY') x.setDate(x.getDate() + inter);
+      else if(r.FREQ === 'MONTHLY') x.setMonth(x.getMonth() + inter);
+      else if(r.FREQ === 'YEARLY') x.setFullYear(x.getFullYear() + inter);
+      else break;
+      d = hoyISO(x);
+    }
+  }
+  return out;
+}
+
+function parseICS(txt){
+  const lineas = txt.replace(/\r?\n[ \t]/g, '').split(/\r?\n/);
+  const crudos = [];
+  let ev = null;
+  for(const l of lineas){
+    if(l === 'BEGIN:VEVENT'){ ev = {ex:[]}; continue; }
+    if(l === 'END:VEVENT'){ if(ev) crudos.push(ev); ev = null; continue; }
+    if(!ev) continue;
+    const i = l.indexOf(':'); if(i < 0) continue;
+    const [nombre, ...params] = l.slice(0, i).split(';');
+    const val = l.slice(i + 1), p = {};
+    params.forEach(x => { const j = x.indexOf('='); if(j > 0) p[x.slice(0, j)] = x.slice(j + 1); });
+    if(nombre === 'SUMMARY') ev.t = desescapar(val);
+    else if(nombre === 'DTSTART') ev.ini = fechaICS(val, p);
+    else if(nombre === 'DTEND') ev.fin = fechaICS(val, p);
+    else if(nombre === 'RRULE') ev.rrule = val;
+    else if(nombre === 'EXDATE') val.split(',').forEach(v => { const f = fechaICS(v, p); if(f) ev.ex.push(f.d); });
+    else if(nombre === 'RECURRENCE-ID') ev.recId = fechaICS(val, p);
+    else if(nombre === 'STATUS') ev.estado = val;
+    else if(nombre === 'UID') ev.uid = val;
+  }
+  const desde = sumarDias(hoyISO(), -40), hasta = sumarDias(hoyISO(), 150);
+  const cambiados = new Set(crudos.filter(e => e.recId).map(e => e.uid + '|' + e.recId.d));
+  const out = [];
+  for(const e of crudos){
+    if(!e.ini || e.estado === 'CANCELLED') continue;
+    const hora = e.ini.hora, fin = e.fin && e.fin.hora ? e.fin.hora : '';
+    const t = e.t || '(sin título)';
+    if(e.rrule && !e.recId){
+      for(const d of repeticiones(e, desde, hasta)){
+        if(e.ex.includes(d) || cambiados.has(e.uid + '|' + d)) continue;
+        out.push({d, hora, fin, t});
+      }
+    }else if(e.ini.d >= desde && e.ini.d <= hasta){
+      out.push({d:e.ini.d, hora, fin, t});
+    }
+  }
+  return out;
+}
+
+async function actualizarICS(url){
+  const antes = ICS[url] || {evs:[]};
+  ICS[url] = Object.assign({}, antes, {estado: antes.evs && antes.evs.length ? antes.estado || 'ok' : 'cargando'});
+  try{
+    const r = await traerICS(url);
+    const evs = parseICS(r.txt);
+    ICS[url] = {evs, estado:'ok', n:evs.length, via:r.via, t:Date.now()};
+  }catch(e){
+    ICS[url] = Object.assign({}, antes, {estado:'error', error:e.message});
+  }
+  guardarCacheICS();
+  pintar();
+}
+function actualizarTodosICS(){ S.ajustes.ics.forEach(c => actualizarICS(c.url)); }
+function externosDe(iso){
+  const out = [];
+  for(const c of S.ajustes.ics){
+    for(const e of ((ICS[c.url] || {}).evs || [])) if(e.d === iso) out.push(Object.assign({src:c.nombre}, e));
+  }
+  return out;
+}
+function agregarICS(){
+  let url = $('ics-url').value.trim();
+  const nombre = $('ics-nombre').value.trim();
+  if(!url){ $('ics-url').focus(); return; }
+  url = url.replace(/^webcals?:\/\//i, 'https://');
+  if(!/^https?:\/\//i.test(url)){ aviso('El enlace tiene que empezar con https://'); return; }
+  if(S.ajustes.ics.some(c => c.url === url)){ aviso('Ese calendario ya está'); return; }
+  S.ajustes.ics.push({url, nombre: nombre || (/outlook|office/i.test(url) ? 'Outlook' : /google/i.test(url) ? 'Google' : /icloud/i.test(url) ? 'iCloud' : 'Calendario')});
+  aplicar();
+  actualizarICS(url);
+}
+function quitarICS(i){
+  const c = S.ajustes.ics.splice(i, 1)[0]; if(!c) return;
+  aplicar();
+  aviso('Calendario quitado', () => { S.ajustes.ics.splice(i, 0, c); aplicar(); });
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   AVISOS — con la app abierta o en segundo plano: 10 minutos antes de
+   cada evento, a la hora de cada tarea que tiene hora, y un resumen
+   en la mañana. Cada aviso sale una sola vez.
+   ══════════════════════════════════════════════════════════════════ */
+let registroSW = null;
+
+function avisosActivos(){
+  try{ return typeof Notification !== 'undefined' && Notification.permission === 'granted' && localStorage.getItem('dtm5-avisos') === '1'; }
+  catch(e){ return false; }
+}
+async function registrarSW(){
+  if(!('serviceWorker' in navigator)) return null;
+  try{ registroSW = await navigator.serviceWorker.register('sw.js'); }catch(e){ registroSW = null; }
+  return registroSW;
+}
+async function activarAvisos(){
+  if(typeof Notification === 'undefined'){ aviso('Este navegador no permite avisos'); return; }
+  const p = await Notification.requestPermission();
+  if(p !== 'granted'){ aviso('Sin permiso, no puedo avisarte'); pintar(); return; }
+  try{ localStorage.setItem('dtm5-avisos', '1'); }catch(e){}
+  await registrarSW();
+  notificar('Avisos activados', 'Te aviso antes de tus eventos y a la hora de tus tareas.', 'prueba');
+  pintar();
+  revisarAvisos();
+}
+function apagarAvisos(){ try{ localStorage.removeItem('dtm5-avisos'); }catch(e){} pintar(); }
+function notificar(titulo, cuerpo, tag){
+  const op = {body:cuerpo, tag, icon:'icon-180.png', badge:'icon-180.png'};
+  if(registroSW && registroSW.showNotification){ registroSW.showNotification(titulo, op).catch(() => {}); return; }
+  try{ new Notification(titulo, op); }catch(e){}
+}
+function revisarAvisos(){
+  if(!avisosActivos()) return;
+  const hoy = hoyISO(), ahora = new Date().getHours() * 60 + new Date().getMinutes();
+  let hechos = {};
+  try{ hechos = JSON.parse(localStorage.getItem('dtm5-avisado') || '{}'); }catch(e){}
+  for(const k of Object.keys(hechos)) if(hechos[k] !== hoy) delete hechos[k];
+  const lanzar = (clave, titulo, cuerpo) => {
+    if(hechos[clave]) return;
+    hechos[clave] = hoy;
+    notificar(titulo, cuerpo, clave);
+  };
+  for(const e of eventosDeHoy()){
+    const m = minutosDe(e.hora);
+    if(m != null && ahora >= m - 10 && ahora < m) lanzar('ev|' + e.hora + '|' + e.t, e.t, 'A las ' + e.hora + (e.src ? ' · ' + e.src : ''));
+  }
+  for(const t of tareasDeHoy()){
+    const m = minutosDe(t.ini);
+    if(m != null && ahora >= m && ahora < m + 30) lanzar('ta|' + t.tid, t.text, 'Ahora · ' + t.ini);
+  }
+  if(ahora >= 8 * 60 && ahora < 12 * 60){
+    const urg = S.tareas.filter(t => !t.done && t.cat === 'urgente').length, frios = enfriandose().length;
+    const partes = [];
+    if(urg) partes.push(urg + (urg === 1 ? ' tarea urgente' : ' tareas urgentes'));
+    if(frios) partes.push(frios + (frios === 1 ? ' caso quieto' : ' casos quietos'));
+    if(partes.length) lanzar('resumen', 'Tu día', partes.join(' · '));
+  }
+  try{ localStorage.setItem('dtm5-avisado', JSON.stringify(hechos)); }catch(e){}
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -2600,7 +3356,7 @@ function salir(){
 function cargarDeDoc(d){
   S = {
     tareas:d.tareas||[], tareasCerradas:d.tareasCerradas||[], casos:d.casos||[], cerrados:d.cerrados||[],
-    agenda:d.agenda||[], enlaces:d.enlaces||[], focos:d.focos||[]
+    agenda:d.agenda||[], enlaces:d.enlaces||[], focos:d.focos||[], ajustes:d.ajustes||{ics:[]}
   };
   normalizar();
   try{ localStorage.setItem(CLAVE_LOCAL, JSON.stringify(S)); }catch(e){}
@@ -2616,6 +3372,7 @@ function conectarPanel(u){
       if(!d){ guardar(); return; }          /* panel nuevo: sube lo que haya en este equipo */
       if(d.by === CID) return;               /* eco de mi propia escritura */
       cargarDeDoc(d);
+      S.ajustes.ics.forEach(c => { if(!ICS[c.url]) actualizarICS(c.url); });
       pintar();
     }, err => aviso('Error de la nube: ' + err.message));
   }catch(e){ ref = null; aviso('No se pudo conectar: ' + e.message); }
@@ -2652,11 +3409,19 @@ addEventListener('online', () => { if(ref) guardar(); });
    ══════════════════════════════════════════════════════════════════ */
 function pintar(){
   pintarBarra();
-  if(vista === 'hoy') pintarHoy();
-  else if(vista === 'semana') pintarSemana();
-  else if(vista === 'todo') pintarTodo();
-  else pintarMas();
+  ({hoy:pintarHoy, calendario:pintarCalendario, tareas:pintarTareas, casos:pintarCasos, mas:pintarMas}[vista] || pintarHoy)();
+  document.querySelectorAll('#lienzo [data-desliza]').forEach(deslizable);
   medirCabeza();
+}
+/* Cambios hechos desde la hoja: la ficha abierta refleja lo nuevo,
+   salvo que se esté escribiendo en ella. */
+function aplicar(){
+  pintar();
+  guardar();
+  if(CAP && CAP.paso === 'ficha'){
+    const a = document.activeElement;
+    if(!(a && $('hoja').contains(a) && /INPUT|TEXTAREA/.test(a.tagName))) pintarHoja();
+  }
 }
 /* Girar el teléfono o cambiar el tamaño de letra cambia el alto de la
    cabecera; hay que volver a medir. */
@@ -2669,9 +3434,27 @@ document.addEventListener('click', e => {
   const q = s => e.target.closest(s);
   let b;
   if((b = q('[data-ir]'))){ irA(b.dataset.ir); return; }
-  if((b = q('[data-caso]'))){ irACaso(b.dataset.caso); return; }
   if((b = q('[data-hecha]'))){ marcarHecha(b); return; }
-  if((b = q('[data-editar]'))){ abrirCaptura({tid:b.dataset.editar}); return; }
+  if((b = q('[data-editar]'))){ abrirCaptura({tid:b.dataset.editar, volver: CAP && CAP.paso === 'ficha' ? CAP.caso : null}); return; }
+  if((b = q('[data-ficha]'))){ abrirFicha(b.dataset.ficha); return; }
+  if((b = q('[data-ev]'))){ abrirEvento({eid:b.dataset.ev}); return; }
+  if((b = q('[data-nuevo-ev]'))){ abrirEvento({d:b.dataset.nuevoEv}); return; }
+  if((b = q('[data-cal-dia]'))){ calDia = b.dataset.calDia; calMes = calDia.slice(0, 7); pintar(); return; }
+  if((b = q('[data-cal-mes]'))){
+    const [y, m] = calMes.split('-').map(Number), d = new Date(y, m - 1 + (+b.dataset.calMes), 1);
+    calMes = hoyISO(d).slice(0, 7); pintar(); return;
+  }
+  if((b = q('[data-cal-hoy]'))){ calDia = hoyISO(); calMes = calDia.slice(0, 7); pintar(); return; }
+  if((b = q('[data-ics-agregar]'))){ agregarICS(); return; }
+  if((b = q('[data-ics-quitar]'))){ quitarICS(+b.dataset.icsQuitar); return; }
+  if((b = q('[data-ics-recargar]'))){ const c = S.ajustes.ics[+b.dataset.icsRecargar]; if(c) actualizarICS(c.url); return; }
+  if((b = q('[data-avisos]'))){ if(b.dataset.avisos === 'on') activarAvisos(); else apagarAvisos(); return; }
+  if((b = q('[data-tema]'))){ guardarPref('dtm5-tema', b.dataset.tema); return; }
+  if((b = q('[data-tamano]'))){ guardarPref('dtm5-tamano', b.dataset.tamano); return; }
+  if((b = q('[data-archivo]'))){ verArchivo = verArchivo === b.dataset.archivo ? null : b.dataset.archivo; pintar(); return; }
+  if((b = q('[data-reabrir-caso]'))){ reabrirCaso(+b.dataset.reabrirCaso); return; }
+  if((b = q('[data-reabrir-tarea]'))){ reabrirTarea(+b.dataset.reabrirTarea); return; }
+  if((b = q('[data-ver-cerrados]'))){ verArchivo = 'casos'; irA('mas'); return; }
   if((b = q('[data-avance]'))){ avanceCaso(b.dataset.avance); return; }
   if((b = q('[data-espera]'))){ esperaCaso(b.dataset.espera); return; }
   if((b = q('[data-colgar]'))){ const [tid, cid] = b.dataset.colgar.split('|'); colgar(tid, cid); return; }
@@ -2696,7 +3479,8 @@ function relojEnMarcha(){
   function tic(){
     const r = $('reloj');
     if(r) r.textContent = hhmm();
-    if(vista === 'hoy') pintarHoy();
+    if(vista === 'hoy' && !(CAP && hoja.abierta)) pintar();
+    revisarAvisos();
     const d = new Date();
     setTimeout(tic, (60 - d.getSeconds())*1000 + 200);
   }
@@ -2707,24 +3491,28 @@ function relojEnMarcha(){
 /* ══════════════════════════════════════════════════════════════════
    ARRANQUE
    ══════════════════════════════════════════════════════════════════ */
+limpiarAntiguo();
+aplicarPrefs();
 cargarLocal();
+cargarCacheICS();
 prepararCaptura();
 pintar();
 relojEnMarcha();
 arrancarNube();
+actualizarTodosICS();
+if(avisosActivos()) registrarSW().then(revisarAvisos);
+/* Los calendarios se releen cada 15 minutos y al volver a la app. */
+setInterval(actualizarTodosICS, 15 * 60 * 1000);
+document.addEventListener('visibilitychange', () => {
+  if(document.hidden) return;
+  actualizarTodosICS();
+  revisarAvisos();
+});
 $('lg-pass').addEventListener('keydown', e => { if(e.key === 'Enter') entrarCorreo(false); });
 
 /* Con el teclado (detail 0) la hoja aparece sin animación. */
 $('btn-capturar').addEventListener('click', e => abrirCaptura({instantaneo: e.detail === 0}));
 
-/* La preferencia de tamaño que ya tenías guardada sigue valiendo. */
-try{
-  const t = localStorage.getItem('dtm4-tamano');
-  const mapa = {compacto:'13.5px', normal:'15px', comodo:'16.5px', grande:'18px', enorme:'20px'};
-  if(t && mapa[t]) document.documentElement.style.setProperty('--base', mapa[t]);
-  const modo = localStorage.getItem('dtm4-modo');
-  if(modo === 'claro' || modo === 'oscuro') document.documentElement.dataset.tema = modo;
-}catch(e){}
 </script>
 </body>
 </html>

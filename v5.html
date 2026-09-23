@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Hoy">
 <meta name="theme-color" content="#0B0F14" media="(prefers-color-scheme: dark)">
@@ -58,6 +58,7 @@
   --r-ta:16px;   /* tarjetas */
   --r-ho:26px;   /* hojas */
 
+  color-scheme:dark light;
   --alto:max(env(safe-area-inset-top), 12px);
   --bajo:max(env(safe-area-inset-bottom), 14px);
 }
@@ -87,7 +88,9 @@
     --azulT:rgba(10,126,164,.09);
   }
 }
+:root[data-tema="oscuro"]{color-scheme:dark}
 :root[data-tema="claro"]{
+  color-scheme:light;
   --fondo:#FBFBFD; --sup:#FFFFFF; --sup2:#FFFFFF; --hueco:#F2F3F6;
   --tinta:#0B0F14; --tinta2:#4A5561; --tinta3:#78838F; --tinta4:#A3ADBA;
   --borde:rgba(11,15,20,.12); --borde2:rgba(11,15,20,.07);
@@ -260,15 +263,24 @@ main{
   display:flex;gap:.7rem;align-items:flex-start;
   padding:.8rem .85rem;border-radius:var(--r-fi);background:var(--sup);
 }
+.tx{flex:1;min-width:0;font-size:.92rem;line-height:1.35;text-align:left}
+/* El círculo se ve de 20 px pero se toca en 44: el botón es grande y
+   el círculo es su ::before. */
 .chk{
-  width:1.25rem;height:1.25rem;border-radius:50%;
-  border:1.8px solid var(--aro);background:none;flex:none;margin-top:.1rem;
+  width:2.75rem;height:2.75rem;margin:-.72rem -.55rem -.72rem -.72rem;
+  display:grid;place-items:center;flex:none;
 }
-.chk[aria-pressed="true"]{background:var(--verde);border-color:var(--verde)}
-.tx{flex:1;min-width:0;font-size:.92rem;line-height:1.35}
+.chk::before{
+  content:"";width:1.3rem;height:1.3rem;border-radius:50%;
+  border:1.8px solid var(--aro);
+  transition:background .15s, border-color .15s, transform .25s cubic-bezier(.3,1.6,.5,1);
+}
+.chk:active::before{transform:scale(.88)}
+.chk[aria-pressed="true"]::before{background:var(--verde);border-color:var(--verde);transform:scale(1.1)}
 .ficha{
   font-size:.66rem;font-weight:600;padding:.18rem .5rem;border-radius:1rem;
   background:var(--ambarT);color:var(--ambar);flex:none;
+  display:inline-flex;align-items:center;gap:.25rem;line-height:1.35;
 }
 .ficha.roja{background:var(--rojoT);color:var(--rojo)}
 .ficha.azul{background:var(--azulT);color:var(--azul)}
@@ -306,6 +318,164 @@ main{
 .pres-a{background:rgba(255,159,10,.1);border:1px solid rgba(255,159,10,.28)}
 
 .vacio{padding:2.5rem 1rem;text-align:center;color:var(--tinta3);font-size:.9rem;line-height:1.5}
+
+/* ── botones ── */
+.btn-pri,.btn-sec{
+  min-height:2.5rem;padding:0 1rem;border-radius:1.25rem;
+  display:inline-flex;align-items:center;justify-content:center;gap:.35rem;
+  font-size:.86rem;font-weight:700;flex:none;
+  transition:transform .12s ease-out, opacity .15s;
+}
+.btn-pri{background:var(--ambar);color:var(--fondo)}
+.btn-sec{background:var(--borde2);color:var(--tinta);font-weight:600}
+.btn-pri:disabled,.btn-sec:disabled{opacity:.35;cursor:default}
+/* Responder al apoyar el dedo: el botón cede un 3 % en el acto. */
+.btn-pri:not(:disabled):active,.btn-sec:active,.acc6 button:active,.op:active,.mini:active{transform:scale(.97)}
+.mini{min-height:2rem;padding:0 .7rem;border-radius:1rem;font-size:.74rem;font-weight:600;background:var(--borde2);color:var(--tinta2)}
+
+/* control segmentado: el elegido se levanta, no se pinta */
+.seg{display:inline-flex;padding:3px;gap:2px;border-radius:.8rem;background:var(--hueco);flex:none}
+.seg button{min-height:2.25rem;padding:0 .8rem;border-radius:.62rem;font-size:.82rem;font-weight:600;color:var(--tinta3)}
+.seg button[aria-pressed="true"]{background:var(--sup2);color:var(--tinta);box-shadow:0 1px 3px rgba(0,0,0,.22),0 0 0 1px var(--borde2)}
+/* opción suelta en forma de píldora */
+.op{min-height:2.25rem;padding:0 .8rem;border-radius:1.2rem;border:1px solid var(--borde);font-size:.8rem;font-weight:600;color:var(--tinta2);transition:transform .12s ease-out}
+.op[aria-pressed="true"]{background:var(--ambarT);border-color:transparent;color:var(--ambar)}
+
+/* ══════════════════════════════════════════════════════════════════
+   TODO — casos y tareas en una sola lista. El caso lleva sus tareas
+   colgando de un hilo, para que se vea de un vistazo qué es de qué.
+   ══════════════════════════════════════════════════════════════════ */
+.grupo{margin-top:1.75rem}
+.env>.grupo:first-child{margin-top:0}
+.grupo-cab{display:flex;align-items:baseline;gap:.5rem;margin:0 .2rem .6rem}
+.grupo-cab .n{font-family:var(--cifra);font-size:.66rem;font-weight:600;color:var(--tinta4)}
+.pila{display:flex;flex-direction:column;gap:.45rem}
+
+/* Una fila deslizable son dos capas: el fondo con la acción, quieto,
+   y la cara que se corre con el dedo. touch-action: pan-y deja el
+   desplazamiento vertical al navegador y el horizontal a nosotros. */
+.desl{position:relative;border-radius:var(--r-fi);touch-action:pan-y}
+.desl>.fondo{position:absolute;inset:0;border-radius:inherit;overflow:hidden;opacity:0;background:var(--hueco)}
+.fondo .lado{
+  position:absolute;top:0;bottom:0;display:flex;align-items:center;gap:.4rem;
+  padding:0 1.15rem;font-size:.8rem;font-weight:700;opacity:0;
+}
+.fondo .der{left:0}
+.fondo .izq{right:0}
+.desl>.cara{position:relative}
+.cara .tx{transition:transform .12s ease-out}
+.cara .tx:active{transform:scale(.985)}
+
+.caso .marca{width:3px;align-self:stretch;border-radius:2px;background:var(--borde);flex:none;margin:.1rem 0}
+.caso .marca.rojo{background:var(--rojo)}
+.caso .marca.ambar{background:var(--ambar)}
+.caso .id{font-family:var(--cifra);font-size:.78rem;font-weight:600;color:var(--tinta3);letter-spacing:-.01em}
+.caso .desc{font-size:.95rem;font-weight:600;line-height:1.3;margin-top:.12rem}
+.meta{display:flex;gap:.35rem;flex-wrap:wrap;margin-top:.45rem}
+.meta:empty{display:none}
+
+.colgadas{
+  margin:-.05rem 0 .3rem 1.1rem;padding-left:.7rem;
+  border-left:1.5px solid var(--borde);
+  display:flex;flex-direction:column;gap:.35rem;
+}
+.colgadas .fila{background:var(--hueco);padding:.6rem .75rem}
+
+/* Las acciones del caso a la vista solo donde hay ratón; en el
+   teléfono están en el gesto. */
+.acc-h{display:none}
+@media (hover:hover) and (pointer:fine){
+  /* Flotan sobre la fila en vez de ocupar ancho: invisibles no deben
+     robarle espacio a la descripción. */
+  .acc-h{
+    display:flex;gap:.3rem;position:absolute;right:.6rem;top:50%;transform:translateY(-50%);
+    padding:.25rem;border-radius:1.2rem;background:var(--sup2);
+    box-shadow:0 0 0 1px var(--borde2),-12px 0 16px var(--sup2);
+    opacity:0;pointer-events:none;transition:opacity .15s;
+  }
+  .desl:hover .acc-h,.acc-h:focus-within{opacity:1;pointer-events:auto}
+  .desl:hover .acc-h,.acc-h:focus-within{opacity:1}
+}
+
+@keyframes resalta{0%,35%{box-shadow:0 0 0 2px var(--ambar)}100%{box-shadow:0 0 0 2px transparent}}
+.resalta>.cara{animation:resalta 1.8s ease-out}
+
+/* la tarjeta de lo anotado dos veces */
+.dobles{background:var(--sup);border:1px solid var(--borde2);border-radius:var(--r-ta);padding:.85rem .95rem .3rem}
+.doble{padding:.8rem 0;border-top:1px solid var(--borde2)}
+.doble:first-of-type{border-top:none;padding-top:.55rem}
+.doble .cita{font-size:.9rem;font-weight:600;line-height:1.35}
+.doble .por{font-size:.8rem;color:var(--tinta3);margin-top:.25rem;line-height:1.4}
+.doble .por b{color:var(--tinta2);font-weight:600}
+.acc{display:flex;gap:.45rem;margin-top:.65rem;flex-wrap:wrap}
+
+/* ══════════════════════════════════════════════════════════════════
+   HOJA DE CAPTURA
+   ══════════════════════════════════════════════════════════════════ */
+.asa{position:relative;touch-action:none}
+.asa::after{content:"";position:absolute;inset:-14px -48px}
+.hoja-cab{display:flex;align-items:center;gap:.6rem;margin-bottom:.55rem;min-height:2.75rem;touch-action:none}
+.hoja-cab.paso{display:grid;grid-template-columns:1fr auto 1fr}
+.hoja-cab.paso .btn-pri{justify-self:end}
+.atras{display:inline-flex;align-items:center;gap:.15rem;min-height:2.75rem;color:var(--ambar);font-weight:600;font-size:.9rem;justify-self:start}
+
+.cap-tx{
+  display:block;width:100%;border:none;background:none;resize:none;outline:none;
+  font-family:var(--display);font-size:1.3rem;font-weight:600;letter-spacing:-.015em;line-height:1.3;
+  padding:.25rem 0;min-height:2.4rem;max-height:40dvh;
+}
+.cap-tx::placeholder{color:var(--tinta4)}
+.lectura{margin-top:.3rem}
+.detec{
+  margin-top:.8rem;padding:.8rem .9rem;border-radius:var(--r-fi);
+  background:var(--hueco);border:1px solid var(--borde2);
+  font-size:.84rem;line-height:1.4;color:var(--tinta2);
+}
+.detec b{color:var(--tinta);font-weight:600}
+
+.plegar{display:flex;align-items:center;gap:.35rem;margin-top:.7rem;min-height:2.75rem;width:100%;color:var(--tinta3);font-size:.84rem;font-weight:600}
+.plegar .res{flex:1;text-align:right;font-weight:500;color:var(--tinta4);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.detalles{margin-top:.9rem;display:flex;flex-direction:column;gap:.95rem}
+.campo{display:flex;flex-direction:column;gap:.4rem;min-width:0}
+.fila-op{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center}
+.dos{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
+.campo input,.campo select,.cap-notas{
+  min-height:2.5rem;padding:0 .7rem;border-radius:.7rem;
+  border:1px solid var(--borde);background:var(--hueco);font-size:.92rem;min-width:0;
+}
+.campo select{width:100%}
+.campo input[type="text"]{width:100%}
+.cap-notas{padding:.6rem .7rem;resize:vertical;line-height:1.4;width:100%}
+.campo input:focus-visible,.campo select:focus-visible,.cap-notas:focus-visible{outline:2px solid var(--ambar);outline-offset:1px}
+
+/* las seis acciones de Evernote: cámara, escanear, archivo, boceto,
+   grabadora y evento */
+.acc6{display:grid;grid-template-columns:repeat(6,1fr);gap:.4rem;margin-top:1.1rem}
+.acc6 button{
+  display:flex;flex-direction:column;align-items:center;gap:.35rem;
+  padding:.7rem 0 .6rem;border-radius:var(--r-fi);background:var(--hueco);
+  color:var(--tinta2);font-size:.62rem;font-weight:600;letter-spacing:.01em;
+  transition:transform .12s ease-out;min-width:0;
+}
+.acc6 button[aria-disabled="true"]{opacity:.45}
+@media (max-width:359px){.acc6{grid-template-columns:repeat(3,1fr)}}
+.pie-edit{display:flex;gap:.5rem;margin-top:1.2rem;align-items:center}
+.sin-nube{margin-top:.8rem;line-height:1.45}
+
+/* boceto: el papel es blanco en los dos temas, como una hoja real */
+.lienzo-bo{display:block;width:100%;height:min(50dvh,26rem);border-radius:var(--r-fi);background:#fff;touch-action:none;border:1px solid var(--borde);cursor:crosshair}
+.bo-herr{display:flex;align-items:center;gap:.6rem;margin-top:.75rem;flex-wrap:wrap}
+.colores{display:flex;gap:.4rem}
+.color{width:2rem;height:2rem;border-radius:50%;border:2px solid transparent;box-shadow:inset 0 0 0 2px var(--sup)}
+.color[aria-pressed="true"]{border-color:var(--tinta)}
+.seg .punto{display:block;border-radius:50%;background:currentColor}
+
+/* grabadora: el botón de siempre, círculo que se vuelve cuadrado */
+.grab{display:flex;flex-direction:column;align-items:center;gap:.9rem;padding:1.2rem 0 .4rem}
+.grab .t{font-family:var(--cifra);font-size:2.6rem;font-weight:600;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1}
+.grab-btn{width:4.5rem;height:4.5rem;border-radius:50%;border:3px solid var(--tinta3);display:grid;place-items:center}
+.grab-btn::before{content:"";width:3.5rem;height:3.5rem;border-radius:50%;background:var(--rojo);transition:width .3s cubic-bezier(.3,1.3,.5,1),height .3s cubic-bezier(.3,1.3,.5,1),border-radius .3s}
+.grab-btn.on::before{width:1.6rem;height:1.6rem;border-radius:.4rem}
 
 /* ══════════════════════════════════════════════════════════════════
    7 · CAPAS — el velo atenúa y empuja atrás lo de abajo; la hoja
@@ -381,6 +551,9 @@ main{
   main{margin-left:5.5rem;padding-bottom:3rem}
   .env{padding-inline:2rem;max-width:56rem}
   .capturar{left:1.1rem;right:auto;bottom:1.5rem}
+  /* En el Mac la hoja ocupa el centro: los avisos se van a la esquina
+     para no taparla. */
+  #avisos{left:auto;right:1.5rem;bottom:1.5rem;transform:none;width:min(24rem,40vw)}
   .hoja{
     left:50%;right:auto;bottom:auto;top:50%;
     width:min(34rem,90vw);
@@ -403,7 +576,15 @@ main{
 </button>
 
 <div id="velo" hidden></div>
+<section class="hoja" id="hoja" role="dialog" aria-modal="true" aria-labelledby="hoja-tit">
+  <div class="asa" aria-hidden="true"></div>
+  <div id="hoja-cuerpo"></div>
+</section>
 <div id="avisos" aria-live="polite"></div>
+
+<input type="file" id="in-camara" accept="image/*" capture="environment" hidden>
+<input type="file" id="in-escanear" accept="image/*" capture="environment" hidden>
+<input type="file" id="in-archivo" multiple hidden>
 
 <script>
 'use strict';
@@ -422,7 +603,11 @@ main{
    Regla: 1.0 para todo lo normal. 0.8 solo cuando el gesto traía
    impulso, porque un menú que apareció solo no debe rebotar.
    ══════════════════════════════════════════════════════════════════ */
-function Resorte(inicial, alCambiar){
+/* tol: cuándo se da por quieto, en las unidades del valor. Por defecto
+   sirve para valores de 0 a 1; un resorte en píxeles pasa algo como
+   0.25, o esperaría a moverse una milésima de píxel. */
+function Resorte(inicial, alCambiar, tol){
+  tol = tol || .0005;
   let x = inicial, v = 0, meta = inicial;
   let resp = .4, amor = 1, vivo = false, id = 0;
   let alLlegar = null;
@@ -446,7 +631,7 @@ function Resorte(inicial, alCambiar){
       if(!vivo) return;
       integrar((ahora - ant)/1000);
       ant = ahora;
-      const quieto = Math.abs(x - meta) < .0005 && Math.abs(v) < .0015;
+      const quieto = Math.abs(x - meta) < tol && Math.abs(v) < tol*3;
       if(quieto){ x = meta; v = 0; vivo = false; alCambiar(x, v); if(alLlegar){ const f = alLlegar; alLlegar = null; f(); } return; }
       alCambiar(x, v);
       id = requestAnimationFrame(cuadro(ant));
@@ -615,9 +800,19 @@ function normalizar(){
     done:false, text:'', cat:'', notas:'', adj:[], venc:'', rep:'', rec:'',
     ck:[], creado:hoyISO(), caso:'', ini:'', dur:0
   }, t));
+  S.tareas.forEach(t => { if(!CATS[t.cat]) t.cat = 'planificar'; });
+  /* Los estados son los de v4, tal cual: EN PROGRESO y EN ESPERA. Un
+     caso cerrado no tiene estado, se muda a S.cerrados. */
   S.casos = (S.casos||[]).map(c => Object.assign({
-    id:'', desc:'', estado:'abierto', act:hoyISO(), rec:'', adj:[], notas:'', hist:[]
+    id:'', desc:'', estado:'EN PROGRESO', act:hoyISO(), rec:'', adj:[], notas:'', hist:[]
   }, c));
+  S.casos.forEach(c => {
+    if(c.estado === 'ESPERANDO') c.estado = 'EN ESPERA';
+    if(c.estado !== 'EN ESPERA') c.estado = 'EN PROGRESO';
+    if(!Array.isArray(c.hist)) c.hist = [];
+    if(!Array.isArray(c.adj)) c.adj = [];
+  });
+  S.focos = S.focos || [];
   S.agenda  = S.agenda  || [];
   S.enlaces = S.enlaces || [];
   S.cerrados = S.cerrados || [];
@@ -655,10 +850,11 @@ function aplicar(){ pintar(); guardar(); }
    ══════════════════════════════════════════════════════════════════ */
 const UMBRAL_FRIO = 2;
 
-function casosAbiertos(){ return S.casos.filter(c => c.estado !== 'cerrado'); }
+function casosAbiertos(){ return S.casos; }
 
+/* Un caso en espera no se enfría: está esperando a otro, a propósito. */
 function enfriandose(){
-  return casosAbiertos()
+  return casosAbiertos().filter(c => c.estado !== 'EN ESPERA')
     .map(c => Object.assign({}, c, {quieto: diasDesde(c.act)}))
     .filter(c => c.quieto != null && c.quieto >= UMBRAL_FRIO)
     .sort((a,b) => b.quieto - a.quieto);
@@ -760,31 +956,55 @@ function aviso(texto, deshacer){
    y al soltar no mira dónde quedó sino hacia dónde iba: por eso un
    tirón corto pero rápido la cierra, y uno largo pero lento no.
    ══════════════════════════════════════════════════════════════════ */
-function Hoja(id){
+function Hoja(id, op){
+  op = op || {};
   const el = $(id);
   const velo = $('velo');
-  let alto = 0, abierta = false, cerrando = null;
+  /* En el Mac la hoja es un panel centrado: no sube desde abajo, se
+     asienta. Mismo resorte, otra geometría. */
+  const escritorio = matchMedia('(min-width: 900px)');
+  let alto = 0, abierta = false;
 
-  const opac = Resorte(0, v => { velo.style.opacity = v; });
+  const opac = Resorte(0, v => { velo.style.opacity = Math.max(0, v); });
   const pos = Resorte(1, v => {
-    el.style.transform = 'translateY(' + (v * 100) + '%)';
+    if(escritorio.matches){
+      el.style.transform = 'translate(-50%,-50%) translateY(' + (v * 28) + 'px) scale(' + (1 - v * .05) + ')';
+      el.style.opacity = Math.max(0, Math.min(1, 1 - v * 1.4));
+    }else{
+      el.style.transform = 'translateY(' + (v * 100) + '%)';
+      el.style.opacity = '';
+    }
   });
 
-  function abrir(){
-    alto = el.offsetHeight || 1;
+  /* Si el contenido cabe entero, toda la hoja es asa. Si no cabe, el
+     dedo dentro del contenido es para desplazarlo y solo el asa y la
+     cabecera arrastran. */
+  function medirGesto(){
+    el.style.touchAction = el.scrollHeight > el.clientHeight + 1 ? '' : 'none';
+  }
+
+  /* instantaneo: cuando se abre con el teclado. Lo que se hace cien
+     veces al día no se anima. */
+  function abrir(instantaneo){
     abierta = true;
     el.classList.add('on');
+    alto = el.offsetHeight || 1;
     velo.hidden = false;
     velo.classList.add('on');
-    opac.a(1, {respuesta:.3});
-    /* Amortiguación 0.8: la hoja llega con un poco de rebote porque
-       es un objeto que se lanza hacia arriba, no un panel que aparece. */
-    pos.a(0, {respuesta:.3, amortiguacion:.8});
     document.body.style.overflow = 'hidden';
+    medirGesto();
+    if(instantaneo){ opac.fijar(1); pos.fijar(0); return; }
+    opac.a(1, {respuesta:.3});
+    /* Amortiguación 0.8 en el teléfono: la hoja es un objeto que se
+       lanza hacia arriba. En el Mac aparece un panel: sin rebote. */
+    pos.a(0, {respuesta:.3, amortiguacion: escritorio.matches ? 1 : .8});
   }
   function cerrar(velocidad){
     if(!abierta) return;
     abierta = false;
+    /* Soltar el foco primero: en el teléfono baja el teclado junto con
+       la hoja y no después. */
+    if(el.contains(document.activeElement)) document.activeElement.blur();
     opac.a(0, {respuesta:.3});
     pos.a(1, {
       respuesta:.3, amortiguacion:1,
@@ -794,17 +1014,18 @@ function Hoja(id){
         velo.classList.remove('on');
         velo.hidden = true;
         document.body.style.overflow = '';
-        if(cerrando){ const f = cerrando; cerrando = null; f(); }
+        if(op.alCerrar) op.alCerrar();
       }
     });
   }
 
   arrastrable(el, {
     puedeEmpezar(e){
+      if(escritorio.matches) return false;
       /* Si el contenido está desplazado hacia abajo, el dedo pertenece
          al desplazamiento, no a la hoja. */
       if(el.scrollTop > 0) return false;
-      return !e.target.closest('input, textarea, button, a, select');
+      return !e.target.closest('input, textarea, button, a, select, label, canvas, audio');
     },
     valor(){ return pos.valor * alto; },
     alTomar(){ alto = el.offsetHeight || 1; },
@@ -824,9 +1045,23 @@ function Hoja(id){
   });
 
   velo.addEventListener('click', () => cerrar());
-  addEventListener('keydown', e => { if(e.key === 'Escape' && abierta) cerrar(); });
+  addEventListener('keydown', e => { if(e.key === 'Escape' && abierta){ e.preventDefault(); cerrar(); } });
 
-  return {abrir, cerrar, get abierta(){ return abierta; }};
+  /* El teclado del teléfono tapa lo que está pegado abajo. La hoja se
+     sube justo lo que el teclado ocupa, ni más ni menos. */
+  if(window.visualViewport){
+    const vv = visualViewport;
+    const ajustar = () => {
+      if(escritorio.matches){ el.style.bottom = ''; el.style.maxHeight = ''; return; }
+      const tapa = Math.max(0, innerHeight - vv.height - vv.offsetTop);
+      el.style.bottom = tapa ? tapa + 'px' : '';
+      el.style.maxHeight = tapa ? (vv.height - 16) + 'px' : '';
+    };
+    vv.addEventListener('resize', ajustar);
+    vv.addEventListener('scroll', ajustar);
+  }
+
+  return {abrir, cerrar, medirGesto, get abierta(){ return abierta; }};
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -838,7 +1073,18 @@ const ICO = {
   todo:  '<path d="M4 7h16M4 12h16M4 17h10"/>',
   mas:   '<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/>',
   alerta:'<path d="M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/><path d="M12 9v4M12 17h.01"/>',
-  visto: '<path d="M20 6L9 17l-5-5"/>'
+  visto: '<path d="M20 6L9 17l-5-5"/>',
+  pausa: '<path d="M9 5v14M15 5v14"/>',
+  seguir:'<path d="M7 5l11 7-11 7z"/>',
+  clip:  '<path d="M21 11l-8.5 8.5a5 5 0 01-7-7L14 4a3.3 3.3 0 014.7 4.7l-8.5 8.5a1.7 1.7 0 01-2.4-2.4L15.5 7"/>',
+  atras: '<path d="M15 18l-6-6 6-6"/>',
+  abajo: '<path d="M6 9l6 6 6-6"/>',
+  camara:'<path d="M4 8h3l2-3h6l2 3h3a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V9a1 1 0 011-1z"/><circle cx="12" cy="13.5" r="3.5"/>',
+  escanear:'<path d="M4 8V5a1 1 0 011-1h3M16 4h3a1 1 0 011 1v3M20 16v3a1 1 0 01-1 1h-3M8 20H5a1 1 0 01-1-1v-3M7 12h10"/>',
+  archivo:'<path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5"/>',
+  boceto:'<path d="M4 20l4-1 11-11a2.1 2.1 0 00-3-3L5 16z"/><path d="M14 7l3 3"/>',
+  grabadora:'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/>',
+  evento:'<rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 10h18M8 2v4M16 2v4M12 13v5M9.5 15.5h5"/>'
 };
 function icono(n, tam, grosor){
   return '<svg width="' + (tam||21) + '" height="' + (tam||21) + '" viewBox="0 0 24 24" fill="none" ' +
@@ -992,7 +1238,7 @@ function tramoDe(f){
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   LAS OTRAS TRES — armazón puesto, contenido en camino.
+   LAS OTRAS DOS — armazón puesto, contenido en camino.
    ══════════════════════════════════════════════════════════════════ */
 function pintarSimple(titulo, cuerpo){
   $('cabeza').innerHTML = '<div class="tit">' + titulo + '</div>';
@@ -1000,8 +1246,1237 @@ function pintarSimple(titulo, cuerpo){
 }
 
 function pintarSemana(){ pintarSimple('Semana', '<div class="vacio">El planificador llega en el siguiente tramo.</div>'); }
-function pintarTodo(){   pintarSimple('Todo',   '<div class="vacio">La lista unida de casos y tareas llega en el siguiente tramo.</div>'); }
 function pintarMas(){    pintarSimple('Más',    '<div class="vacio">Ajustes, biblioteca, métricas y archivo llegan en el siguiente tramo.</div>'); }
+
+/* ══════════════════════════════════════════════════════════════════
+   CATÁLOGOS Y AYUDAS — los mismos valores que v4, para que lo que
+   escribe una versión lo entienda la otra.
+   ══════════════════════════════════════════════════════════════════ */
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const sinTildes = s => String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+const corto = (s, n) => { s = String(s||''); n = n || 42; return s.length > n ? s.slice(0, n-1).trimEnd() + '…' : s; };
+
+const CATS = {urgente:'Urgente', planificar:'Planificar', delegar:'Delegar'};
+const CAT_ORDEN = ['urgente','planificar','delegar'];
+const REPS = {diaria:'cada día', laboral:'días de semana', semanal:'cada semana', quincenal:'cada 2 semanas', mensual:'cada mes'};
+const DURACIONES = [15,30,45,60,90];
+
+function sumarDias(iso, n){ const d = new Date(iso + 'T00:00:00'); d.setDate(d.getDate() + n); return hoyISO(d); }
+function difDias(a, b){ return Math.round((new Date(a + 'T00:00:00') - new Date(b + 'T00:00:00')) / 86400000); }
+/* "hoy", "mañana", "vie 26"; lejos, "14 oct". Nunca 2026-10-14. */
+function fechaCorta(iso){
+  const n = difDias(iso, hoyISO());
+  if(n === 0) return 'hoy';
+  if(n === 1) return 'mañana';
+  if(n === -1) return 'ayer';
+  const d = new Date(iso + 'T00:00:00');
+  return Math.abs(n) > 6 ? d.getDate() + ' ' + MESES[d.getMonth()].slice(0,3)
+                         : DIAS[d.getDay()].slice(0,3) + ' ' + d.getDate();
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   DOBLE ANOTACIÓN
+
+   Lo mismo anotado dos veces: una vez como caso y otra como tarea
+   suelta. Tres señales, de más fuerte a más débil:
+     exacto    la tarea trae el número de un caso abierto
+     huérfano  trae un número con pinta de caso, pero ese caso no existe
+     parecido  comparte con un caso una palabra que solo ese caso usa
+               (así aparecen los clientes: "mendez", "gelen")
+   La rareza importa: "línea inactiva" sale en tres casos y no dice
+   nada; "giovanni" sale en uno y lo dice todo.
+   ══════════════════════════════════════════════════════════════════ */
+const VACIAS = new Set(['caso','casos','cliente','clienta','clientes','revisar','enviar','pedir','verificar',
+  'llamar','hacer','para','por','con','que','del','las','los','una','uno','este','esta','esto','tiene',
+  'sobre','desde','hasta','solicita','solicitar','urgente','correo','mandar','favor','nuevo','nueva']);
+
+function numerosDe(t){ return String(t||'').match(/\b\d{6,12}\b/g) || []; }
+function palabrasDe(t){
+  return sinTildes(t).split(/[^a-z0-9]+/).filter(p => p.length >= 4 && !VACIAS.has(p) && !/^\d+$/.test(p));
+}
+function rarezas(casos){
+  const n = {};
+  for(const c of casos) for(const p of new Set(palabrasDe(c.desc))) n[p] = (n[p]||0) + 1;
+  return n;
+}
+function casoPorNumero(texto, casos){
+  const nums = numerosDe(texto);
+  return casos.find(c => nums.includes(c.id) || (c.id.length >= 6 && String(texto).includes(c.id))) || null;
+}
+function casoParecido(texto, casos, rar){
+  const pt = new Set(palabrasDe(texto));
+  for(const c of casos){
+    const p = palabrasDe(c.desc).find(p => pt.has(p) && rar[p] === 1);
+    if(p) return {c, palabra:p};
+  }
+  return null;
+}
+
+/* "No es lo mismo" se recuerda en este equipo y no en el documento
+   compartido: es una preferencia de mirada, no un dato del caso. */
+const CLAVE_NODUP = 'dtm5-no-dup';
+function ignorados(){
+  try{ return new Set(JSON.parse(localStorage.getItem(CLAVE_NODUP) || '[]')); }
+  catch(e){ return new Set(); }
+}
+function ignorar(k){
+  const s = ignorados(); s.add(k);
+  try{ localStorage.setItem(CLAVE_NODUP, JSON.stringify([...s].slice(-300))); }catch(e){}
+}
+
+function dobles(){
+  const casos = casosAbiertos(), ids = new Set(casos.map(c => c.id));
+  const rar = rarezas(casos), ign = ignorados(), out = [];
+  for(const t of S.tareas){
+    if(t.done || (t.caso && ids.has(t.caso))) continue;
+    const exacto = casoPorNumero(t.text, casos);
+    if(exacto){ if(!ign.has(t.tid + '|' + exacto.id)) out.push({tipo:'exacto', t, c:exacto}); continue; }
+    const n = numerosDe(t.text)[0];
+    if(n){ if(!ign.has(t.tid + '|#')) out.push({tipo:'huerfano', t, n}); continue; }
+    const par = casoParecido(t.text, casos, rar);
+    if(par && !ign.has(t.tid + '|' + par.c.id)) out.push({tipo:'parecido', t, c:par.c, palabra:par.palabra});
+  }
+  return out;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   ACCIONES — todas con deshacer en el aviso. Nada pregunta antes.
+   ══════════════════════════════════════════════════════════════════ */
+function tareaPorId(tid){ return S.tareas.find(t => t.tid === tid); }
+function casoPorId(id){ return S.casos.find(c => c.id === id); }
+function anotar(c, texto){
+  c.hist.unshift({f:hoyISO(), t:texto});
+  if(c.hist.length > 60) c.hist.length = 60;
+}
+
+function nuevaTarea(r){
+  return {tid:uid(), done:false, text:r.texto, cat:CATS[r.cat] ? r.cat : 'planificar', notas:'', adj:[],
+          venc:r.venc||'', rep:r.rep||'', rec:'', ck:[], creado:hoyISO(),
+          caso:r.caso||'', ini:r.ini||'', dur:r.dur||0};
+}
+
+/* Una tarea repetitiva no se cierra: vuelve con la fecha siguiente. */
+function regenerar(t){
+  const paso = {diaria:1, laboral:1, semanal:7, quincenal:14}[t.rep];
+  if(!paso && t.rep !== 'mensual') return null;
+  const avanzar = iso => {
+    if(t.rep === 'mensual'){ const d = new Date(iso + 'T00:00:00'); d.setMonth(d.getMonth() + 1); return hoyISO(d); }
+    let s = sumarDias(iso, paso);
+    if(t.rep === 'laboral') while([0,6].includes(new Date(s + 'T00:00:00').getDay())) s = sumarDias(s, 1);
+    return s;
+  };
+  let sig = avanzar(t.venc || hoyISO()), guarda = 0;
+  while(difDias(sig, hoyISO()) < 0 && guarda++ < 400) sig = avanzar(sig);
+  const n = Object.assign(nuevaTarea({texto:t.text, cat:t.cat, venc:sig, rep:t.rep, caso:t.caso, ini:t.ini, dur:t.dur}),
+                          {notas:t.notas, ck:(t.ck||[]).map(c => ({t:c.t, d:false}))});
+  S.tareas.push(n);
+  return n;
+}
+
+function cerrarTarea(tid){
+  const i = S.tareas.findIndex(t => t.tid === tid);
+  if(i < 0) return;
+  const t = S.tareas[i];
+  const otra = t.rep ? regenerar(t) : null;
+  S.tareas.splice(S.tareas.indexOf(t), 1);
+  const cerrada = Object.assign({}, t, {done:true, doneAt:Date.now(), cerrado:hoyISO()});
+  S.tareasCerradas.unshift(cerrada);
+  if(S.tareasCerradas.length > 400) S.tareasCerradas.length = 400;
+  aplicar();
+  aviso('Hecha: «' + corto(t.text, 34) + '»' + (otra ? ' · vuelve ' + fechaCorta(otra.venc) : ''), () => {
+    S.tareasCerradas = S.tareasCerradas.filter(x => x !== cerrada);
+    if(otra) S.tareas = S.tareas.filter(x => x !== otra);
+    S.tareas.splice(Math.min(i, S.tareas.length), 0, t);
+    aplicar();
+  });
+}
+function posponerTarea(tid){
+  const t = tareaPorId(tid); if(!t) return;
+  const antes = t.venc;
+  t.venc = sumarDias(hoyISO(), 1);
+  aplicar();
+  aviso('Para mañana: «' + corto(t.text, 32) + '»', () => { t.venc = antes; aplicar(); });
+}
+function eliminarTarea(tid){
+  const i = S.tareas.findIndex(t => t.tid === tid); if(i < 0) return;
+  const t = S.tareas.splice(i, 1)[0];
+  aplicar();
+  aviso('Tarea eliminada', () => { S.tareas.splice(Math.min(i, S.tareas.length), 0, t); aplicar(); });
+}
+function avanceCaso(id){
+  const c = casoPorId(id); if(!c) return;
+  const antes = c.act;
+  c.act = hoyISO();
+  anotar(c, 'Movimiento registrado');
+  aplicar();
+  aviso('Avance en ' + c.id, () => { c.act = antes; c.hist.shift(); aplicar(); });
+}
+function esperaCaso(id){
+  const c = casoPorId(id); if(!c) return;
+  const antes = {estado:c.estado, act:c.act};
+  c.estado = c.estado === 'EN ESPERA' ? 'EN PROGRESO' : 'EN ESPERA';
+  c.act = hoyISO();
+  anotar(c, 'Pasó a ' + c.estado);
+  aplicar();
+  aviso(c.id + (c.estado === 'EN ESPERA' ? ' en espera' : ' retomado'),
+        () => { Object.assign(c, antes); c.hist.shift(); aplicar(); });
+}
+function colgar(tid, cid){
+  const t = tareaPorId(tid), c = casoPorId(cid);
+  if(!t || !c) return;
+  const antes = t.caso;
+  t.caso = cid;
+  anotar(c, 'Se colgó «' + corto(t.text, 60) + '»');
+  aplicar();
+  aviso('Colgada de ' + cid, () => { t.caso = antes; c.hist.shift(); aplicar(); });
+}
+function crearCasoDesdeTarea(tid, n){
+  const t = tareaPorId(tid); if(!t) return;
+  if(casoPorId(n)){ colgar(tid, n); return; }
+  const desc = t.text.replace(n, '').replace(/^[\s,.;:–-]+/, '').replace(/\s+/g, ' ').trim();
+  const c = {id:n, desc:desc || t.text, estado:'EN PROGRESO', act:hoyISO(), rec:'', adj:[], notas:'',
+             hist:[{f:hoyISO(), t:'Caso creado desde la tarea «' + corto(t.text, 60) + '»'}]};
+  S.casos.push(c);
+  const antes = t.caso;
+  t.caso = n;
+  aplicar();
+  aviso('Caso ' + n + ' creado', () => { S.casos = S.casos.filter(x => x !== c); t.caso = antes; aplicar(); });
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   FILAS QUE SE DESLIZAN
+
+   La cara sigue al dedo 1 a 1. Pasado el umbral el fondo se vuelve
+   sólido: es el aviso de "si sueltas, pasa". Al soltar decide la
+   proyección, no la posición, igual que la hoja: un golpe corto y
+   rápido cuenta, un arrastre largo que se arrepiente no.
+   ══════════════════════════════════════════════════════════════════ */
+const LADOS = {
+  avance: {txt:'Avance',  ico:'visto',  color:'ambar'},
+  espera: {txt:'Esperar', ico:'pausa',  color:'gris'},
+  retomar:{txt:'Retomar', ico:'seguir', color:'gris'},
+  hecha:  {txt:'Hecha',   ico:'visto',  color:'verde'},
+  manana: {txt:'Mañana',  ico:'hoy',    color:'ambar'}
+};
+const ACCION_FILA = {
+  avance:{color:'ambar', quita:false, hacer:avanceCaso},
+  espera:{color:'gris',  quita:false, hacer:esperaCaso},
+  hecha: {color:'verde', quita:true,  hacer:cerrarTarea},
+  manana:{color:'ambar', quita:false, hacer:posponerTarea}
+};
+const TINTE  = {ambar:'var(--ambarT)', verde:'var(--verdeT)', gris:'var(--borde2)'};
+const SOLIDO = {ambar:'var(--ambar)',  verde:'var(--verde)',  gris:'var(--tinta3)'};
+const COLOR  = {ambar:'var(--ambar)',  verde:'var(--verde)',  gris:'var(--tinta2)'};
+
+function fondoFila(der, izq){
+  return '<div class="fondo" aria-hidden="true">' +
+    '<span class="lado der">' + icono(der.ico, 17, 2.4) + der.txt + '</span>' +
+    '<span class="lado izq">' + izq.txt + icono(izq.ico, 17, 2.4) + '</span>' +
+  '</div>';
+}
+
+/* La fila se pliega antes de irse: si desaparece de golpe, las de
+   abajo saltan y el ojo pierde el hilo. */
+function colapsar(el, fin){
+  if(!el || !el.isConnected || REDUCIDO){ fin(); return; }
+  const h = el.offsetHeight;
+  const gap = parseFloat(getComputedStyle(el.parentNode).rowGap) || 0;
+  el.style.overflow = 'hidden';
+  Resorte(1, v => {
+    el.style.height = Math.max(0, h * v) + 'px';
+    el.style.marginBottom = (-(1 - v) * gap) + 'px';
+    el.style.opacity = Math.max(0, v);
+  }, .01).a(0, {respuesta:.26, alLlegar:fin});
+}
+
+function deslizable(el){
+  const cara = el.querySelector('.cara'), fondo = el.querySelector('.fondo');
+  const lados = {der:ACCION_FILA[el.dataset.der], izq:ACCION_FILA[el.dataset.izq]};
+  const etq = {der:fondo.querySelector('.der'), izq:fondo.querySelector('.izq')};
+  let activo = false, eje = null, x0 = 0, y0 = 0, base = 0, ancho = 1, arrastro = false, listo = false, idp = null;
+  let hist = [], salida = null;
+  const umbral = () => Math.min(ancho * .36, 120);
+
+  const pos = Resorte(0, x => {
+    /* Cuando la cara ya salió del todo no hay nada que esperar: la
+       fila empieza a plegarse aunque el resorte no se haya asentado. */
+    if(salida && Math.abs(x) >= ancho * .98){ const f = salida; salida = null; f(); }
+    cara.style.transform = Math.abs(x) < .05 ? '' : 'translateX(' + x + 'px)';
+    fondo.style.opacity = Math.abs(x) < .5 ? 0 : 1;
+    const lado = x > 0 ? 'der' : 'izq', a = lados[lado];
+    if(!a) return;
+    const pasado = Math.abs(x) >= umbral();
+    etq.der.style.opacity = lado === 'der' ? Math.min(1, Math.abs(x) / umbral()) : 0;
+    etq.izq.style.opacity = lado === 'izq' ? Math.min(1, Math.abs(x) / umbral()) : 0;
+    fondo.style.background = pasado ? SOLIDO[a.color] : TINTE[a.color];
+    fondo.style.color = pasado ? 'var(--fondo)' : COLOR[a.color];
+    if(activo && pasado !== listo){
+      listo = pasado;
+      if(pasado && navigator.vibrate) try{ navigator.vibrate(8); }catch(err){}
+    }
+  }, .25);
+
+  function velocidad(){
+    const ahora = performance.now();
+    const h = hist.filter(p => ahora - p.t < 80);
+    if(h.length < 2) return 0;
+    const dt = (h[h.length-1].t - h[0].t) / 1000;
+    return dt > 0 ? (h[h.length-1].x - h[0].x) / dt : 0;
+  }
+
+  el.addEventListener('pointerdown', e => {
+    if(e.button !== 0 || e.target.closest('.acc-h')) return;
+    activo = true; eje = null; arrastro = false; listo = false; idp = e.pointerId;
+    x0 = e.clientX; y0 = e.clientY;
+    base = pos.valor;            /* agarrarla en vuelo sigue desde donde va */
+    ancho = el.offsetWidth || 1;
+    hist = [{x:e.clientX, t:performance.now()}];
+  });
+  el.addEventListener('pointermove', e => {
+    if(!activo || e.pointerId !== idp) return;
+    const dx = e.clientX - x0, dy = e.clientY - y0;
+    if(!eje){
+      /* Histéresis de 10 px y el primer eje claro gana. Si es vertical,
+         la fila se retira y el desplazamiento sigue sin estorbo. */
+      if(Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
+      eje = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+      if(eje === 'y'){ activo = false; return; }
+      arrastro = true;
+      try{ el.setPointerCapture(e.pointerId); }catch(err){}
+    }
+    e.preventDefault();
+    hist.push({x:e.clientX, t:performance.now()});
+    if(hist.length > 12) hist.shift();
+    let x = base + dx;
+    const a = lados[x > 0 ? 'der' : 'izq'];
+    const tope = ancho * .72;
+    if(!a) x = gomaElastica(x, ancho * .5);
+    else if(Math.abs(x) > tope) x = Math.sign(x) * (tope + gomaElastica(Math.abs(x) - tope, ancho * .3));
+    pos.fijar(x);
+  });
+  function soltar(e){
+    if(!activo || e.pointerId !== idp) return;
+    activo = false;
+    if(!arrastro) return;
+    const v = velocidad(), x = pos.valor;
+    const a = lados[x > 0 ? 'der' : 'izq'];
+    const destino = x + proyectar(v, .993);
+    const id = el.dataset.id;
+    if(a && Math.sign(destino) === Math.sign(x) && Math.abs(destino) >= umbral() && Math.abs(x) > 24){
+      if(a.quita){
+        salida = () => colapsar(el, () => a.hacer(id));
+        pos.a(Math.sign(x) * ancho * 1.02, {respuesta:.28, velocidad:v});
+      }else{
+        pos.a(0, {respuesta:.34, velocidad:v * .3, alLlegar:() => a.hacer(id)});
+      }
+    }else{
+      pos.a(0, {respuesta:.3, velocidad:v});
+    }
+  }
+  el.addEventListener('pointerup', soltar);
+  el.addEventListener('pointercancel', soltar);
+  /* Un arrastre no es un toque: el clic que el navegador manda al
+     soltar se descarta. */
+  el.addEventListener('click', e => {
+    if(arrastro){ e.stopPropagation(); e.preventDefault(); arrastro = false; }
+  }, true);
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   TODO — donde se elige. Casos primero, del más frío al más fresco,
+   con sus tareas colgando; después lo suelto, por prioridad.
+   ══════════════════════════════════════════════════════════════════ */
+let verTodosDobles = false;
+
+function casosOrdenados(){
+  return casosAbiertos()
+    .map(c => ({c, q:diasDesde(c.act) || 0, e:c.estado === 'EN ESPERA' ? 1 : 0}))
+    .sort((a,b) => (a.e - b.e) || (b.q - a.q))
+    .map(x => x.c);
+}
+function tonoCaso(c){
+  if(c.estado === 'EN ESPERA') return '';
+  const q = diasDesde(c.act) || 0;
+  return q >= 3 ? 'rojo' : q >= UMBRAL_FRIO ? 'ambar' : '';
+}
+function ordenarTareas(l){
+  return l.slice().sort((a,b) =>
+    (a.venc||'9999').localeCompare(b.venc||'9999') ||
+    (a.ini||'99').localeCompare(b.ini||'99') ||
+    String(a.creado||'').localeCompare(String(b.creado||'')));
+}
+
+function chipsTarea(t, colgada){
+  const hoy = hoyISO();
+  let h = '';
+  if(t.venc){
+    const n = difDias(t.venc, hoy);
+    h += '<span class="ficha' + (n < 0 ? ' roja' : n === 0 ? '' : ' gris') + '">' +
+         (n < 0 ? 'venció ' + fechaCorta(t.venc) : fechaCorta(t.venc)) + '</span>';
+  }
+  if(t.ini) h += '<span class="ficha cifra' + (!t.venc || t.venc === hoy ? '' : ' gris') + '">' + esc(t.ini) + '</span>';
+  if(t.dur) h += '<span class="ficha gris">' + enHoras(t.dur) + '</span>';
+  if(t.rep && REPS[t.rep]) h += '<span class="ficha gris">' + REPS[t.rep] + '</span>';
+  if(!colgada && t.caso) h += '<span class="ficha gris cifra">' + esc(t.caso) + '</span>';
+  if(t.adj && t.adj.length) h += '<span class="ficha gris">' + icono('clip', 11, 2.2) + t.adj.length + '</span>';
+  return h;
+}
+
+function filaTarea(t, colgada){
+  return '<div class="desl" data-desliza data-id="' + esc(t.tid) + '" data-der="hecha" data-izq="manana">' +
+    fondoFila(LADOS.hecha, LADOS.manana) +
+    '<div class="cara fila">' +
+      '<button type="button" class="chk" data-hecha="' + esc(t.tid) + '" aria-pressed="false" aria-label="Marcar hecha"></button>' +
+      '<button type="button" class="tx" data-editar="' + esc(t.tid) + '">' +
+        '<span style="display:block">' + esc(t.text) + '</span>' +
+        '<span class="meta">' + chipsTarea(t, colgada) + '</span>' +
+      '</button>' +
+    '</div></div>';
+}
+
+function filaCaso(c){
+  const q = diasDesde(c.act) || 0, tono = tonoCaso(c), espera = c.estado === 'EN ESPERA';
+  const quieto = espera ? '<span class="ficha gris">En espera</span>'
+    : q === 0 ? '<span class="ficha gris">Movido hoy</span>'
+    : '<span class="ficha cifra' + (tono === 'rojo' ? ' roja' : tono === 'ambar' ? '' : ' gris') + '">' + enDias(q) + ' quieto</span>';
+  return '<div class="desl caso" data-desliza data-id="' + esc(c.id) + '" data-fila-caso="' + esc(c.id) + '" data-der="avance" data-izq="espera">' +
+    fondoFila(LADOS.avance, espera ? LADOS.retomar : LADOS.espera) +
+    '<div class="cara fila">' +
+      '<span class="marca ' + tono + '"></span>' +
+      '<div class="tx">' +
+        '<div class="id">' + esc(c.id) + '</div>' +
+        '<div class="desc">' + esc(c.desc) + '</div>' +
+        '<div class="meta">' + quieto +
+          (c.adj && c.adj.length ? '<span class="ficha gris">' + icono('clip', 11, 2.2) + c.adj.length + '</span>' : '') +
+        '</div>' +
+      '</div>' +
+      '<div class="acc-h">' +
+        '<button type="button" class="mini" data-avance="' + esc(c.id) + '">Avance</button>' +
+        '<button type="button" class="mini" data-espera="' + esc(c.id) + '">' + (espera ? 'Retomar' : 'Esperar') + '</button>' +
+      '</div>' +
+    '</div></div>';
+}
+
+function pintarDobles(lista){
+  const n = lista.length;
+  const ver = verTodosDobles ? lista : lista.slice(0, 3);
+  return '<div class="dobles">' +
+    '<div class="grupo-cab" style="margin:0"><span class="rotulo">Para ordenar</span><span class="n">' + n + '</span></div>' +
+    ver.map(d => {
+      const tid = esc(d.t.tid);
+      let por = '', acc = '';
+      if(d.tipo === 'exacto'){
+        por = 'Tiene el número del caso <b class="cifra">' + esc(d.c.id) + '</b> · ' + esc(corto(d.c.desc, 48)) + '. Está anotado dos veces.';
+        acc = '<button type="button" class="btn-pri" data-colgar="' + tid + '|' + esc(d.c.id) + '">Colgar del caso</button>' +
+              '<button type="button" class="btn-sec" data-nodup="' + tid + '|' + esc(d.c.id) + '">No es lo mismo</button>';
+      }else if(d.tipo === 'huerfano'){
+        por = 'Trae el número <b class="cifra">' + esc(d.n) + '</b>, que no es ninguno de tus casos abiertos.';
+        acc = '<button type="button" class="btn-pri" data-crear-caso="' + tid + '|' + esc(d.n) + '">Crear ese caso</button>' +
+              '<button type="button" class="btn-sec" data-nodup="' + tid + '|#">Es solo una tarea</button>';
+      }else{
+        por = 'Habla de «' + esc(d.palabra) + '», igual que el caso <b class="cifra">' + esc(d.c.id) + '</b> · ' + esc(corto(d.c.desc, 40)) + '.';
+        acc = '<button type="button" class="btn-sec" data-colgar="' + tid + '|' + esc(d.c.id) + '">Colgar del caso</button>' +
+              '<button type="button" class="btn-sec" data-nodup="' + tid + '|' + esc(d.c.id) + '">No es lo mismo</button>';
+      }
+      return '<div class="doble"><div class="cita">' + esc(d.t.text) + '</div><div class="por">' + por + '</div><div class="acc">' + acc + '</div></div>';
+    }).join('') +
+    (n > 3 ? '<button type="button" class="plegar" data-mas-dobles style="margin-top:0">' +
+      (verTodosDobles ? 'Ver menos' : 'Ver las ' + n) + '</button>' : '') +
+  '</div>';
+}
+
+function grupo(titulo, n, cuerpo){
+  return '<div class="grupo"><div class="grupo-cab"><span class="rotulo">' + titulo + '</span><span class="n">' + n + '</span></div>' +
+         '<div class="pila">' + cuerpo + '</div></div>';
+}
+
+function pintarTodo(){
+  const casos = casosOrdenados();
+  const ids = new Set(casos.map(c => c.id));
+  const colg = {}, sueltas = [];
+  const vivas = S.tareas.filter(t => !t.done);
+  for(const t of vivas){
+    if(t.caso && ids.has(t.caso)) (colg[t.caso] = colg[t.caso] || []).push(t);
+    else sueltas.push(t);
+  }
+  $('cabeza').innerHTML =
+    '<div class="cabeza-fila"><div>' +
+      '<div class="rotulo">' + casos.length + (casos.length === 1 ? ' caso' : ' casos') + ' · ' +
+        vivas.length + (vivas.length === 1 ? ' tarea' : ' tareas') + '</div>' +
+      '<div class="tit" style="margin-top:.15rem">Todo</div>' +
+    '</div></div>';
+
+  let h = '<section class="env">';
+  const dup = dobles();
+  if(dup.length) h += pintarDobles(dup);
+  if(casos.length){
+    h += grupo('Casos', casos.length, casos.map(c =>
+      filaCaso(c) + (colg[c.id] ? '<div class="colgadas">' + ordenarTareas(colg[c.id]).map(t => filaTarea(t, true)).join('') + '</div>' : '')
+    ).join(''));
+  }
+  for(const k of CAT_ORDEN){
+    const l = ordenarTareas(sueltas.filter(t => t.cat === k));
+    if(l.length) h += grupo(CATS[k], l.length, l.map(t => filaTarea(t, false)).join(''));
+  }
+  if(!casos.length && !vivas.length) h += '<div class="vacio">Nada pendiente.<br>Lo que llegue, captúralo con <b>+</b>.</div>';
+  h += '</section>';
+  $('lienzo').innerHTML = h;
+  document.querySelectorAll('#lienzo [data-desliza]').forEach(deslizable);
+}
+
+/* Desde Hoy, tocar un caso que se enfría lleva a su fila en Todo. */
+function irACaso(id){
+  vista = 'todo';
+  pintar();
+  const f = document.querySelector('[data-fila-caso="' + CSS.escape(id) + '"]');
+  if(!f) return;
+  f.scrollIntoView({block:'center', behavior: REDUCIDO ? 'auto' : 'smooth'});
+  f.classList.add('resalta');
+}
+
+/* El círculo se llena primero y la fila se va después: sin esa pausa
+   no se ve qué se marcó. */
+function marcarHecha(b){
+  if(b.getAttribute('aria-pressed') === 'true') return;
+  b.setAttribute('aria-pressed', 'true');
+  const tid = b.dataset.hecha, fila = b.closest('.desl');
+  setTimeout(() => colapsar(fila, () => cerrarTarea(tid)), 220);
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   LENGUAJE NATURAL — el mismo intérprete de v4.
+   "llamar a Diego mañana 15:00 !urgente" sale con fecha, hora y
+   prioridad puestas, y el título limpio. Todo local, sin servicios.
+   ══════════════════════════════════════════════════════════════════ */
+const DIAS_SEM = {domingo:0, lunes:1, martes:2, miercoles:3, jueves:4, viernes:5, sabado:6};
+
+function proximoDiaSemana(objetivo, incluirHoy){
+  const d = new Date();
+  let delta = (objetivo - d.getDay() + 7) % 7;
+  if(delta === 0 && !incluirHoy) delta = 7;
+  d.setDate(d.getDate() + delta);
+  return hoyISO(d);
+}
+function interpretar(entrada){
+  let s = ' ' + String(entrada||'').trim() + ' ';
+  const quitar = re => { const m = s.match(re); if(m){ s = s.replace(m[0], ' '); return m; } return null; };
+  let cat = 'planificar', venc = '', hora = '', rep = '', m;
+
+  let marcoCat = true;
+  if(quitar(/\s(!!|!urg\w*|!u)\s/i)) cat = 'urgente';
+  else if(quitar(/\s(!del\w*|!d)\s/i)) cat = 'delegar';
+  else if(quitar(/\s(!plan\w*|!p)\s/i)) cat = 'planificar';
+  else if(/\burgente\b/i.test(s)) cat = 'urgente';
+  else marcoCat = false;
+
+  /* La repetición va antes que las fechas, porque "cada lunes" trae
+     un día adentro. */
+  const RECUR = [
+    [/\s(cada d[ií]a h[aá]bil(es)?|d[ií]as de semana|de lunes a viernes)\s/i, 'laboral'],
+    [/\s(cada dos semanas|cada 2 semanas|quincenal\w*)\s/i, 'quincenal'],
+    [/\s(cada d[ií]a|diariamente|a diario|todos los d[ií]as)\s/i, 'diaria'],
+    [/\s(cada mes|mensual\w*|todos los meses)\s/i, 'mensual'],
+    [/\s(cada semana|semanal\w*|todas las semanas)\s/i, 'semanal']
+  ];
+  for(let pasada = 0; pasada < 3; pasada++){
+    let hubo = false;
+    for(const [re, valor] of RECUR){ if(quitar(re)){ if(!rep) rep = valor; hubo = true; } }
+    if(!hubo) break;
+  }
+  if(!rep && (m = quitar(/\scada (domingo|lunes|martes|mi[eé]rcoles|jueves|viernes|s[aá]bado)s?\s/i))){
+    rep = 'semanal'; venc = proximoDiaSemana(DIAS_SEM[sinTildes(m[1])], true);
+  }
+
+  if(!venc){
+    if(quitar(/\shoy\s/i)) venc = hoyISO();
+    else if(quitar(/\s(pasado ma[ñn]ana)\s/i)) venc = sumarDias(hoyISO(), 2);
+    else if(quitar(/\sma[ñn]ana\s/i)) venc = sumarDias(hoyISO(), 1);
+    else if((m = quitar(/\sen (\d{1,3}) d[ií]as?\s/i))) venc = sumarDias(hoyISO(), parseInt(m[1], 10));
+    else if((m = quitar(/\sen (\d{1,2}) semanas?\s/i))) venc = sumarDias(hoyISO(), parseInt(m[1], 10) * 7);
+    else if((m = quitar(/\s(?:el |este |pr[oó]ximo |la pr[oó]xima )?(domingo|lunes|martes|mi[eé]rcoles|jueves|viernes|s[aá]bado)\s/i)))
+      venc = proximoDiaSemana(DIAS_SEM[sinTildes(m[1])], false);
+    else if((m = quitar(/\s(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{2,4}))?\s/))){
+      const dd = parseInt(m[1], 10), mm = parseInt(m[2], 10);
+      let yy = m[3] ? parseInt(m[3], 10) : new Date().getFullYear();
+      if(yy < 100) yy += 2000;
+      if(dd >= 1 && dd <= 31 && mm >= 1 && mm <= 12){
+        const cand = yy + '-' + dosCifras(mm) + '-' + dosCifras(dd);
+        /* sin año y ya pasó: se entiende el del año que viene */
+        venc = (!m[3] && difDias(cand, hoyISO()) < -1) ? (yy + 1) + cand.slice(4) : cand;
+      }
+    }
+  }
+
+  if((m = quitar(/\s(?:a las |a la )?(\d{1,2})[:.](\d{2})\s*(am|pm)?\s/i))){
+    let h = parseInt(m[1], 10);
+    if(/pm/i.test(m[3]||'') && h < 12) h += 12;
+    if(/am/i.test(m[3]||'') && h === 12) h = 0;
+    if(h <= 23 && +m[2] <= 59) hora = dosCifras(h) + ':' + m[2];
+  }else if((m = quitar(/\sa las (\d{1,2})\s*(am|pm|hrs?|horas)?\s/i))){
+    let h = parseInt(m[1], 10);
+    if(/pm/i.test(m[2]||'') && h < 12) h += 12;
+    if(h <= 23) hora = dosCifras(h) + ':00';
+  }
+
+  const texto = s.replace(/\s+/g, ' ').trim().replace(/^[,;:\-–]\s*/, '');
+  return {texto: texto || String(entrada||'').trim(), cat, venc, rep, hora, marcoCat};
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   HOJA DE CAPTURA
+
+   Un campo, y lo que se entendió aparece debajo mientras escribes.
+   Si lo que escribes ya existe como caso, la hoja lo dice antes de
+   guardar: ahí se corta la doble anotación, en la entrada.
+
+   Abajo, las seis acciones de Evernote: cámara, escanear, archivo,
+   boceto, grabadora y evento. Si hay texto escrito, lo que adjuntes
+   se cuelga de esa tarea; si no, nace una tarea con el nombre del
+   adjunto.
+
+   La misma hoja edita una tarea existente: tocar una fila en Todo
+   la abre con los campos puestos.
+   ══════════════════════════════════════════════════════════════════ */
+let CAP = null;
+let hoja = null;
+
+const SIN_NUBE = 'Los adjuntos viven en la nube y esta versión todavía no inicia sesión. Por ahora, adjunta desde v4.';
+
+function abrirCaptura(op){
+  op = op || {};
+  const t = op.tid ? tareaPorId(op.tid) : null;
+  CAP = {
+    tid: t ? t.tid : null, tipo:'tarea', paso:'texto',
+    texto: t ? t.text : '', cat: t ? t.cat : 'planificar', venc: t ? t.venc : '', ini: t ? t.ini : '',
+    dur: t ? t.dur : 0, rep: t ? t.rep : '', caso: t ? t.caso : (op.caso || ''), notas: t ? t.notas : '',
+    tocado: t ? {cat:1, venc:1, ini:1, caso:1} : (op.caso ? {caso:1} : {}),
+    soltar:false, detalles: !!t
+  };
+  pintarHoja();
+  hoja.abrir(op.instantaneo);
+  /* El foco tiene que ir dentro del mismo toque: iOS solo levanta el
+     teclado si el foco nace de un gesto del usuario. Al editar no se
+     levanta: primero se mira. */
+  if(!t) $('cap-tx').focus({preventScroll:true});
+}
+
+function leerCaptura(){
+  if(CAP.tid) return {texto:CAP.texto.trim(), cat:CAP.cat, venc:CAP.venc, ini:CAP.ini, dur:CAP.dur, rep:CAP.rep, caso:CAP.caso, det:null};
+  const p = interpretar(CAP.texto), toc = CAP.tocado;
+  const r = {
+    texto:p.texto,
+    cat: toc.cat ? CAP.cat : (p.marcoCat ? p.cat : CAP.cat),
+    venc: toc.venc ? CAP.venc : p.venc,
+    ini: toc.ini ? CAP.ini : p.hora,
+    dur:CAP.dur, rep:p.rep, caso:CAP.caso, det:null
+  };
+  /* Una hora sin día es para hoy; si no, saldría en Hoy todos los días. */
+  if(r.ini && !r.venc && !toc.venc) r.venc = hoyISO();
+  if(!CAP.texto.trim()) return r;
+  const casos = casosAbiertos();
+  const exacto = casoPorNumero(CAP.texto, casos);
+  if(exacto){
+    r.det = {tipo:'exacto', c:exacto};
+    if(!toc.caso && !CAP.soltar) r.caso = exacto.id;
+  }else{
+    const n = numerosDe(CAP.texto)[0];
+    if(n) r.det = {tipo:'huerfano', n};
+    else if(!r.caso){
+      const par = casoParecido(CAP.texto, casos, rarezas(casos));
+      if(par) r.det = {tipo:'parecido', c:par.c, palabra:par.palabra};
+    }
+  }
+  return r;
+}
+function leerCaso(){
+  const tx = CAP.texto.trim();
+  const n = numerosDe(tx)[0] || '';
+  const desc = (n ? tx.replace(n, '') : tx).replace(/^[\s,.;:–-]+/, '').replace(/\s+/g, ' ').trim();
+  return {id:n, desc, existe: n ? casoPorId(n) : null};
+}
+
+/* ── pintado ── */
+function campo(titulo, cuerpo){ return '<div class="campo"><span class="rotulo">' + titulo + '</span>' + cuerpo + '</div>'; }
+function op(attr, txt, on){ return '<button type="button" class="op" ' + attr + ' aria-pressed="' + !!on + '">' + txt + '</button>'; }
+function cabPaso(titulo, attr, habil){
+  return '<div class="hoja-cab paso">' +
+    '<button type="button" class="atras" data-cap-paso="texto">' + icono('atras', 18, 2.4) + 'Volver</button>' +
+    '<div class="tit-s" id="hoja-tit">' + titulo + '</div>' +
+    '<button type="button" class="btn-pri" ' + attr + (habil === false ? ' disabled' : '') + '>Guardar</button>' +
+  '</div>';
+}
+const ACCIONES = [
+  {k:'camara',    t:'Cámara'},
+  {k:'escanear',  t:'Escanear'},
+  {k:'archivo',   t:'Archivo'},
+  {k:'boceto',    t:'Boceto'},
+  {k:'grabadora', t:'Audio'},
+  {k:'evento',    t:'Evento'}
+];
+
+function htmlTexto(){
+  const editando = !!CAP.tid;
+  const t = editando ? tareaPorId(CAP.tid) : null;
+  const nAdj = t && t.adj ? t.adj.length : 0;
+  return '<div class="hoja-cab">' +
+      (editando
+        ? '<div class="rotulo" id="hoja-tit">Tarea' + (nAdj ? ' · ' + nAdj + (nAdj === 1 ? ' adjunto' : ' adjuntos') : '') + '</div>'
+        : '<div class="seg" role="group" aria-label="Qué es" id="hoja-tit">' +
+            '<button type="button" data-cap-tipo="tarea" aria-pressed="' + (CAP.tipo === 'tarea') + '">Tarea</button>' +
+            '<button type="button" data-cap-tipo="caso" aria-pressed="' + (CAP.tipo === 'caso') + '">Caso</button>' +
+          '</div>') +
+      '<span style="flex:1"></span>' +
+      '<button type="button" class="btn-pri" data-cap-guardar>' + (editando ? 'Listo' : 'Guardar') + '</button>' +
+    '</div>' +
+    '<textarea id="cap-tx" class="cap-tx sel" rows="1" enterkeyhint="done" autocomplete="off" aria-label="Qué hay que hacer"></textarea>' +
+    '<div id="cap-lectura"></div>' +
+    '<div id="cap-detalles"></div>' +
+    '<div id="cap-acciones"' + (CAP.tipo === 'caso' ? ' hidden' : '') + '>' +
+      (editando ? '<div class="rotulo" style="margin-top:1.3rem">Añadir a esta tarea</div>' : '') +
+      '<div class="acc6"' + (editando ? ' style="margin-top:.55rem"' : '') + '>' +
+        ACCIONES.map(a => {
+          const sinNube = !ref && ['camara','escanear','archivo'].includes(a.k);
+          return '<button type="button" data-cap-accion="' + a.k + '"' + (sinNube ? ' aria-disabled="true"' : '') + '>' +
+            icono(a.k, 22, 1.8) + '<span>' + a.t + '</span></button>';
+        }).join('') +
+      '</div>' +
+    '</div>' +
+    (editando
+      ? '<div class="pie-edit">' +
+          '<button type="button" class="btn-sec" data-cap-eliminar>Eliminar</button>' +
+          '<span style="flex:1"></span>' +
+          '<button type="button" class="btn-sec" data-cap-hecha style="color:var(--verde)">' + icono('visto', 16, 2.6) + 'Hecha</button>' +
+        '</div>'
+      : '');
+}
+
+function pintarHoja(){
+  const cu = $('hoja-cuerpo');
+  if(CAP.paso === 'evento')        cu.innerHTML = htmlEvento();
+  else if(CAP.paso === 'boceto'){  cu.innerHTML = htmlBoceto(); prepararBoceto(); }
+  else if(CAP.paso === 'grabadora') cu.innerHTML = htmlGrabadora();
+  else{
+    cu.innerHTML = htmlTexto();
+    const tx = $('cap-tx');
+    tx.value = CAP.texto;
+    ponerPlaceholder();
+    ajustarAlto(tx);
+    pintarLectura();
+  }
+  if(hoja && hoja.abierta) hoja.medirGesto();
+}
+function ponerPlaceholder(){
+  const tx = $('cap-tx'); if(!tx) return;
+  tx.placeholder = CAP.tipo === 'caso' ? '70129397 Línea inactiva Nicol' : 'Llamar a Gelen mañana 15:00 !urgente';
+}
+function ajustarAlto(tx){ tx.style.height = 'auto'; tx.style.height = tx.scrollHeight + 'px'; }
+
+/* Lo que depende del texto se repinta en cada tecla; el campo no, para
+   no perder el foco ni el cursor. */
+function pintarLectura(){
+  const el = $('cap-lectura'), det = $('cap-detalles');
+  if(!el) return;
+  if(CAP.tipo === 'caso'){ el.innerHTML = lecturaCaso(); det.innerHTML = ''; return; }
+  const r = leerCaptura();
+  let chips = '';
+  if(!CAP.tid){
+    if(r.venc) chips += '<span class="ficha">' + fechaCorta(r.venc) + '</span>';
+    if(r.ini) chips += '<span class="ficha cifra">' + esc(r.ini) + '</span>';
+    if(r.rep) chips += '<span class="ficha gris">' + REPS[r.rep] + '</span>';
+    if(r.cat !== 'planificar') chips += '<span class="ficha gris">' + CATS[r.cat] + '</span>';
+    if(r.caso) chips += '<span class="ficha gris cifra">caso ' + esc(r.caso) + '</span>';
+  }
+  el.innerHTML = (chips ? '<div class="meta lectura">' + chips + '</div>' : '') + deteccionHTML(r);
+  det.innerHTML = detallesHTML(r);
+}
+
+function deteccionHTML(r){
+  const d = r.det;
+  if(!d) return '';
+  if(d.tipo === 'exacto'){
+    return CAP.soltar
+      ? '<div class="detec"><b class="cifra">' + esc(d.c.id) + '</b> ya es un caso abierto. La tarea quedará suelta.' +
+          '<div class="acc"><button type="button" class="btn-sec" data-cap-colgar="' + esc(d.c.id) + '">Colgarla del caso</button></div></div>'
+      : '<div class="detec"><b>Ya tienes el caso <span class="cifra">' + esc(d.c.id) + '</span></b> · ' + esc(corto(d.c.desc, 60)) +
+          '<br>La tarea queda colgada de él, para no anotarlo dos veces.' +
+          '<div class="acc"><button type="button" class="btn-sec" data-cap-soltar>Dejarla suelta</button></div></div>';
+  }
+  if(d.tipo === 'huerfano'){
+    return '<div class="detec"><b class="cifra">' + esc(d.n) + '</b> parece un número de caso y no está entre tus casos abiertos.' +
+      '<div class="acc"><button type="button" class="btn-sec" data-cap-tipo="caso">Crearlo como caso</button></div></div>';
+  }
+  return '<div class="detec">¿Es del caso <b class="cifra">' + esc(d.c.id) + '</b> · ' + esc(corto(d.c.desc, 44)) +
+    '? Los dos hablan de «' + esc(d.palabra) + '».' +
+    '<div class="acc"><button type="button" class="btn-sec" data-cap-colgar="' + esc(d.c.id) + '">Colgarla de ese caso</button></div></div>';
+}
+
+function detallesHTML(r){
+  if(!CAP.detalles){
+    const res = [CATS[r.cat], r.dur ? enHoras(r.dur) : ''].filter(Boolean).join(' · ');
+    return '<button type="button" class="plegar" data-cap-detalles aria-expanded="false">Detalles' +
+      '<span class="res">' + esc(res) + '</span>' + icono('abajo', 16, 2.2) + '</button>';
+  }
+  const hoy = hoyISO(), man = sumarDias(hoy, 1);
+  const casos = casosOrdenados();
+  const opcCaso = casos.map(c => '<option value="' + esc(c.id) + '"' + (r.caso === c.id ? ' selected' : '') + '>' +
+    esc(c.id) + ' · ' + esc(corto(c.desc, 38)) + '</option>').join('') +
+    (r.caso && !casos.some(c => c.id === r.caso) ? '<option value="' + esc(r.caso) + '" selected>' + esc(r.caso) + ' · cerrado</option>' : '');
+  return '<div class="detalles">' +
+    campo('Prioridad', '<div class="seg" role="group" aria-label="Prioridad" style="align-self:flex-start">' + CAT_ORDEN.map(k =>
+      '<button type="button" data-cap-cat="' + k + '" aria-pressed="' + (r.cat === k) + '">' + CATS[k] + '</button>').join('') + '</div>') +
+    campo('Cuándo', '<div class="fila-op">' +
+      op('data-cap-venc="' + hoy + '"', 'Hoy', r.venc === hoy) +
+      op('data-cap-venc="' + man + '"', 'Mañana', r.venc === man) +
+      op('data-cap-venc=""', 'Sin fecha', !r.venc) +
+      '<input type="date" id="cap-venc" value="' + esc(r.venc) + '" aria-label="Otra fecha">' +
+    '</div>') +
+    campo('Hora y duración', '<div class="fila-op">' +
+      '<input type="time" id="cap-ini" value="' + esc(r.ini) + '" aria-label="Hora de inicio">' +
+      DURACIONES.map(m => op('data-cap-dur="' + m + '"', enHoras(m), r.dur === m)).join('') +
+    '</div>') +
+    campo('Caso', '<select id="cap-caso" aria-label="Caso"><option value="">Suelta, sin caso</option>' + opcCaso + '</select>') +
+    (CAP.tid ? campo('Notas', '<textarea id="cap-notas" class="cap-notas sel" rows="3">' + esc(CAP.notas) + '</textarea>') : '') +
+  '</div>';
+}
+
+function lecturaCaso(){
+  if(!CAP.texto.trim()) return '<div class="menor lectura" style="margin-top:.4rem">El número primero y después de qué se trata. Sin número, le pongo uno provisorio.</div>';
+  const k = leerCaso();
+  let h = '<div class="meta lectura">' + (k.id ? '<span class="ficha gris cifra">N° ' + esc(k.id) + '</span>' : '<span class="ficha gris">sin número</span>') + '</div>';
+  if(k.existe) h += '<div class="detec"><b>Ya tienes el caso <span class="cifra">' + esc(k.id) + '</span></b> · ' + esc(corto(k.existe.desc, 60)) +
+    '<br>Guardar lo anota en su bitácora en vez de crear otro igual.</div>';
+  return h;
+}
+
+/* ── guardar ── */
+function guardarCaptura(){
+  if(CAP.tipo === 'caso') return guardarCasoCaptura();
+  const r = leerCaptura();
+  if(!r.texto){ $('cap-tx').focus(); return; }
+  if(CAP.tid){
+    const t = tareaPorId(CAP.tid);
+    if(t) Object.assign(t, {text:r.texto, cat:r.cat, venc:r.venc, ini:r.ini, dur:r.dur, caso:r.caso, notas:CAP.notas});
+    hoja.cerrar(); aplicar();
+    aviso('Tarea guardada');
+    return;
+  }
+  const t = nuevaTarea(r);
+  S.tareas.push(t);
+  if(t.caso){ const c = casoPorId(t.caso); if(c) anotar(c, 'Se colgó «' + corto(t.text, 60) + '»'); }
+  hoja.cerrar(); aplicar();
+  const donde = t.caso ? ' en ' + t.caso : t.venc ? ' · ' + fechaCorta(t.venc) + (t.ini ? ' ' + t.ini : '') : '';
+  aviso('Tarea creada' + donde, () => {
+    S.tareas = S.tareas.filter(x => x !== t);
+    if(t.caso){ const c = casoPorId(t.caso); if(c) c.hist.shift(); }
+    aplicar();
+  });
+}
+function guardarCasoCaptura(){
+  const k = leerCaso();
+  if(!CAP.texto.trim()){ $('cap-tx').focus(); return; }
+  if(k.existe){
+    const c = k.existe, antes = c.act;
+    anotar(c, k.desc || 'Movimiento registrado');
+    c.act = hoyISO();
+    hoja.cerrar(); aplicar();
+    aviso('Anotado en la bitácora de ' + c.id, () => { c.hist.shift(); c.act = antes; aplicar(); });
+    return;
+  }
+  const id = k.id || 'CASO-' + Date.now().toString().slice(-6);
+  const c = {id, desc:k.desc || '(sin descripción)', estado:'EN PROGRESO', act:hoyISO(), rec:'', adj:[], notas:'',
+             hist:[{f:hoyISO(), t:'Caso creado'}]};
+  S.casos.push(c);
+  hoja.cerrar(); aplicar();
+  aviso('Caso ' + id + ' creado', () => { S.casos = S.casos.filter(x => x !== c); aplicar(); });
+}
+
+/* ── pasos: la hoja cambia de contenido sin cerrarse ── */
+let transPaso = null;
+function irPaso(p){
+  if(CAP.paso === 'grabadora' && p !== 'grabadora') pararGrabacion(true);
+  const ida = p !== 'texto';
+  CAP.paso = p;
+  pintarHoja();
+  const cu = $('hoja-cuerpo');
+  if(!transPaso) transPaso = Resorte(1, v => {
+    cu.style.opacity = Math.min(1, v);
+    cu.style.transform = Math.abs(1 - v) < .002 ? '' : 'translateX(' + ((1 - v) * cu._dir) + 'px)';
+  });
+  cu._dir = ida ? 18 : -18;
+  transPaso.fijar(0);
+  transPaso.a(1, {respuesta:.3});
+}
+
+function accionCaptura(k){
+  if(k === 'evento' || k === 'boceto' || k === 'grabadora'){
+    if(k === 'grabadora') pararGrabacion(true);
+    irPaso(k);
+    return;
+  }
+  if(!ref){ aviso(SIN_NUBE); return; }
+  $('in-' + k).click();
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   ADJUNTOS — igual que v4: cada adjunto es un documento propio en la
+   subcolección adjuntos/, porque un documento de Firestore no pasa de
+   1 MB. En la tarea solo queda su identificador y cuatro datos.
+   ══════════════════════════════════════════════════════════════════ */
+const LIMITE_ADJ = 700 * 1024;
+const pesoTxt = b => b >= 1048576 ? (b/1048576).toFixed(1).replace('.', ',') + ' MB' : Math.round(b/1024) + ' KB';
+
+function leerDataURL(file){
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(String(r.result));
+    r.onerror = () => rej(new Error('no se pudo leer'));
+    r.readAsDataURL(file);
+  });
+}
+/* Con escaneo, gris y más contraste: es lo que hace que la foto de un
+   papel se lea como documento. */
+function comprimir(file, escaneo){
+  return leerDataURL(file).then(src => new Promise((res, rej) => {
+    const img = new Image();
+    img.onload = () => {
+      const MAX = escaneo ? 1600 : 1280;
+      let w = img.width, h = img.height;
+      if(w > MAX || h > MAX){ const f = MAX / Math.max(w, h); w = Math.round(w*f); h = Math.round(h*f); }
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      const cx = c.getContext('2d');
+      cx.drawImage(img, 0, 0, w, h);
+      if(escaneo){
+        const d = cx.getImageData(0, 0, w, h), p = d.data;
+        for(let i = 0; i < p.length; i += 4){
+          const gris = .299*p[i] + .587*p[i+1] + .114*p[i+2];
+          p[i] = p[i+1] = p[i+2] = Math.max(0, Math.min(255, (gris - 128) * 1.55 + 142));
+        }
+        cx.putImageData(d, 0, 0);
+      }
+      res(c.toDataURL('image/jpeg', escaneo ? .78 : .72));
+    };
+    img.onerror = () => rej(new Error('no es una imagen'));
+    img.src = src;
+  }));
+}
+async function guardarAdjunto(a){
+  if(!ref){ aviso(SIN_NUBE); return null; }
+  if(a.img.length > 980000){ aviso('Ese adjunto pesa demasiado. Súbelo a Drive y guarda el enlace.'); return null; }
+  const aid = uid();
+  try{
+    await ref.collection('adjuntos').doc(aid).set({
+      img:a.img, tipo:a.tipo, nombre:a.nombre||'', mime:a.mime||'', creado:new Date().toISOString()
+    });
+  }catch(e){ aviso('No se pudo subir el adjunto: ' + e.message); return null; }
+  return {aid, tipo:a.tipo, nombre:a.nombre||'', mime:a.mime||'', peso:a.peso||a.img.length};
+}
+
+/* De quién cuelga el adjunto: la tarea que se edita; si no, la que se
+   está escribiendo, que nace en ese momento; y si no hay nada escrito,
+   una tarea con el nombre del adjunto. La hoja queda abierta sobre
+   esa tarea para seguir. */
+function duenoAdjunto(nombre){
+  if(CAP && CAP.tid){ const t = tareaPorId(CAP.tid); if(t) return {obj:t, nuevo:false}; }
+  const r = CAP ? leerCaptura() : null;
+  const t = nuevaTarea(r && r.texto ? r : {texto:nombre});
+  S.tareas.push(t);
+  if(CAP) Object.assign(CAP, {tid:t.tid, tipo:'tarea', texto:t.text, cat:t.cat, venc:t.venc, ini:t.ini, dur:t.dur,
+                              rep:t.rep, caso:t.caso, notas:'', tocado:{cat:1, venc:1, ini:1, caso:1}, detalles:true});
+  return {obj:t, nuevo:true};
+}
+function trasAdjuntar(n, que, nuevo){
+  aplicar();
+  if(CAP){ CAP.paso = 'texto'; pintarHoja(); }
+  aviso((n === 1 ? que : n + ' adjuntos guardados') + (nuevo ? ' en una tarea nueva' : ''));
+}
+
+async function recibirArchivos(input, modo){
+  const lista = [...input.files];
+  input.value = '';
+  if(!lista.length || !ref) return;
+  const nombre = modo === 'escanear' ? 'Documento escaneado' : modo === 'camara' ? 'Foto' : 'Archivo adjunto';
+  const {obj, nuevo} = duenoAdjunto(nombre);
+  let ok = 0;
+  for(const f of lista){
+    try{
+      let g = null;
+      if(/^image\//.test(f.type)){
+        g = await guardarAdjunto({tipo:'img', img:await comprimir(f, modo === 'escanear'), nombre:f.name || 'foto.jpg'});
+      }else if(f.size > LIMITE_ADJ){
+        aviso('«' + f.name + '» pesa ' + pesoTxt(f.size) + ' y el máximo es ' + pesoTxt(LIMITE_ADJ) + '. Súbelo a Drive y guarda el enlace.');
+      }else{
+        g = await guardarAdjunto({tipo:'file', img:await leerDataURL(f), nombre:f.name, mime:f.type || 'application/octet-stream', peso:f.size});
+      }
+      if(g){ obj.adj.push(g); ok++; }
+    }catch(e){ aviso('No pude guardar «' + (f.name || 'el archivo') + '»: ' + e.message); }
+  }
+  if(ok) trasAdjuntar(ok, modo === 'escanear' ? 'Documento escaneado' : modo === 'camara' ? 'Foto guardada' : 'Archivo adjuntado', nuevo);
+}
+
+/* ── boceto ── */
+const BO_COLORES = ['#111417','#D70015','#0A7EA4','#18893B','#C77700'];
+const bo = {ctx:null, color:BO_COLORES[0], grosor:3, pintando:false, trazos:0};
+
+function htmlBoceto(){
+  return cabPaso('Boceto', 'data-bo-guardar', !!ref) +
+    '<canvas id="bo-lienzo" class="lienzo-bo" aria-label="Lienzo para dibujar"></canvas>' +
+    '<div class="bo-herr">' +
+      '<div class="colores">' + BO_COLORES.map((c, i) =>
+        '<button type="button" class="color" style="background:' + c + '" data-bo-color="' + c + '" aria-pressed="' + (bo.color === c) + '" aria-label="Color ' + (i+1) + '"></button>').join('') +
+      '</div>' +
+      '<div class="seg" role="group" aria-label="Grosor">' + [2,4,8].map(g =>
+        '<button type="button" data-bo-grosor="' + g + '" aria-pressed="' + (bo.grosor === g) + '" aria-label="Grosor ' + g + '">' +
+          '<span class="punto" style="width:' + (g + 3) + 'px;height:' + (g + 3) + 'px"></span></button>').join('') +
+      '</div>' +
+      '<span style="flex:1"></span>' +
+      '<button type="button" class="btn-sec" data-bo-limpiar>Limpiar</button>' +
+    '</div>' +
+    (ref ? '' : '<p class="menor sin-nube">' + SIN_NUBE + '</p>');
+}
+function prepararBoceto(){
+  const c = $('bo-lienzo'); if(!c) return;
+  /* offsetWidth y no getBoundingClientRect: en el Mac la hoja entra
+     escalada y el rectángulo mentiría el tamaño. */
+  const w = c.offsetWidth, h = c.offsetHeight, dpr = Math.min(devicePixelRatio || 1, 2);
+  c.width = Math.round(w * dpr); c.height = Math.round(h * dpr);
+  bo.ctx = c.getContext('2d');
+  bo.ctx.scale(dpr, dpr);
+  bo.ctx.fillStyle = '#fff'; bo.ctx.fillRect(0, 0, w, h);
+  bo.ctx.lineCap = 'round'; bo.ctx.lineJoin = 'round';
+  bo.trazos = 0;
+  c.addEventListener('pointerdown', boIni);
+  c.addEventListener('pointermove', boMueve);
+  c.addEventListener('pointerup', boFin);
+  c.addEventListener('pointercancel', boFin);
+}
+function boPunto(c, e){
+  const r = c.getBoundingClientRect();
+  return {x:(e.clientX - r.left) * c.offsetWidth / r.width, y:(e.clientY - r.top) * c.offsetHeight / r.height};
+}
+function boIni(e){
+  e.preventDefault();
+  const c = e.currentTarget;
+  try{ c.setPointerCapture(e.pointerId); }catch(err){}
+  bo.pintando = true; bo.trazos++;
+  const p = boPunto(c, e);
+  bo.ctx.strokeStyle = bo.color; bo.ctx.lineWidth = bo.grosor;
+  bo.ctx.beginPath(); bo.ctx.moveTo(p.x, p.y); bo.ctx.lineTo(p.x + .01, p.y); bo.ctx.stroke();
+}
+function boMueve(e){
+  if(!bo.pintando) return;
+  e.preventDefault();
+  const c = e.currentTarget;
+  /* Los eventos agrupados traen los puntos intermedios: sin ellos, un
+     trazo rápido sale a tramos rectos. */
+  const lista = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
+  for(const ev of (lista.length ? lista : [e])){ const p = boPunto(c, ev); bo.ctx.lineTo(p.x, p.y); }
+  bo.ctx.stroke();
+}
+function boFin(){ bo.pintando = false; }
+function limpiarBoceto(){
+  const c = $('bo-lienzo'); if(!c) return;
+  bo.ctx.fillStyle = '#fff'; bo.ctx.fillRect(0, 0, c.offsetWidth, c.offsetHeight);
+  bo.trazos = 0;
+}
+async function guardarBoceto(){
+  if(!ref){ aviso(SIN_NUBE); return; }
+  if(!bo.trazos){ aviso('El lienzo está en blanco'); return; }
+  const img = $('bo-lienzo').toDataURL('image/jpeg', .86);
+  const {obj, nuevo} = duenoAdjunto('Boceto');
+  const g = await guardarAdjunto({tipo:'img', img, nombre:'boceto.jpg'});
+  if(!g) return;
+  obj.adj.push(g);
+  trasAdjuntar(1, 'Boceto guardado', nuevo);
+}
+
+/* ── grabadora ── */
+const grab = {mr:null, trozos:[], blob:null, url:'', t0:0, seg:0, timer:0, stream:null};
+
+function htmlGrabadora(){
+  const s = grab.seg;
+  return cabPaso('Nota de voz', 'data-grab-guardar', !!(grab.blob && ref)) +
+    '<div class="grab">' +
+      '<div class="t" id="grab-t">' + dosCifras(Math.floor(s/60)) + ':' + dosCifras(s % 60) + '</div>' +
+      '<div class="menor" id="grab-est">' + (grab.mr ? 'Grabando · máximo 3 minutos'
+         : grab.blob ? pesoTxt(grab.blob.size) + ' listos para guardar' : 'Toca para grabar · máximo 3 minutos') + '</div>' +
+      '<button type="button" class="grab-btn' + (grab.mr ? ' on' : '') + '" data-grab-alternar aria-label="' +
+        (grab.mr ? 'Detener' : 'Grabar') + '"></button>' +
+      (grab.url ? '<audio controls src="' + grab.url + '" style="width:100%"></audio>' : '') +
+    '</div>' +
+    (ref ? '' : '<p class="menor sin-nube">' + SIN_NUBE + '</p>');
+}
+async function grabAlternar(){
+  if(grab.mr && grab.mr.state === 'recording'){ grab.mr.stop(); return; }
+  if(!navigator.mediaDevices || !window.MediaRecorder){ aviso('Este navegador no permite grabar audio'); return; }
+  let stream;
+  try{ stream = await navigator.mediaDevices.getUserMedia({audio:true}); }
+  catch(e){ aviso('Necesito permiso para usar el micrófono'); return; }
+  /* Si la hoja se cerró mientras se pedía el permiso, no se graba. */
+  if(!CAP || CAP.paso !== 'grabadora'){ stream.getTracks().forEach(t => t.stop()); return; }
+  pararGrabacion(true);
+  grab.stream = stream; grab.trozos = []; grab.seg = 0;
+  const tipo = ['audio/mp4','audio/webm','audio/ogg'].find(t => MediaRecorder.isTypeSupported(t)) || '';
+  const mr = new MediaRecorder(stream, tipo ? {mimeType:tipo} : undefined);
+  grab.mr = mr;
+  mr.ondataavailable = e => { if(e.data.size) grab.trozos.push(e.data); };
+  mr.onstop = () => {
+    clearInterval(grab.timer);
+    stream.getTracks().forEach(t => t.stop());
+    if(grab.mr === mr) grab.mr = null;
+    if(mr._descartar) return;
+    grab.blob = new Blob(grab.trozos, {type:(mr.mimeType || 'audio/webm').split(';')[0]});
+    grab.url = URL.createObjectURL(grab.blob);
+    if(CAP && CAP.paso === 'grabadora') pintarHoja();
+  };
+  mr.start();
+  grab.t0 = Date.now();
+  pintarHoja();
+  grab.timer = setInterval(() => {
+    grab.seg = Math.floor((Date.now() - grab.t0) / 1000);
+    const el = $('grab-t');
+    if(el) el.textContent = dosCifras(Math.floor(grab.seg/60)) + ':' + dosCifras(grab.seg % 60);
+    if(grab.seg >= 180 && grab.mr) grab.mr.stop();
+  }, 250);
+}
+function pararGrabacion(descartar){
+  if(grab.mr && grab.mr.state === 'recording'){ grab.mr._descartar = !!descartar; grab.mr.stop(); }
+  if(descartar){
+    grab.mr = null; grab.blob = null; grab.seg = 0;
+    if(grab.url) URL.revokeObjectURL(grab.url);
+    grab.url = '';
+  }
+}
+async function guardarGrabacion(){
+  if(!grab.blob || !ref) return;
+  if(grab.blob.size > LIMITE_ADJ){ aviso('La grabación pesa ' + pesoTxt(grab.blob.size) + ' y el máximo es ' + pesoTxt(LIMITE_ADJ) + '. Graba algo más corto.'); return; }
+  const blob = grab.blob;
+  const datos = await leerDataURL(blob);
+  const {obj, nuevo} = duenoAdjunto('Nota de voz');
+  const g = await guardarAdjunto({tipo:'audio', img:datos, nombre:'nota-de-voz', mime:blob.type, peso:blob.size});
+  if(!g) return;
+  obj.adj.push(g);
+  pararGrabacion(true);
+  trasAdjuntar(1, 'Grabación guardada', nuevo);
+}
+
+/* ── evento ── */
+function htmlEvento(){
+  const r = leerCaptura();
+  const ahora = new Date().getHours() * 60 + new Date().getMinutes();
+  const ini = r.ini || comoHora(Math.min(23 * 60, Math.ceil((ahora + 1) / 30) * 30));
+  const fin = comoHora(Math.min(23 * 60 + 59, minutosDe(ini) + 60));
+  return cabPaso('Evento', 'data-ev-guardar') +
+    '<div class="detalles" style="margin-top:.4rem">' +
+      campo('Título', '<input type="text" id="ev-t" enterkeyhint="done" value="' + esc(r.texto) + '" placeholder="Reunión con Raimundo">') +
+      campo('Día', '<input type="date" id="ev-d" value="' + esc(r.venc || hoyISO()) + '">') +
+      '<div class="dos">' +
+        campo('Desde', '<input type="time" id="ev-h" value="' + ini + '">') +
+        campo('Hasta', '<input type="time" id="ev-f" value="' + fin + '">') +
+      '</div>' +
+    '</div>' +
+    '<p class="menor" style="margin-top:.9rem">Queda en tu agenda y aparece en la columna de Hoy.</p>';
+}
+function guardarEvento(){
+  const t = $('ev-t').value.trim(), d = $('ev-d').value || hoyISO(), hora = $('ev-h').value, fin = $('ev-f').value;
+  if(!t){ $('ev-t').focus(); aviso('El evento necesita un título'); return; }
+  if(hora && fin && minutosDe(fin) <= minutosDe(hora)){ aviso('La hora de término va después del inicio'); return; }
+  const ev = {eid:uid(), t, d, hora, fin, color:'info'};
+  S.agenda.push(ev);
+  hoja.cerrar(); aplicar();
+  aviso('Evento · ' + fechaCorta(d) + (hora ? ' ' + hora : ''), () => { S.agenda = S.agenda.filter(x => x !== ev); aplicar(); });
+}
+
+/* ── oyentes de la hoja ── */
+function clicEnHoja(e){
+  const q = s => e.target.closest(s);
+  let b;
+  if((b = q('[data-cap-guardar]'))){ guardarCaptura(); return true; }
+  if((b = q('[data-cap-tipo]'))){
+    CAP.tipo = b.dataset.capTipo;
+    /* Sin repintar el campo: repintarlo bajaría el teclado. */
+    document.querySelectorAll('[data-cap-tipo]').forEach(x => x.setAttribute('aria-pressed', x.dataset.capTipo === CAP.tipo));
+    $('cap-acciones').hidden = CAP.tipo === 'caso';
+    ponerPlaceholder();
+    pintarLectura();
+    hoja.medirGesto();
+    return true;
+  }
+  if((b = q('[data-cap-soltar]'))){ CAP.soltar = true; CAP.caso = ''; CAP.tocado.caso = 1; pintarLectura(); return true; }
+  if((b = q('[data-cap-colgar]'))){ CAP.soltar = false; CAP.caso = b.dataset.capColgar; CAP.tocado.caso = 1; pintarLectura(); return true; }
+  if((b = q('[data-cap-detalles]'))){ CAP.detalles = true; pintarLectura(); hoja.medirGesto(); return true; }
+  if((b = q('[data-cap-cat]'))){ CAP.cat = b.dataset.capCat; CAP.tocado.cat = 1; pintarLectura(); return true; }
+  if((b = q('[data-cap-venc]'))){ CAP.venc = b.dataset.capVenc; CAP.tocado.venc = 1; pintarLectura(); return true; }
+  if((b = q('[data-cap-dur]'))){ const m = +b.dataset.capDur; CAP.dur = CAP.dur === m ? 0 : m; pintarLectura(); return true; }
+  if((b = q('[data-cap-accion]'))){ accionCaptura(b.dataset.capAccion); return true; }
+  if((b = q('[data-cap-paso]'))){ irPaso(b.dataset.capPaso); return true; }
+  if((b = q('[data-cap-eliminar]'))){ const tid = CAP.tid; hoja.cerrar(); eliminarTarea(tid); return true; }
+  if((b = q('[data-cap-hecha]'))){ const tid = CAP.tid; hoja.cerrar(); cerrarTarea(tid); return true; }
+  if((b = q('[data-ev-guardar]'))){ guardarEvento(); return true; }
+  if((b = q('[data-bo-guardar]'))){ guardarBoceto(); return true; }
+  if((b = q('[data-bo-limpiar]'))){ limpiarBoceto(); return true; }
+  if((b = q('[data-bo-color]'))){
+    bo.color = b.dataset.boColor;
+    document.querySelectorAll('[data-bo-color]').forEach(x => x.setAttribute('aria-pressed', x === b));
+    return true;
+  }
+  if((b = q('[data-bo-grosor]'))){
+    bo.grosor = +b.dataset.boGrosor;
+    document.querySelectorAll('[data-bo-grosor]').forEach(x => x.setAttribute('aria-pressed', x === b));
+    return true;
+  }
+  if((b = q('[data-grab-alternar]'))){ grabAlternar(); return true; }
+  if((b = q('[data-grab-guardar]'))){ guardarGrabacion(); return true; }
+  return false;
+}
+
+function prepararCaptura(){
+  hoja = Hoja('hoja', {alCerrar(){
+    pararGrabacion(true);
+    CAP = null;
+    $('hoja-cuerpo').innerHTML = '';
+  }});
+  const h = $('hoja');
+  h.addEventListener('click', e => { if(CAP) clicEnHoja(e); });
+  /* En Chrome y Android un botón se lleva el foco al apretarlo, y el
+     teclado baja a mitad de frase. Mientras se escribe, los botones de
+     la hoja no se lo quitan al campo. */
+  h.addEventListener('mousedown', e => {
+    if(document.activeElement && document.activeElement.id === 'cap-tx' && e.target.closest('button')) e.preventDefault();
+  });
+  h.addEventListener('input', e => {
+    if(!CAP) return;
+    if(e.target.id === 'cap-tx'){ CAP.texto = e.target.value; ajustarAlto(e.target); pintarLectura(); }
+    else if(e.target.id === 'cap-notas') CAP.notas = e.target.value;
+  });
+  h.addEventListener('change', e => {
+    if(!CAP) return;
+    const id = e.target.id;
+    if(id === 'cap-venc'){ CAP.venc = e.target.value; CAP.tocado.venc = 1; pintarLectura(); }
+    else if(id === 'cap-ini'){
+      CAP.ini = e.target.value; CAP.tocado.ini = 1;
+      if(CAP.ini && !leerCaptura().venc){ CAP.venc = hoyISO(); CAP.tocado.venc = 1; }
+      pintarLectura();
+    }
+    else if(id === 'cap-caso'){ CAP.caso = e.target.value; CAP.tocado.caso = 1; CAP.soltar = !e.target.value; pintarLectura(); }
+  });
+  h.addEventListener('keydown', e => {
+    if(!CAP) return;
+    const enter = e.key === 'Enter' && !e.isComposing;
+    /* Intro guarda; Mayús+Intro, salto de línea. Cmd+Intro guarda
+       desde cualquier campo. */
+    if(enter && (e.metaKey || e.ctrlKey)){
+      e.preventDefault();
+      if(CAP.paso === 'evento') guardarEvento();
+      else if(CAP.paso === 'texto') guardarCaptura();
+      return;
+    }
+    if(enter && !e.shiftKey && e.target.id === 'cap-tx'){ e.preventDefault(); guardarCaptura(); }
+    if(enter && e.target.id === 'ev-t'){ e.preventDefault(); guardarEvento(); }
+  });
+  $('in-camara').addEventListener('change', e => recibirArchivos(e.target, 'camara'));
+  $('in-escanear').addEventListener('change', e => recibirArchivos(e.target, 'escanear'));
+  $('in-archivo').addEventListener('change', e => recibirArchivos(e.target, 'archivo'));
+}
 
 /* ══════════════════════════════════════════════════════════════════
    PINTAR
@@ -1022,8 +2497,25 @@ addEventListener('resize', medirCabeza);
    constantemente y volver a colgarles oyentes en cada pintada es de
    donde salen las fugas. */
 document.addEventListener('click', e => {
-  const ir = e.target.closest('[data-ir]');
-  if(ir){ irA(ir.dataset.ir); return; }
+  const q = s => e.target.closest(s);
+  let b;
+  if((b = q('[data-ir]'))){ irA(b.dataset.ir); return; }
+  if((b = q('[data-caso]'))){ irACaso(b.dataset.caso); return; }
+  if((b = q('[data-hecha]'))){ marcarHecha(b); return; }
+  if((b = q('[data-editar]'))){ abrirCaptura({tid:b.dataset.editar}); return; }
+  if((b = q('[data-avance]'))){ avanceCaso(b.dataset.avance); return; }
+  if((b = q('[data-espera]'))){ esperaCaso(b.dataset.espera); return; }
+  if((b = q('[data-colgar]'))){ const [tid, cid] = b.dataset.colgar.split('|'); colgar(tid, cid); return; }
+  if((b = q('[data-crear-caso]'))){ const [tid, n] = b.dataset.crearCaso.split('|'); crearCasoDesdeTarea(tid, n); return; }
+  if((b = q('[data-nodup]'))){ ignorar(b.dataset.nodup); pintar(); aviso('Entendido, no los vuelvo a juntar'); return; }
+  if((b = q('[data-mas-dobles]'))){ verTodosDobles = !verTodosDobles; pintar(); return; }
+});
+
+/* N abre la captura desde el teclado, sin animación. */
+addEventListener('keydown', e => {
+  if(e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey) return;
+  if(e.target.closest && e.target.closest('input, textarea, select, [contenteditable]')) return;
+  if((e.key === 'n' || e.key === 'N') && hoja && !hoja.abierta){ e.preventDefault(); abrirCaptura({instantaneo:true}); }
 });
 
 /* El reloj de la cabecera, al minuto y alineado con el minuto: no
@@ -1044,12 +2536,12 @@ function relojEnMarcha(){
    ARRANQUE
    ══════════════════════════════════════════════════════════════════ */
 cargarLocal();
+prepararCaptura();
 pintar();
 relojEnMarcha();
 
-$('btn-capturar').addEventListener('click', () => {
-  aviso('La hoja de captura llega en el siguiente tramo.');
-});
+/* Con el teclado (detail 0) la hoja aparece sin animación. */
+$('btn-capturar').addEventListener('click', e => abrirCaptura({instantaneo: e.detail === 0}));
 
 /* La preferencia de tamaño que ya tenías guardada sigue valiendo. */
 try{

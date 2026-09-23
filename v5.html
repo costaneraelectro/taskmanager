@@ -462,6 +462,14 @@ main{
 .pie-edit{display:flex;gap:.5rem;margin-top:1.2rem;align-items:center}
 .sin-nube{margin-top:.8rem;line-height:1.45}
 
+/* ── entrada ── */
+.entrada{position:fixed;inset:0;z-index:90;background:var(--fondo);display:grid;place-items:center;padding:1.5rem 1.25rem calc(var(--bajo) + 1rem)}
+.entrada[hidden]{display:none}
+.entrada-caja{width:min(22rem,100%);text-align:center}
+.entrada input{display:block;width:100%;min-height:2.9rem;padding:0 .9rem;border-radius:.8rem;border:1px solid var(--borde);background:var(--hueco);margin-top:.5rem}
+.entrada input:focus-visible{outline:2px solid var(--ambar);outline-offset:1px}
+.ancho{width:100%;flex:1;min-height:2.9rem}
+
 /* boceto: el papel es blanco en los dos temas, como una hoja real */
 .lienzo-bo{display:block;width:100%;height:min(50dvh,26rem);border-radius:var(--r-fi);background:#fff;touch-action:none;border:1px solid var(--borde);cursor:crosshair}
 .bo-herr{display:flex;align-items:center;gap:.6rem;margin-top:.75rem;flex-wrap:wrap}
@@ -581,6 +589,22 @@ main{
   <div id="hoja-cuerpo"></div>
 </section>
 <div id="avisos" aria-live="polite"></div>
+
+<div class="entrada" id="entrada" hidden>
+  <div class="entrada-caja">
+    <div class="tit">Daily Task Manager</div>
+    <p class="menor" style="margin:.5rem 0 1.6rem;line-height:1.5">Tus casos, tareas y agenda.<br>Entra para tenerlos en todos tus equipos.</p>
+    <button type="button" class="btn-pri ancho" data-google>Continuar con Google</button>
+    <div class="rotulo" style="margin:1.4rem 0 .8rem">o con tu correo</div>
+    <input type="email" id="lg-mail" placeholder="tu@correo.com" autocomplete="username" autocapitalize="none" autocorrect="off" enterkeyhint="next">
+    <input type="password" id="lg-pass" placeholder="contraseña" autocomplete="current-password" enterkeyhint="go">
+    <div style="display:flex;gap:.5rem;margin-top:.8rem">
+      <button type="button" class="btn-sec ancho" data-correo="entrar">Entrar</button>
+      <button type="button" class="btn-sec ancho" data-correo="crear">Crear cuenta</button>
+    </div>
+    <p class="menor" id="lg-err" role="alert" style="color:var(--rojo);margin-top:.9rem;min-height:1.2em"></p>
+  </div>
+</div>
 
 <input type="file" id="in-camara" accept="image/*" capture="environment" hidden>
 <input type="file" id="in-escanear" accept="image/*" capture="environment" hidden>
@@ -775,10 +799,9 @@ function saludo(h){
 /* ══════════════════════════════════════════════════════════════════
    DATOS
 
-   Misma forma que v4, mismo documento de Firestore. Abrir v5 no
-   importa nada ni convierte nada: los casos y tareas que ya existen
-   se leen tal cual. Los campos que agrego son aditivos, así que las
-   dos versiones pueden convivir mientras pruebas.
+   Misma forma que v4, pero v5 tiene su propio proyecto de Firebase
+   (taskmanager-ebec9) y su propia copia en este equipo: parte en
+   blanco y los datos viejos se traspasan a mano.
 
      tarea  {tid, done, text, cat, notas, adj[], venc, rep, rec, ck[], creado}
      caso   {id, desc, estado, act, rec, adj[], notas, hist[]}
@@ -788,7 +811,7 @@ function saludo(h){
      tarea.ini    hora de inicio, para poder ponerla en la columna
      tarea.dur    minutos que se estima que toma
    ══════════════════════════════════════════════════════════════════ */
-const CLAVE_LOCAL = 'dtm4-data';        /* la misma que v4, a propósito */
+const CLAVE_LOCAL = 'dtm5-data';        /* propia: no arrastra lo de v4 */
 const CID = Math.random().toString(36).slice(2);
 
 let S = {tareas:[], tareasCerradas:[], casos:[], cerrados:[], agenda:[], enlaces:[], focos:[]};
@@ -1246,7 +1269,19 @@ function pintarSimple(titulo, cuerpo){
 }
 
 function pintarSemana(){ pintarSimple('Semana', '<div class="vacio">El planificador llega en el siguiente tramo.</div>'); }
-function pintarMas(){    pintarSimple('Más',    '<div class="vacio">Ajustes, biblioteca, métricas y archivo llegan en el siguiente tramo.</div>'); }
+function pintarMas(){
+  pintarSimple('Más',
+    '<div class="tarjeta" style="padding:1rem 1.05rem;display:flex;align-items:center;gap:.8rem">' +
+      '<div style="flex:1;min-width:0">' +
+        '<div class="rotulo">Cuenta</div>' +
+        '<div style="font-size:.92rem;font-weight:600;margin-top:.2rem;overflow:hidden;text-overflow:ellipsis">' +
+          (USUARIO ? esc(USUARIO.email || USUARIO.displayName || 'Sesión iniciada') : 'Modo local, sin sesión') + '</div>' +
+        '<div class="menor" style="margin-top:.15rem">' + (ref ? 'Guardando en la nube' : 'Solo en este equipo') + '</div>' +
+      '</div>' +
+      (USUARIO ? '<button type="button" class="btn-sec" data-salir>Cerrar sesión</button>' : '') +
+    '</div>' +
+    '<div class="vacio">Ajustes, biblioteca, métricas y archivo llegan en el siguiente tramo.</div>');
+}
 
 /* ══════════════════════════════════════════════════════════════════
    CATÁLOGOS Y AYUDAS — los mismos valores que v4, para que lo que
@@ -2479,6 +2514,139 @@ function prepararCaptura(){
 }
 
 /* ══════════════════════════════════════════════════════════════════
+   NUBE — proyecto propio de v5 (taskmanager-ebec9). Un documento por
+   persona, paneles/{uid}, y los adjuntos en su subcolección.
+
+   El SDK se carga a pedido desde dos redes distintas: si una está
+   caída, la otra responde. Si no carga ninguna, la app sigue en modo
+   local con lo que haya en este equipo.
+   ══════════════════════════════════════════════════════════════════ */
+const FB_CONFIG = {
+  apiKey:"AIzaSyDud41NN-KaUsnwdjPYSj_bvFYZ12Be-Kc",
+  authDomain:"taskmanager-ebec9.firebaseapp.com",
+  projectId:"taskmanager-ebec9",
+  storageBucket:"taskmanager-ebec9.firebasestorage.app",
+  messagingSenderId:"96443576789",
+  appId:"1:96443576789:web:62c41987a1177b2aca8d5c"
+};
+let USUARIO = null, dejarSnapshot = null;
+
+function cargarScript(src, ms){
+  return new Promise((res, rej) => {
+    const s = document.createElement('script');
+    let listo = false;
+    const t = setTimeout(() => { if(!listo){ listo = true; rej(new Error('tiempo')); } }, ms);
+    s.src = src;
+    s.onload = () => { if(!listo){ listo = true; clearTimeout(t); res(); } };
+    s.onerror = () => { if(!listo){ listo = true; clearTimeout(t); rej(new Error('fallo')); } };
+    document.head.appendChild(s);
+  });
+}
+async function cargarFirebase(){
+  if(window.firebase && firebase.auth) return true;
+  const partes = ['firebase-app-compat.js','firebase-auth-compat.js','firebase-firestore-compat.js'];
+  for(const base of ['https://cdn.jsdelivr.net/npm/firebase@10.14.1/','https://www.gstatic.com/firebasejs/10.14.1/']){
+    try{ for(const p of partes) await cargarScript(base + p, 7000); return true; }catch(e){}
+  }
+  return false;
+}
+
+const ERR_AUTH = {
+  'auth/invalid-credential':'Correo o contraseña incorrectos.',
+  'auth/wrong-password':'Contraseña incorrecta.',
+  'auth/user-not-found':'No hay cuenta con ese correo. Usa «Crear cuenta».',
+  'auth/email-already-in-use':'Ese correo ya tiene cuenta. Usa «Entrar».',
+  'auth/weak-password':'La contraseña necesita al menos 6 caracteres.',
+  'auth/invalid-email':'Ese correo no parece válido.',
+  'auth/popup-blocked':'El navegador bloqueó la ventana de Google.',
+  'auth/unauthorized-domain':'Falta autorizar este dominio en Firebase: Authentication, Settings, Dominios autorizados.',
+  'auth/operation-not-allowed':'Falta activar este método en Firebase: Authentication, Sign-in method.'
+};
+function errAuth(e){
+  const el = $('lg-err');
+  if(el) el.textContent = ERR_AUTH[e && e.code] || (e && e.message) || 'No se pudo entrar.';
+}
+
+async function entrarGoogle(){
+  $('lg-err').textContent = '';
+  const prov = new firebase.auth.GoogleAuthProvider();
+  try{ await firebase.auth().signInWithPopup(prov); }
+  catch(e){
+    /* Instalada en la pantalla de inicio, la ventana emergente falla;
+       la redirección sí funciona. */
+    const rec = ['auth/popup-blocked','auth/popup-closed-by-user','auth/cancelled-popup-request','auth/operation-not-supported-in-this-environment'];
+    if(rec.includes(e.code)){
+      try{ await firebase.auth().signInWithRedirect(prov); return; }catch(e2){ errAuth(e2); return; }
+    }
+    errAuth(e);
+  }
+}
+async function entrarCorreo(crear){
+  $('lg-err').textContent = '';
+  const m = $('lg-mail').value.trim(), p = $('lg-pass').value;
+  if(!m || !p){ $('lg-err').textContent = 'Escribe tu correo y tu contraseña.'; return; }
+  try{
+    if(crear) await firebase.auth().createUserWithEmailAndPassword(m, p);
+    else await firebase.auth().signInWithEmailAndPassword(m, p);
+  }catch(e){ errAuth(e); }
+}
+function salir(){
+  if(!confirm('¿Cerrar sesión en este equipo? Lo guardado en la nube se queda allá.')) return;
+  try{ localStorage.removeItem(CLAVE_LOCAL); }catch(e){}
+  firebase.auth().signOut().then(() => location.reload());
+}
+
+function cargarDeDoc(d){
+  S = {
+    tareas:d.tareas||[], tareasCerradas:d.tareasCerradas||[], casos:d.casos||[], cerrados:d.cerrados||[],
+    agenda:d.agenda||[], enlaces:d.enlaces||[], focos:d.focos||[]
+  };
+  normalizar();
+  try{ localStorage.setItem(CLAVE_LOCAL, JSON.stringify(S)); }catch(e){}
+}
+
+function conectarPanel(u){
+  if(dejarSnapshot){ dejarSnapshot(); dejarSnapshot = null; }
+  try{
+    ref = firebase.firestore().collection('paneles').doc(u.uid);
+    dejarSnapshot = ref.onSnapshot(snap => {
+      if(snap.metadata && snap.metadata.hasPendingWrites) return;
+      const d = snap.data();
+      if(!d){ guardar(); return; }          /* panel nuevo: sube lo que haya en este equipo */
+      if(d.by === CID) return;               /* eco de mi propia escritura */
+      cargarDeDoc(d);
+      pintar();
+    }, err => aviso('Error de la nube: ' + err.message));
+  }catch(e){ ref = null; aviso('No se pudo conectar: ' + e.message); }
+}
+
+function mostrarEntrada(si){
+  $('entrada').hidden = !si;
+  document.body.style.overflow = si ? 'hidden' : '';
+}
+
+async function arrancarNube(){
+  if(!navigator.onLine){ aviso('Sin conexión: trabajando con lo que hay en este equipo'); return; }
+  if(!await cargarFirebase()){ aviso('No se pudo cargar Firebase. La app sigue en modo local.'); return; }
+  firebase.initializeApp(FB_CONFIG);
+  firebase.auth().getRedirectResult().catch(errAuth);
+  firebase.auth().onAuthStateChanged(u => {
+    USUARIO = u;
+    if(!u){
+      if(dejarSnapshot){ dejarSnapshot(); dejarSnapshot = null; }
+      ref = null;
+      mostrarEntrada(true);
+      pintar();
+      return;
+    }
+    mostrarEntrada(false);
+    conectarPanel(u);
+    pintar();
+  });
+}
+addEventListener('online', () => { if(ref) guardar(); });
+
+/* ══════════════════════════════════════════════════════════════════
    PINTAR
    ══════════════════════════════════════════════════════════════════ */
 function pintar(){
@@ -2509,6 +2677,9 @@ document.addEventListener('click', e => {
   if((b = q('[data-crear-caso]'))){ const [tid, n] = b.dataset.crearCaso.split('|'); crearCasoDesdeTarea(tid, n); return; }
   if((b = q('[data-nodup]'))){ ignorar(b.dataset.nodup); pintar(); aviso('Entendido, no los vuelvo a juntar'); return; }
   if((b = q('[data-mas-dobles]'))){ verTodosDobles = !verTodosDobles; pintar(); return; }
+  if((b = q('[data-salir]'))){ salir(); return; }
+  if((b = q('[data-google]'))){ entrarGoogle(); return; }
+  if((b = q('[data-correo]'))){ entrarCorreo(b.dataset.correo === 'crear'); return; }
 });
 
 /* N abre la captura desde el teclado, sin animación. */
@@ -2539,6 +2710,8 @@ cargarLocal();
 prepararCaptura();
 pintar();
 relojEnMarcha();
+arrancarNube();
+$('lg-pass').addEventListener('keydown', e => { if(e.key === 'Enter') entrarCorreo(false); });
 
 /* Con el teclado (detail 0) la hoja aparece sin animación. */
 $('btn-capturar').addEventListener('click', e => abrirCaptura({instantaneo: e.detail === 0}));

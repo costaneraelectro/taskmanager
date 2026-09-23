@@ -1,0 +1,34 @@
+name: Avisos
+
+# Cada 10 minutos revisa qué hay que avisar y lo envía a los equipos
+# suscritos. GitHub puede atrasar las ejecuciones programadas unos
+# minutos; las ventanas de aviso ya lo consideran.
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: avisos
+  cancel-in-progress: false
+
+jobs:
+  enviar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: avisos
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install --no-audit --no-fund
+      - run: node enviar.mjs
+        env:
+          FIREBASE_SA: ${{ secrets.FIREBASE_SA }}
+          TZ: America/Santiago

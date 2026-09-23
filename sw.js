@@ -2,8 +2,8 @@
 self.addEventListener('push', e => {
   let d = {};
   try { d = e.data ? e.data.json() : {}; }
-  catch (_) { d = { title: 'Task Manager', body: e.data ? e.data.text() : '' }; }
-  e.waitUntil(self.registration.showNotification(d.title || '🚨 Task Manager', {
+  catch (_) { d = { title: 'Tareas', body: e.data ? e.data.text() : '' }; }
+  e.waitUntil(self.registration.showNotification(d.title || 'Tareas', {
     body: d.body || '',
     icon: 'icon-180.png',
     badge: 'icon-180.png',

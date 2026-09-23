@@ -1679,6 +1679,8 @@ function pintarMas(){
   h += tarjeta('Avisos',
     '<div class="aj-fila"><div class="aj-tx">' +
       '<div style="font-weight:600">' + (estadoAv === 'si' ? 'Activados en este equipo' : 'Avisos') + '</div>' +
+      (estadoAv === 'si' ? '<div class="menor" style="color:var(--' + (pushListo ? 'verde' : 'tinta3') + ')">' +
+        (pushListo ? 'También con la app cerrada' : 'Solo con la app abierta') + '</div>' : '') +
       '<div class="menor">' + ({
         no:'Este navegador no permite avisos. En iPhone, agrega la app a la pantalla de inicio (Compartir, «Agregar a inicio») y ábrela desde ahí.',
         bloqueado:'Bloqueaste los avisos. Actívalos en los ajustes del navegador para este sitio.',
@@ -1689,7 +1691,7 @@ function pintarMas(){
     (estadoAv === 'si' ? '<button type="button" class="btn-sec" data-avisos="off">Apagar</button>'
       : estadoAv === 'apagado' ? '<button type="button" class="btn-pri" data-avisos="on">Activar</button>' : '') +
     '</div>' +
-    '<p class="menor" style="margin-top:.7rem;line-height:1.45">Llegan mientras la app está abierta o en segundo plano. Con la app cerrada del todo hace falta un servidor que los envíe; eso queda para después.</p>');
+    '<p class="menor" style="margin-top:.7rem;line-height:1.45">En iPhone llegan con la app cerrada si la abres desde la pantalla de inicio (iOS 16.4 o más nuevo).</p>');
 
   const tema = prefs().tema, tam = prefs().tamano;
   h += tarjeta('Apariencia',
@@ -3637,10 +3639,54 @@ async function activarAvisos(){
   try{ localStorage.setItem('dtm5-avisos', '1'); }catch(e){}
   await registrarSW();
   notificar('Avisos activados', 'Te aviso antes de tus eventos y a la hora de tus tareas.', 'prueba');
+  await suscribirPush(true);
   pintar();
   revisarAvisos();
 }
-function apagarAvisos(){ try{ localStorage.removeItem('dtm5-avisos'); }catch(e){} pintar(); }
+async function apagarAvisos(){
+  try{ localStorage.removeItem('dtm5-avisos'); }catch(e){}
+  try{
+    const sub = registroSW && registroSW.pushManager && await registroSW.pushManager.getSubscription();
+    if(sub) await sub.unsubscribe();
+    if(ref) await ref.collection('push').doc(idEquipo()).delete();
+  }catch(e){}
+  pushListo = false;
+  pintar();
+}
+
+/* ── con la app cerrada ──
+   El servidor (GitHub Actions, carpeta avisos/) deja su clave pública en
+   paneles/{uid}/push/_clave. Con ella el equipo se suscribe y guarda su
+   suscripción en paneles/{uid}/push/{equipo}; desde ahí el servidor le
+   envía los avisos aunque la app esté cerrada. */
+let pushListo = false;
+function idEquipo(){
+  try{
+    let id = localStorage.getItem('dtm5-equipo');
+    if(!id){ id = 'e' + uid(); localStorage.setItem('dtm5-equipo', id); }
+    return id;
+  }catch(e){ return 'e-sin-id'; }
+}
+function b64aBytes(s){
+  const b = atob((s + '='.repeat((4 - s.length % 4) % 4)).replace(/-/g, '+').replace(/_/g, '/'));
+  return Uint8Array.from(b, c => c.charCodeAt(0));
+}
+async function suscribirPush(avisar){
+  if(!ref || !avisosActivos() || !('PushManager' in window)) return;
+  if(!registroSW) await registrarSW();
+  if(!registroSW) return;
+  try{
+    const d = (await ref.collection('push').doc('_clave').get()).data();
+    if(!d || !d.publica){ if(avisar) aviso('Con la app cerrada llegarán cuando el servidor de avisos esté configurado'); return; }
+    let sub = await registroSW.pushManager.getSubscription();
+    if(!sub) sub = await registroSW.pushManager.subscribe({userVisibleOnly:true, applicationServerKey:b64aBytes(d.publica)});
+    const j = sub.toJSON();
+    await ref.collection('push').doc(idEquipo()).set({endpoint:j.endpoint, keys:j.keys, agente:navigator.userAgent.slice(0, 120), actualizado:new Date().toISOString()});
+    pushListo = true;
+    if(avisar) aviso('También te aviso con la app cerrada');
+  }catch(e){ if(avisar) aviso('Avisos solo con la app abierta: ' + e.message); }
+  pintar();
+}
 function notificar(titulo, cuerpo, tag){
   const op = {body:cuerpo, tag, icon:'icon-180.png', badge:'icon-180.png'};
   if(registroSW && registroSW.showNotification){ registroSW.showNotification(titulo, op).catch(() => {}); return; }
@@ -3652,10 +3698,16 @@ function revisarAvisos(){
   let hechos = {};
   try{ hechos = JSON.parse(localStorage.getItem('dtm5-avisado') || '{}'); }catch(e){}
   for(const k of Object.keys(hechos)) if(hechos[k] !== hoy) delete hechos[k];
+  /* Las claves llevan el día y son las mismas del servidor: lo que ya
+     avisó uno no lo repite el otro. */
   const lanzar = (clave, titulo, cuerpo) => {
+    clave = hoy + '|' + clave;
     if(hechos[clave]) return;
     hechos[clave] = hoy;
     notificar(titulo, cuerpo, clave);
+    if(ref && window.firebase && firebase.firestore.FieldValue){
+      ref.collection('push').doc('_enviados').set({claves:firebase.firestore.FieldValue.arrayUnion(clave)}, {merge:true}).catch(() => {});
+    }
   };
   for(const e of eventosDeHoy()){
     const m = minutosDe(e.hora);
@@ -3808,6 +3860,7 @@ async function arrancarNube(){
     mostrarEntrada(false);
     conectarPanel(u);
     pintar();
+    if(avisosActivos()) suscribirPush(false);
   });
 }
 addEventListener('online', () => { if(ref) guardar(); });

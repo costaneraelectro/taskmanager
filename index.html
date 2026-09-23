@@ -51,6 +51,7 @@
   /* Prioridad: rojo lo que no espera, índigo lo que se planifica,
      menta lo que pasa a otro. Solo marcan: una franja, un punto, el
      aro del círculo. El fondo sigue neutro. */
+  --fuego:#FF7A1A; --fuegoT:rgba(255,122,26,.18);
   --urg:#FF453A;   --urgT:rgba(255,69,58,.13);
   --plan:#7D7AFF;  --planT:rgba(125,122,255,.14);
   --dele:#63E6BE;  --deleT:rgba(99,230,190,.12);
@@ -96,6 +97,7 @@
     --rojoT:rgba(215,0,21,.1);
     --verdeT:rgba(24,137,59,.1);
     --azulT:rgba(10,126,164,.09);
+    --fuego:#B84800; --fuegoT:rgba(184,72,0,.12);
     --urg:#D70015;  --urgT:rgba(215,0,21,.09);
     --plan:#5856D6; --planT:rgba(88,86,214,.1);
     --dele:#0C8A6A; --deleT:rgba(12,138,106,.1);
@@ -112,6 +114,7 @@
   --ambar:#C77700; --rojo:#D70015; --verde:#18893B; --azul:#0A7EA4;
   --ambarT:rgba(199,119,0,.12); --rojoT:rgba(215,0,21,.1);
   --verdeT:rgba(24,137,59,.1); --azulT:rgba(10,126,164,.09);
+  --fuego:#B84800; --fuegoT:rgba(184,72,0,.12);
   --urg:#D70015; --urgT:rgba(215,0,21,.09);
   --plan:#5856D6; --planT:rgba(88,86,214,.1);
   --dele:#0C8A6A; --deleT:rgba(12,138,106,.1);
@@ -261,6 +264,7 @@ main{
   display:flex;align-items:center;justify-content:center;padding:0 .25rem;
 }
 .dest .glob.gris{background:var(--tinta3)}
+.dest .glob.ambar{background:var(--ambar)}
 
 /* El botón de capturar flota sobre la barra, no dentro de ella. */
 .capturar{
@@ -336,7 +340,7 @@ button.cuerpo{display:block;width:100%;text-align:left;cursor:pointer}
 /* ── calendario ── */
 .cal-nav{display:flex;align-items:center;gap:.35rem;padding-bottom:.15rem}
 .redondo{width:2.5rem;height:2.5rem;border-radius:50%;display:grid;place-items:center;color:var(--tinta2);background:var(--borde2)}
-.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;background:var(--sup);border-radius:var(--r-ta);padding:.5rem .4rem .6rem}
+.cal{touch-action:pan-y;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;background:var(--sup);border-radius:var(--r-ta);padding:.5rem .4rem .6rem}
 .cal-dn{text-align:center;font-family:var(--cifra);font-size:.62rem;font-weight:600;color:var(--tinta4);padding:.2rem 0 .35rem}
 .cal-d{
   display:flex;flex-direction:column;align-items:center;gap:.2rem;
@@ -421,15 +425,33 @@ a.mini{display:inline-flex;align-items:center}
 .adj-otro .adj-x{top:50%;transform:translateY(-50%);right:.5rem;background:var(--borde);color:var(--tinta2)}
 .adj-ico{width:2.2rem;height:2.2rem;border-radius:.6rem;display:grid;place-items:center;background:var(--borde2);color:var(--tinta2);flex:none}
 .adj-otro audio{display:block;width:100%;height:2.2rem;margin-top:.4rem}
-.lupa{position:fixed;inset:0;z-index:95;background:rgba(0,0,0,.92);display:grid;place-items:center;padding:calc(var(--alto) + .5rem) .5rem calc(var(--bajo) + .5rem)}
+.lupa{position:fixed;inset:0;z-index:95;background:transparent;display:grid;place-items:center;padding:calc(var(--alto) + .5rem) .5rem calc(var(--bajo) + .5rem)}
 .lupa[hidden]{display:none}
 .lupa{grid-template-rows:1fr auto;gap:.8rem}
-.lupa img{max-width:100%;max-height:100%;object-fit:contain;border-radius:.4rem;align-self:center;justify-self:center;min-height:0}
+.lupa img{will-change:transform;max-width:100%;max-height:100%;object-fit:contain;border-radius:.4rem;align-self:center;justify-self:center;min-height:0}
 .lupa-barra{display:flex;gap:.6rem;justify-content:center}
 .lupa-barra .btn-sec{background:rgba(255,255,255,.14);color:#fff}
 .adj-bajar{position:absolute;bottom:.25rem;right:.25rem;width:1.7rem;height:1.7rem;border-radius:50%;display:grid;place-items:center;background:rgba(0,0,0,.55);color:#fff}
 @media (prefers-reduced-motion: reduce){.cargando{animation:none}}
 
+.buscar{position:relative;display:flex;align-items:center;margin-bottom:1rem;color:var(--tinta3)}
+.buscar svg{position:absolute;left:.85rem;pointer-events:none}
+.buscar input{width:100%;min-height:2.75rem;padding:0 2.6rem 0 2.5rem;border-radius:.9rem;border:1px solid transparent;background:var(--sup);color:var(--tinta);font-size:.95rem;-webkit-appearance:none;appearance:none}
+.buscar input::-webkit-search-cancel-button{display:none}
+.buscar input:focus-visible{outline:none;border-color:var(--ambar)}
+.buscar input::placeholder{color:var(--tinta4)}
+.buscar-x{position:absolute;right:.45rem;width:2rem;height:2rem;border-radius:50%;display:grid;place-items:center;background:var(--borde2);color:var(--tinta2)}
+.fila.hecha{align-items:center;opacity:.75}
+/* Una fila recién creada entra desde un poco más abajo: dice dónde
+   quedó lo que acabas de guardar. */
+@keyframes entra{from{opacity:0;transform:translateY(8px)}}
+.nueva{animation:entra 320ms cubic-bezier(.23,1,.32,1)}
+@keyframes asoma{from{opacity:0;transform:translateY(-4px)}}
+.detec.entra{animation:asoma 200ms cubic-bezier(.23,1,.32,1)}
+@media (prefers-reduced-motion: reduce){
+  @keyframes entra{from{opacity:0}}
+  @keyframes asoma{from{opacity:0}}
+}
 .vacio{padding:2.5rem 1rem;text-align:center;color:var(--tinta3);font-size:.9rem;line-height:1.5}
 
 /* ── botones ── */
@@ -444,6 +466,11 @@ a.mini{display:inline-flex;align-items:center}
 .btn-pri:disabled,.btn-sec:disabled{opacity:.35;cursor:default}
 /* Responder al apoyar el dedo: el botón cede un 3 % en el acto. */
 .btn-pri:not(:disabled):active,.btn-sec:active,.acc6 button:active,.op:active,.mini:active{transform:scale(.97)}
+/* Lo que se toca a cada rato responde casi sin notarse: 120 ms. */
+.cal-d,.redondo,.seg button,.atras,.buscar-x,.dest svg,.adj-x,.adj-bajar{transition:transform 120ms ease-out}
+.cal-d:active,.redondo:active,.atras:active,.buscar-x:active,.adj-x:active,.adj-bajar:active{transform:scale(.94)}
+.seg button:active{transform:scale(.97)}
+.dest:active svg{transform:scale(.88)}
 .mini{min-height:2rem;padding:0 .7rem;border-radius:1rem;font-size:.74rem;font-weight:600;background:var(--borde2);color:var(--tinta2)}
 
 /* control segmentado: el elegido se levanta, no se pinta */
@@ -480,7 +507,9 @@ a.mini{display:inline-flex;align-items:center}
 .cara .tx:active{transform:scale(.985)}
 
 .caso .marca{width:3px;align-self:stretch;border-radius:2px;background:var(--borde);flex:none;margin:.1rem 0}
-.caso .marca.rojo{background:var(--rojo)}
+.caso .marca.fuego{background:var(--fuego)}
+.ficha.ambar{background:var(--ambarT);color:var(--ambar)}
+.ficha.fuego{background:var(--fuegoT);color:var(--fuego)}
 .caso .marca.ambar{background:var(--ambar)}
 .caso .id,.caso .desc{display:block}
 .id-fila{display:flex;align-items:center;gap:.35rem}
@@ -614,7 +643,6 @@ a.mini{display:inline-flex;align-items:center}
 #velo{
   position:fixed;inset:0;z-index:50;background:var(--velo);
   opacity:0;pointer-events:none;
-  backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);
 }
 #velo.on{pointer-events:auto}
 .hoja{
@@ -965,6 +993,7 @@ function normalizar(){
     if(c.estado !== 'EN ESPERA') c.estado = 'EN PROGRESO';
     if(!Array.isArray(c.hist)) c.hist = [];
     if(!Array.isArray(c.adj)) c.adj = [];
+    if(typeof c.seguir !== 'string') c.seguir = '';
   });
   S.focos = S.focos || [];
   S.ajustes = Object.assign({ics:[]}, S.ajustes || {});
@@ -1256,6 +1285,8 @@ const ICO = {
   tareas:'<path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 5.5l1 1 2-2M4 11.5l1 1 2-2M4 17.5l1 1 2-2"/>',
   casos: '<path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>',
   x:     '<path d="M6 6l12 12M18 6L6 18"/>',
+  campana:'<path d="M6 16V11a6 6 0 0112 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 004 0"/>',
+  lupa:  '<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>',
   copiar:'<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 012-2h8"/>',
   bajar: '<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>',
   evento:'<rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 10h18M8 2v4M16 2v4M12 13v5M9.5 15.5h5"/>'
@@ -1295,7 +1326,7 @@ function pintarBarra(){
     '<button type="button" class="dest" data-ir="' + v.id + '"' +
       (vista === v.id ? ' aria-current="page"' : '') + '>' +
       icono(v.ico) +
-      (globo[v.id] ? '<span class="glob' + (v.id === 'tareas' ? ' gris' : '') + '">' + globo[v.id] + '</span>' : '') +
+      (globo[v.id] ? '<span class="glob' + (v.id === 'casos' ? ' ambar' : '') + '">' + globo[v.id] + '</span>' : '') +
       '<span>' + v.rotulo + '</span>' +
     '</button>'
   ).join('');
@@ -1354,8 +1385,10 @@ function pintarHoy(){
   const vivas = S.tareas.filter(t => !t.done);
   const urgentes = ordenarTareas(vivas.filter(t => t.cat === 'urgente' && !(t.ini && t.venc === hoy) && (!t.venc || t.venc <= hoy)));
   const paraHoy = ordenarTareas(vivas.filter(t => t.cat !== 'urgente' && t.venc && t.venc <= hoy && !(t.ini && t.venc === hoy)));
-  const casos = casosOrdenados().filter(c => c.estado !== 'EN ESPERA');
+  const revisar = casosOrdenados().filter(c => c.seguir && c.seguir <= hoy);
+  const casos = casosOrdenados().filter(c => c.estado !== 'EN ESPERA' && !revisar.includes(c));
 
+  if(revisar.length) h += grupo('Casos para revisar hoy', revisar.length, revisar.map(c => filaCaso(c)).join(''));
   if(urgentes.length) h += grupo('Urgentes', urgentes.length, urgentes.map(t => filaTarea(t)).join(''), '', 'urgente');
   if(paraHoy.length) h += grupo('Para hoy', paraHoy.length, paraHoy.map(t => filaTarea(t)).join(''));
   if(casos.length){
@@ -1363,7 +1396,7 @@ function pintarHoy(){
     h += grupo('Casos pendientes', casos.length, ver.map(c => filaCaso(c)).join(''),
                casos.length > 5 ? '<button type="button" class="menor toque" data-ir="casos">ver los ' + casos.length + '</button>' : '');
   }
-  if(!urgentes.length && !paraHoy.length && !casos.length && columna.length){
+  if(!revisar.length && !urgentes.length && !paraHoy.length && !casos.length && columna.length){
     h += '<div class="vacio" style="padding:1.6rem 1rem">Nada urgente pendiente.</div>';
   }
   h += '</section>';
@@ -1442,6 +1475,46 @@ function fechaLarga(iso){
   const n = difDias(iso, hoyISO());
   const base = DIAS[d.getDay()] + ' ' + d.getDate() + ' de ' + MESES[d.getMonth()];
   return n === 0 ? 'Hoy · ' + base : n === 1 ? 'Mañana · ' + base : base;
+}
+
+/* Cambiar de mes: el mes nuevo entra desde el lado hacia donde se va,
+   24 px y opacidad, con resorte. Dice "adelante" o "atrás" sin
+   hacerse esperar. */
+let entradaMes = 0;
+function cambiarMes(dir){
+  const [y, m] = calMes.split('-').map(Number);
+  calMes = hoyISO(new Date(y, m - 1 + dir, 1)).slice(0, 7);
+  entradaMes = dir;
+  pintar();
+}
+function animarMes(){
+  const g = document.querySelector('#lienzo .cal');
+  if(!g || !entradaMes) return;
+  const dir = entradaMes;
+  entradaMes = 0;
+  if(REDUCIDO) return;
+  Resorte(0, v => {
+    g.style.transform = v >= .999 ? '' : 'translateX(' + (dir * 24 * (1 - v)) + 'px)';
+    g.style.opacity = Math.min(1, .3 + v * .7);
+  }, .002).a(1, {respuesta:.3});
+}
+/* Deslizar sobre la grilla cambia de mes. Un toque sigue eligiendo
+   el día: solo cuenta como deslizar si fue horizontal y largo, o
+   corto pero rápido. */
+function gestoMes(g){
+  let x0 = 0, y0 = 0, t0 = 0, activo = false;
+  g.addEventListener('pointerdown', e => { activo = true; x0 = e.clientX; y0 = e.clientY; t0 = performance.now(); });
+  g.addEventListener('pointerup', e => {
+    if(!activo) return;
+    activo = false;
+    const dx = e.clientX - x0, dy = e.clientY - y0, v = Math.abs(dx) / Math.max(1, performance.now() - t0);
+    if(Math.abs(dx) > Math.abs(dy) * 1.5 && (Math.abs(dx) > 70 || (Math.abs(dx) > 30 && v > .5))){
+      g.dataset.deslizo = '1';
+      cambiarMes(dx < 0 ? 1 : -1);
+    }
+  });
+  g.addEventListener('pointercancel', () => { activo = false; });
+  g.addEventListener('click', e => { if(g.dataset.deslizo){ e.stopPropagation(); e.preventDefault(); delete g.dataset.deslizo; } }, true);
 }
 
 /* Tres vistas, como el Calendario de Apple: compacta (puntos),
@@ -1548,6 +1621,8 @@ function pintarCalendario(){
     botonesDia(calDia));
   h += '</section>';
   $('lienzo').innerHTML = h;
+  gestoMes(document.querySelector('#lienzo .cal'));
+  animarMes();
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -1830,11 +1905,12 @@ function eliminarTarea(tid){
 }
 function avanceCaso(id){
   const c = casoPorId(id); if(!c) return;
-  const antes = c.act;
+  const antes = c.act, seguia = c.seguir;
   c.act = hoyISO();
+  if(c.seguir && c.seguir <= hoyISO()) c.seguir = '';
   anotar(c, 'Movimiento registrado');
   aplicar();
-  aviso('Avance en ' + c.id, () => { c.act = antes; c.hist.shift(); aplicar(); });
+  aviso('Avance en ' + c.id, () => { c.act = antes; c.seguir = seguia; c.hist.shift(); aplicar(); });
 }
 function esperaCaso(id){
   const c = casoPorId(id); if(!c) return;
@@ -2022,7 +2098,9 @@ function casosOrdenados(){
 function tonoCaso(c){
   if(c.estado === 'EN ESPERA') return '';
   const q = diasDesde(c.act) || 0;
-  return q >= 3 ? 'rojo' : q >= UMBRAL_FRIO ? 'ambar' : '';
+  /* El rojo es solo para lo urgente. Un caso quieto se calienta en
+     ámbar: más días, ámbar más encendido. */
+  return q >= 4 ? 'fuego' : q >= UMBRAL_FRIO ? 'ambar' : '';
 }
 function ordenarTareas(l){
   return l.slice().sort((a,b) =>
@@ -2047,7 +2125,7 @@ function chipsTarea(t){
 }
 
 function filaTarea(t){
-  return '<div class="desl" data-desliza data-id="' + esc(t.tid) + '" data-der="hecha" data-izq="manana">' +
+  return '<div class="desl' + (t.tid === recien ? ' nueva' : '') + '" data-desliza data-id="' + esc(t.tid) + '" data-der="hecha" data-izq="manana">' +
     fondoFila(LADOS.hecha, LADOS.manana) +
     '<div class="cara fila p-' + (CATS[t.cat] ? t.cat : 'planificar') + '">' +
       '<button type="button" class="chk" data-hecha="' + esc(t.tid) + '" aria-pressed="false" aria-label="Marcar hecha"></button>' +
@@ -2062,14 +2140,17 @@ function filaTarea(t){
    botón. Tocar el detalle lo despliega entero con sus acciones; el
    número queda quieto donde estaba. */
 let casoDesplegado = null;
+/* Lo último creado, para que su fila entre con animación una vez. */
+let recien = null;
+function marcarRecien(id){ recien = id; setTimeout(() => { if(recien === id) recien = null; }, 900); }
 function filaCaso(c){
   const q = diasDesde(c.act) || 0, tono = tonoCaso(c), espera = c.estado === 'EN ESPERA';
   const nT = S.tareas.filter(t => !t.done && t.caso === c.id).length;
   const abierto = casoDesplegado === c.id;
   const quieto = espera ? '<span class="ficha gris">En espera</span>'
     : q === 0 ? '<span class="ficha gris">Movido hoy</span>'
-    : '<span class="ficha cifra' + (tono === 'rojo' ? ' roja' : tono === 'ambar' ? '' : ' gris') + '">' + enDias(q) + ' quieto</span>';
-  return '<div class="desl caso' + (abierto ? ' abierto' : '') + '" data-desliza data-id="' + esc(c.id) + '" data-fila-caso="' + esc(c.id) + '" data-der="avance" data-izq="espera">' +
+    : '<span class="ficha cifra' + (tono ? ' ' + tono : ' gris') + '">' + enDias(q) + ' quieto</span>';
+  return '<div class="desl caso' + (abierto ? ' abierto' : '') + (c.id === recien ? ' nueva' : '') + '" data-desliza data-id="' + esc(c.id) + '" data-fila-caso="' + esc(c.id) + '" data-der="avance" data-izq="espera">' +
     fondoFila(LADOS.avance, espera ? LADOS.retomar : LADOS.espera) +
     '<div class="cara fila">' +
       '<span class="marca ' + tono + '"></span>' +
@@ -2079,6 +2160,7 @@ function filaCaso(c){
         '</div>' +
         '<button type="button" class="desc" data-desplegar="' + esc(c.id) + '" aria-expanded="' + abierto + '">' + esc(c.desc) + '</button>' +
         '<span class="meta">' + quieto +
+          (c.seguir ? '<span class="ficha' + (c.seguir <= hoyISO() ? '' : ' gris') + '">' + icono('campana', 11, 2.2) + 'revisar ' + fechaCorta(c.seguir) + '</span>' : '') +
           (nT ? '<span class="ficha gris">' + nT + (nT === 1 ? ' tarea' : ' tareas') + '</span>' : '') +
           (c.adj && c.adj.length ? '<span class="ficha gris">' + icono('clip', 11, 2.2) + c.adj.length + '</span>' : '') +
         '</span>' +
@@ -2095,6 +2177,34 @@ function filaCaso(c){
         '<button type="button" class="mini" data-espera="' + esc(c.id) + '">' + (espera ? 'Retomar' : 'Esperar') + '</button>' +
       '</div>' +
     '</div></div>';
+}
+
+/* Desplegar sin repintar la lista: la fila cambia en el sitio y su
+   alto viaja con un resorte del alto viejo al nuevo, así las de abajo
+   se corren en vez de saltar. Si había otra abierta, se cierra igual. */
+function desplegarCaso(id){
+  const cambiar = cid => {
+    const vieja = document.querySelector('[data-fila-caso="' + CSS.escape(cid) + '"]');
+    if(!vieja) return;
+    const alto0 = vieja.offsetHeight;
+    const tmp = document.createElement('div');
+    tmp.innerHTML = filaCaso(casoPorId(cid));
+    const nueva = tmp.firstElementChild;
+    vieja.replaceWith(nueva);
+    deslizable(nueva);
+    const alto1 = nueva.offsetHeight;
+    if(REDUCIDO || alto0 === alto1) return;
+    const acc = nueva.querySelector('.tx>.acc');
+    nueva.style.overflow = 'hidden';
+    Resorte(0, v => {
+      nueva.style.height = (alto0 + (alto1 - alto0) * v) + 'px';
+      if(acc) acc.style.opacity = Math.max(0, Math.min(1, v * 1.4 - .4));
+    }, .002).a(1, {respuesta:.32, alLlegar(){ nueva.style.height = ''; nueva.style.overflow = ''; }});
+  };
+  const antes = casoDesplegado;
+  casoDesplegado = antes === id ? null : id;
+  if(antes && antes !== id) cambiar(antes);
+  cambiar(id);
 }
 
 /* Copiar al portapapeles, con el aviso de que se hizo. */
@@ -2136,19 +2246,48 @@ function pintarDobles(lista){
   '</div>';
 }
 
-function pintarTareas(){
-  const vivas = S.tareas.filter(t => !t.done);
-  cabeza('Tareas', vivas.length + (vivas.length === 1 ? ' pendiente' : ' pendientes'));
-  let h = '<section class="env">';
-  const dup = dobles();
-  if(dup.length) h += pintarDobles(dup);
+/* ── buscar ──
+   Un campo arriba de Tareas y de Casos. Filtra mientras escribes, sin
+   tildes ni mayúsculas, y también encuentra lo ya hecho o finalizado,
+   que se puede reabrir desde ahí. Solo se repinta la lista: el campo
+   no pierde el foco. */
+const busca = {tareas:'', casos:''};
+function coincide(texto, q){ return sinTildes(texto).includes(sinTildes(q)); }
+function campoBuscar(v, ph){
+  return '<div class="buscar">' + icono('lupa', 17, 2.2) +
+    '<input type="search" id="buscar" data-buscar="' + v + '" placeholder="' + ph + '" value="' + esc(busca[v]) + '" autocomplete="off" enterkeyhint="search" aria-label="' + ph + '">' +
+    (busca[v] ? '<button type="button" class="buscar-x" data-limpiar-busqueda aria-label="Borrar búsqueda">' + icono('x', 14, 2.6) + '</button>' : '') +
+  '</div>';
+}
+function pintarLista(){
+  const el = $('lista'); if(!el) return;
+  el.innerHTML = vista === 'tareas' ? listaTareas() : listaCasos();
+  el.querySelectorAll('[data-desliza]').forEach(deslizable);
+}
+
+function listaTareas(){
+  const q = busca.tareas.trim();
+  const vivas = S.tareas.filter(t => !t.done && (!q || coincide(t.text + ' ' + (t.caso || ''), q)));
+  let h = '';
+  if(!q){ const dup = dobles(); if(dup.length) h += pintarDobles(dup); }
   for(const k of CAT_ORDEN){
     const l = ordenarTareas(vivas.filter(t => t.cat === k));
     if(l.length) h += grupo(CATS[k], l.length, l.map(t => filaTarea(t)).join(''), '', k);
   }
-  if(!vivas.length) h += '<div class="vacio">Sin tareas pendientes.<br>Crea una con <b>+</b>.</div>';
-  h += '</section>';
-  $('lienzo').innerHTML = h;
+  if(q){
+    const hechas = S.tareasCerradas.map((t, i) => ({t, i})).filter(x => coincide(x.t.text, q)).slice(0, 20);
+    if(hechas.length) h += grupo('Hechas', hechas.length, hechas.map(x =>
+      '<div class="fila hecha"><span class="tx"><span style="display:block">' + esc(x.t.text) + '</span>' +
+      '<span class="menor">hecha ' + (x.t.cerrado ? fechaCorta(x.t.cerrado) : '') + '</span></span>' +
+      '<button type="button" class="mini" data-reabrir-tarea="' + x.i + '">Reabrir</button></div>').join(''));
+    if(!vivas.length && !hechas.length) h += '<div class="vacio">Nada con «' + esc(q) + '».</div>';
+  }else if(!vivas.length) h += '<div class="vacio">Sin tareas pendientes.<br>Crea una con <b>+</b>.</div>';
+  return h;
+}
+function pintarTareas(){
+  const vivas = S.tareas.filter(t => !t.done);
+  cabeza('Tareas', vivas.length + (vivas.length === 1 ? ' pendiente' : ' pendientes'));
+  $('lienzo').innerHTML = '<section class="env">' + campoBuscar('tareas', 'Buscar tareas') + '<div id="lista">' + listaTareas() + '</div></section>';
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -2156,15 +2295,28 @@ function pintarTareas(){
    caso despliega su detalle; "Abrir caso" lleva a la ficha con sus
    tareas y adjuntos.
    ══════════════════════════════════════════════════════════════════ */
+function listaCasos(){
+  const q = busca.casos.trim();
+  const casos = casosOrdenados().filter(c => !q || coincide(c.id + ' ' + c.desc, q));
+  let h = casos.length ? '<div class="pila">' + casos.map(c => filaCaso(c)).join('') + '</div>' : '';
+  if(q){
+    const fin = S.cerrados.map((c, i) => ({c, i})).filter(x => coincide(x.c.id + ' ' + x.c.desc, q)).slice(0, 20);
+    if(fin.length) h += grupo('Finalizados', fin.length, fin.map(x =>
+      '<div class="fila hecha"><span class="tx"><span class="cifra sel" style="display:block;font-size:.8rem;color:var(--tinta3)">' + esc(x.c.id) + '</span>' +
+      '<span style="display:block">' + esc(x.c.desc) + '</span>' +
+      '<span class="menor">finalizado ' + (x.c.cerrado ? fechaCorta(x.c.cerrado) : '') + '</span></span>' +
+      '<button type="button" class="mini" data-reabrir-caso="' + x.i + '">Reabrir</button></div>').join(''));
+    if(!casos.length && !fin.length) h += '<div class="vacio">Ningún caso con «' + esc(q) + '».</div>';
+  }else{
+    if(!casos.length) h += '<div class="vacio">Sin casos abiertos.<br>Crea uno con <b>+</b> y elige «Caso».</div>';
+    if(S.cerrados.length) h += '<button type="button" class="plegar" data-ver-cerrados>Casos finalizados · ' + S.cerrados.length + '</button>';
+  }
+  return h;
+}
 function pintarCasos(){
   const casos = casosOrdenados(), frios = enfriandose().length;
   cabeza('Casos', casos.length + (casos.length === 1 ? ' abierto' : ' abiertos') + (frios ? ' · ' + frios + ' quietos' : ''));
-  let h = '<section class="env">';
-  h += casos.length ? '<div class="pila">' + casos.map(c => filaCaso(c)).join('') + '</div>'
-                    : '<div class="vacio">Sin casos abiertos.<br>Crea uno con <b>+</b> y elige «Caso».</div>';
-  if(S.cerrados.length) h += '<button type="button" class="plegar" data-ver-cerrados>Casos cerrados · ' + S.cerrados.length + '</button>';
-  h += '</section>';
-  $('lienzo').innerHTML = h;
+  $('lienzo').innerHTML = '<section class="env">' + campoBuscar('casos', 'Buscar por número o detalle') + '<div id="lista">' + listaCasos() + '</div></section>';
 }
 
 function terminarCaso(id){
@@ -2479,7 +2631,13 @@ function pintarLectura(){
 
 function deteccionHTML(r){
   const d = r.det;
+  const clave = d ? d.tipo + (d.c ? d.c.id : d.n || '') + CAP.soltar : '';
+  const entra = clave && clave !== CAP.ultDet ? ' entra' : '';
+  CAP.ultDet = clave;
   if(!d) return '';
+  return deteccionCuerpo(d).replace('class="detec"', 'class="detec' + entra + '"');
+}
+function deteccionCuerpo(d){
   if(d.tipo === 'exacto'){
     return CAP.soltar
       ? '<div class="detec"><b class="cifra">' + esc(d.c.id) + '</b> ya es un caso abierto. La tarea quedará suelta.' +
@@ -2552,6 +2710,7 @@ function guardarCaptura(){
   }
   const t = nuevaTarea(r);
   S.tareas.push(t);
+  marcarRecien(t.tid);
   if(t.caso){ const c = casoPorId(t.caso); if(c) anotar(c, 'Se colgó «' + corto(t.text, 60) + '»'); }
   terminarHoja(); aplicar();
   const donde = t.caso ? ' en ' + t.caso : t.venc ? ' · ' + fechaCorta(t.venc) + (t.ini ? ' ' + t.ini : '') : '';
@@ -2571,6 +2730,7 @@ function guardarCasoCaptura(){
   const c = {id, desc:det || '(sin detalle)', estado:'EN PROGRESO', act:hoyISO(), rec:'', adj:[], notas:'',
              hist:[{f:hoyISO(), t:'Caso creado'}]};
   S.casos.push(c);
+  marcarRecien(c.id);
   terminarHoja(); aplicar();
   aviso('Caso ' + id + ' creado', () => { S.casos = S.casos.filter(x => x !== c); aplicar(); });
 }
@@ -2584,13 +2744,20 @@ function htmlFicha(){
   return '<div class="hoja-cab">' +
       '<div class="rotulo" id="hoja-tit">Caso</div>' +
       (espera ? '<span class="ficha gris">En espera</span>'
-        : '<span class="ficha cifra' + (tono === 'rojo' ? ' roja' : tono === 'ambar' ? '' : ' gris') + '">' + (q ? enDias(q) + ' quieto' : 'movido hoy') + '</span>') +
+        : '<span class="ficha cifra' + (tono ? ' ' + tono : ' gris') + '">' + (q ? enDias(q) + ' quieto' : 'movido hoy') + '</span>') +
       '<span style="flex:1"></span>' +
       '<button type="button" class="btn-pri" data-ficha-listo>Listo</button>' +
     '</div>' +
     '<div class="detalles" style="margin-top:.2rem">' +
       campo('Número de caso', '<input type="text" id="fi-num" class="cifra" autocomplete="off" value="' + esc(c.id) + '">') +
       campo('Detalle', '<textarea id="fi-det" class="cap-notas sel" rows="3">' + esc(c.desc) + '</textarea>') +
+      campo('Revisar de nuevo', '<div class="fila-op">' +
+        op('data-fi-seguir="1"', 'Mañana', c.seguir === sumarDias(hoyISO(), 1)) +
+        op('data-fi-seguir="3"', 'En 3 días', c.seguir === sumarDias(hoyISO(), 3)) +
+        op('data-fi-seguir="7"', 'En 1 semana', c.seguir === sumarDias(hoyISO(), 7)) +
+        '<input type="date" id="fi-seguir" value="' + esc(c.seguir) + '" aria-label="Otra fecha">' +
+        (c.seguir ? op('data-fi-seguir=""', 'Quitar', false) : '') +
+      '</div>' + (c.seguir ? '<div class="menor">Aparece en Hoy el ' + fechaLarga(c.seguir).replace(/^(Hoy|Mañana) · /, '') + ' y te aviso a las 9:00.</div>' : '')) +
       campo('Estado', '<div class="seg ancho" role="group" aria-label="Estado">' +
         '<button type="button" data-fi-estado="EN PROGRESO" aria-pressed="' + !espera + '">En progreso</button>' +
         '<button type="button" data-fi-estado="EN ESPERA" aria-pressed="' + espera + '">En espera</button>' +
@@ -2825,11 +2992,46 @@ function quitarAdjunto(aid){
   /* El documento se borra cuando ya no se puede deshacer. */
   setTimeout(() => { if(!deshecho && ref) ref.collection('adjuntos').doc(aid).delete().catch(() => {}); }, 7000);
 }
-function verAdjunto(aid){
+/* La foto crece desde su miniatura y vuelve a ella al cerrar: así se
+   sabe de dónde salió. El resorte se puede interrumpir: cerrar a mitad
+   de la entrada la devuelve desde donde va. */
+let lupaOrigen = null, lupaRes = null, lupaGeo = null;
+function geometriaLupa(){
+  const img = $('lupa-img');
+  if(!lupaOrigen || !lupaOrigen.isConnected) return null;
+  const r0 = lupaOrigen.getBoundingClientRect(), r1 = img.getBoundingClientRect();
+  if(!r1.width || !r1.height) return null;
+  return {
+    dx:(r0.left + r0.width/2) - (r1.left + r1.width/2),
+    dy:(r0.top + r0.height/2) - (r1.top + r1.height/2),
+    s:Math.max(r0.width / r1.width, r0.height / r1.height)
+  };
+}
+function pintarLupa(v){
+  const img = $('lupa-img'), g = lupaGeo;
+  $('lupa').style.backgroundColor = 'rgba(0,0,0,' + (.92 * Math.max(0, Math.min(1, v))) + ')';
+  $('lupa').querySelector('.lupa-barra').style.opacity = Math.max(0, Math.min(1, v * 2 - 1));
+  img.style.transform = g ? 'translate(' + g.dx * (1 - v) + 'px,' + g.dy * (1 - v) + 'px) scale(' + (g.s + (1 - g.s) * v) + ')' : '';
+  img.style.opacity = g ? 1 : Math.max(0, Math.min(1, v));
+}
+async function verAdjunto(aid, origen){
   const src = adjCache[aid]; if(!src) return;
-  $('lupa-img').src = src;
+  const img = $('lupa-img');
+  img.src = src;
+  try{ await img.decode(); }catch(e){}
   $('lupa').dataset.aid = aid;
   $('lupa').hidden = false;
+  lupaOrigen = origen || null;
+  img.style.transform = '';
+  lupaGeo = geometriaLupa();
+  if(!lupaRes) lupaRes = Resorte(0, pintarLupa, .001);
+  lupaRes.fijar(0);
+  lupaRes.a(1, {respuesta:.34, amortiguacion:.9});
+}
+function cerrarLupa(){
+  if($('lupa').hidden) return;
+  lupaGeo = geometriaLupa();
+  lupaRes.a(0, {respuesta:.28, amortiguacion:1, alLlegar(){ $('lupa').hidden = true; }});
 }
 /* En el teléfono, la hoja de compartir: desde ahí "Guardar imagen" o
    "Guardar en Archivos", que es lo que el sistema permite. En el
@@ -3122,7 +3324,7 @@ function clicEnHoja(e){
   }
   if((b = q('[data-grab-alternar]'))){ grabAlternar(); return; }
   if((b = q('[data-grab-guardar]'))){ guardarGrabacion(); return; }
-  if((b = q('[data-ver-adj]'))){ verAdjunto(b.dataset.verAdj); return; }
+  if((b = q('[data-ver-adj]'))){ verAdjunto(b.dataset.verAdj, b.querySelector('img') || b); return; }
   if((b = q('[data-bajar-adj]'))){ descargarAdjunto(b.dataset.bajarAdj); return; }
   if((b = q('[data-quitar-adj]'))){ quitarAdjunto(b.dataset.quitarAdj); return; }
   /* ficha */
@@ -3131,6 +3333,11 @@ function clicEnHoja(e){
   if((b = q('[data-fi-estado]'))){
     const c = casoPorId(CAP.caso);
     if(c && c.estado !== b.dataset.fiEstado) esperaCaso(c.id);
+    return;
+  }
+  if((b = q('[data-fi-seguir]'))){
+    const c = casoPorId(CAP.caso), n = b.dataset.fiSeguir;
+    if(c){ c.seguir = n === '' ? '' : sumarDias(hoyISO(), +n); aplicar(); if(c.seguir) aviso('Te lo recuerdo ' + fechaCorta(c.seguir)); }
     return;
   }
   if((b = q('[data-fi-cerrar]'))){ const id = CAP.caso; hoja.cerrar(); terminarCaso(id); return; }
@@ -3176,6 +3383,7 @@ function prepararCaptura(){
     else if(id === 'cap-caso'){ CAP.caso = e.target.value; CAP.tocado.caso = 1; CAP.soltar = !e.target.value; pintarLectura(); }
     else if(id === 'fi-num'){ if(!renombrarCaso(CAP.caso, e.target.value)) e.target.value = CAP.caso; }
     else if(id === 'fi-det'){ pintar(); }
+    else if(id === 'fi-seguir'){ const c = casoPorId(CAP.caso); if(c){ c.seguir = e.target.value; aplicar(); } }
   });
   h.addEventListener('keydown', e => {
     if(!CAP) return;
@@ -3199,10 +3407,10 @@ function prepararCaptura(){
   $('in-archivo').addEventListener('change', e => recibirArchivos(e.target, 'archivo'));
   $('lupa').addEventListener('click', e => {
     if(e.target.id === 'lupa-bajar'){ descargarAdjunto($('lupa').dataset.aid); return; }
-    $('lupa').hidden = true;
+    cerrarLupa();
   });
   document.addEventListener('keydown', e => {
-    if(e.key === 'Escape' && !$('lupa').hidden){ $('lupa').hidden = true; e.stopPropagation(); }
+    if(e.key === 'Escape' && !$('lupa').hidden){ cerrarLupa(); e.stopPropagation(); }
   }, true);
 }
 
@@ -3457,6 +3665,9 @@ function revisarAvisos(){
     const m = minutosDe(t.ini);
     if(m != null && ahora >= m && ahora < m + 30) lanzar('ta|' + t.tid, t.text, 'Ahora · ' + t.ini);
   }
+  if(ahora >= 9 * 60){
+    for(const c of casosAbiertos()) if(c.seguir && c.seguir <= hoy) lanzar('seg|' + c.id, 'Revisar caso ' + c.id, c.desc);
+  }
   if(ahora >= 8 * 60 && ahora < 12 * 60){
     const urg = S.tareas.filter(t => !t.done && t.cat === 'urgente').length, frios = enfriandose().length;
     const partes = [];
@@ -3633,9 +3844,10 @@ document.addEventListener('click', e => {
   if((b = q('[data-ir]'))){ irA(b.dataset.ir); return; }
   if((b = q('[data-hecha]'))){ marcarHecha(b); return; }
   if((b = q('[data-editar]'))){ abrirCaptura({tid:b.dataset.editar, volver: CAP && CAP.paso === 'ficha' ? CAP.caso : null}); return; }
+  if((b = q('[data-limpiar-busqueda]'))){ busca[vista] = ''; pintar(); const f = $('buscar'); if(f) f.focus(); return; }
   if((b = q('[data-ficha]'))){ abrirFicha(b.dataset.ficha); return; }
   if((b = q('[data-copiar]'))){ copiar(b.dataset.copiar); return; }
-  if((b = q('[data-desplegar]'))){ casoDesplegado = casoDesplegado === b.dataset.desplegar ? null : b.dataset.desplegar; pintar(); return; }
+  if((b = q('[data-desplegar]'))){ desplegarCaso(b.dataset.desplegar); return; }
   if((b = q('[data-finalizar]'))){ casoDesplegado = null; terminarCaso(b.dataset.finalizar); return; }
   if((b = q('[data-ev]'))){ abrirEvento({eid:b.dataset.ev}); return; }
   if((b = q('[data-nuevo-ev]'))){ abrirEvento({d:b.dataset.nuevoEv}); return; }
@@ -3647,10 +3859,7 @@ document.addEventListener('click', e => {
     toqueDia = {d, t};
     calDia = d; calMes = d.slice(0, 7); pintar(); return;
   }
-  if((b = q('[data-cal-mes]'))){
-    const [y, m] = calMes.split('-').map(Number), d = new Date(y, m - 1 + (+b.dataset.calMes), 1);
-    calMes = hoyISO(d).slice(0, 7); pintar(); return;
-  }
+  if((b = q('[data-cal-mes]'))){ cambiarMes(+b.dataset.calMes); return; }
   if((b = q('[data-cal-vista]'))){ try{ localStorage.setItem('dtm5-calvista', b.dataset.calVista); }catch(err){} pintar(); return; }
   if((b = q('[data-nueva-tarea]'))){ abrirCaptura({venc:b.dataset.nuevaTarea}); return; }
   if((b = q('[data-cal-hoy]'))){ calDia = hoyISO(); calMes = calDia.slice(0, 7); pintar(); return; }
@@ -3675,11 +3884,25 @@ document.addEventListener('click', e => {
   if((b = q('[data-correo]'))){ entrarCorreo(b.dataset.correo === 'crear'); return; }
 });
 
+document.addEventListener('input', e => {
+  const v = e.target.dataset && e.target.dataset.buscar;
+  if(!v) return;
+  busca[v] = e.target.value;
+  pintarLista();
+  const x = document.querySelector('[data-limpiar-busqueda]');
+  if(!!busca[v] !== !!x){
+    const cont = e.target.parentNode;
+    if(busca[v]) cont.insertAdjacentHTML('beforeend', '<button type="button" class="buscar-x" data-limpiar-busqueda aria-label="Borrar búsqueda">' + icono('x', 14, 2.6) + '</button>');
+    else if(x) x.remove();
+  }
+});
+
 /* N abre la captura desde el teclado, sin animación. */
 addEventListener('keydown', e => {
   if(e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey) return;
   if(e.target.closest && e.target.closest('input, textarea, select, [contenteditable]')) return;
   if((e.key === 'n' || e.key === 'N') && hoja && !hoja.abierta){ e.preventDefault(); abrirCaptura({instantaneo:true}); }
+  if(e.key === '/' && $('buscar') && !(hoja && hoja.abierta)){ e.preventDefault(); $('buscar').focus(); }
 });
 
 /* El reloj de la cabecera, al minuto y alineado con el minuto: no

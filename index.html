@@ -383,9 +383,6 @@ button.cuerpo{display:block;width:100%;text-align:left;cursor:pointer}
 .ayuda{margin-top:.9rem;font-size:.82rem;color:var(--tinta2);line-height:1.5}
 .ayuda summary{cursor:pointer;color:var(--ambar);font-weight:600;min-height:2.25rem;display:flex;align-items:center}
 .ayuda p{margin:.5rem 0 0}
-.aj-p{margin:.8rem 0 0;font-size:.86rem;line-height:1.5;color:var(--tinta2)}
-.aj-p b{color:var(--tinta)}
-.marcador{min-height:2.1rem;margin:.35rem 0;cursor:grab}
 .seg.ancho{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;width:100%}
 .seg.ancho button{padding:0 .3rem}
 /* ── color de prioridad ── */
@@ -1602,22 +1599,6 @@ function pintarMas(){
       '<p>Los eventos se leen cada 15 minutos. Son de solo lectura: se cambian en su calendario de origen.</p>' +
     '</details>');
 
-  const base = location.origin + location.pathname;
-  const marcador = "javascript:(()=>{const s=String(getSelection()).trim();window.open('" + base +
-    "?texto='+encodeURIComponent(s||prompt('¿Qué anoto?')||''),'tareas')})()";
-  h += tarjeta('Desde otras apps',
-    '<p class="aj-p"><b>Pegar.</b> Copia un número de caso, un texto o una imagen en cualquier app y, con esta abierta, pega (⌘V o Ctrl+V). Un número abre un caso nuevo con él; un texto, una tarea; una imagen se adjunta. Dentro de una tarea o un caso, pegar una imagen la adjunta ahí.</p>' +
-    '<p class="aj-p"><b>En el computador.</b> Arrastra este botón a la barra de favoritos: ' +
-      '<a class="btn-sec marcador" href="' + esc(marcador) + '" data-marcador>+ Tareas</a><br>' +
-      'Después, en cualquier página, selecciona el número de caso y toca el favorito: se abre la app con el número puesto.</p>' +
-    '<details class="ayuda"><summary>En el iPhone, desde el botón Compartir</summary>' +
-      '<p>1. App Atajos, <b>+</b>, «Agregar acción», busca <b>URL</b> y escribe:<br><span class="cifra sel" style="word-break:break-all">' + esc(base) + '?texto=</span></p>' +
-      '<p>2. Toca el final de esa URL y elige la variable <b>Entrada del atajo</b>.</p>' +
-      '<p>3. Agrega la acción <b>Abrir URL</b>.</p>' +
-      '<p>4. En los detalles del atajo, activa <b>Mostrar en hoja para compartir</b> y ponle de nombre «Registrar en Tareas».</p>' +
-      '<p>Desde ahí, al seleccionar un texto y tocar Compartir, aparece «Registrar en Tareas».</p>' +
-    '</details>');
-
   const estadoAv = typeof Notification === 'undefined' ? 'no'
     : Notification.permission === 'denied' ? 'bloqueado' : avisosActivos() ? 'si' : 'apagado';
   h += tarjeta('Avisos',
@@ -2766,9 +2747,8 @@ function trasAdjuntar(n, que, nuevo){
 }
 
 /* ── pegar ──
-   Una imagen pegada (captura de pantalla, foto copiada) se adjunta a
-   lo que está abierto, o a una tarea nueva. Un texto pegado con la app
-   en reposo abre la captura con él: si es solo un número, como caso. */
+   Con una tarea o un caso abierto, pegar una imagen (una captura de
+   pantalla, una foto copiada) la adjunta ahí. El texto se pega normal. */
 function imagenesDe(dt){ return [...((dt && dt.files) || [])].filter(f => /^image\//.test(f.type)); }
 async function pegarImagenes(files){
   if(!ref){ aviso(SIN_NUBE); return; }
@@ -2782,42 +2762,13 @@ async function pegarImagenes(files){
   }
   if(ok) trasAdjuntar(ok, 'Imagen pegada', nuevo);
 }
-function pareceNumeroDeCaso(txt){ return /^[A-Z]*-?\d{5,14}$/i.test(txt.trim()); }
-function abrirDesdeTexto(txt){
-  txt = txt.trim();
-  if(pareceNumeroDeCaso(txt)) abrirCaptura({tipo:'caso', num:txt});
-  else abrirCaptura({texto:txt});
-}
 document.addEventListener('paste', e => {
+  if(!(CAP && hoja && hoja.abierta)) return;
   const imgs = imagenesDe(e.clipboardData);
-  const enHoja = CAP && hoja && hoja.abierta;
-  if(imgs.length){
-    e.preventDefault();
-    if(!enHoja) abrirCaptura({});
-    pegarImagenes(imgs);
-    return;
-  }
-  if(enHoja) return;
-  const a = document.activeElement;
-  if(a && /INPUT|TEXTAREA|SELECT/.test(a.tagName)) return;
-  const txt = (e.clipboardData && e.clipboardData.getData('text')) || '';
-  if(!txt.trim()) return;
+  if(!imgs.length) return;
   e.preventDefault();
-  abrirDesdeTexto(txt);
+  pegarImagenes(imgs);
 });
-
-/* ── desde otras apps ──
-   ?texto=… (favorito del navegador, atajo del iPhone, compartir en
-   Android) o ?caso=…&detalle=… abren la captura con eso escrito. */
-function leerEnlaceEntrante(){
-  const q = new URLSearchParams(location.search);
-  const caso = q.get('caso');
-  const txt = [q.get('titulo'), q.get('texto'), q.get('enlace')].filter(Boolean).join(' ').trim();
-  if(!caso && !txt) return;
-  history.replaceState(null, '', location.pathname);
-  if(caso) abrirCaptura({tipo:'caso', num:caso, det:q.get('detalle') || ''});
-  else abrirDesdeTexto(txt);
-}
 
 function htmlAdjuntos(obj){
   const l = (obj && obj.adj) || [];
@@ -3682,7 +3633,6 @@ document.addEventListener('click', e => {
   if((b = q('[data-ir]'))){ irA(b.dataset.ir); return; }
   if((b = q('[data-hecha]'))){ marcarHecha(b); return; }
   if((b = q('[data-editar]'))){ abrirCaptura({tid:b.dataset.editar, volver: CAP && CAP.paso === 'ficha' ? CAP.caso : null}); return; }
-  if((b = q('[data-marcador]'))){ e.preventDefault(); aviso('Arrástralo a la barra de favoritos del navegador'); return; }
   if((b = q('[data-ficha]'))){ abrirFicha(b.dataset.ficha); return; }
   if((b = q('[data-copiar]'))){ copiar(b.dataset.copiar); return; }
   if((b = q('[data-desplegar]'))){ casoDesplegado = casoDesplegado === b.dataset.desplegar ? null : b.dataset.desplegar; pintar(); return; }
@@ -3759,7 +3709,6 @@ pintar();
 relojEnMarcha();
 arrancarNube();
 actualizarTodosICS();
-leerEnlaceEntrante();
 if(avisosActivos()) registrarSW().then(revisarAvisos);
 /* Los calendarios se releen cada 15 minutos y al volver a la app. */
 setInterval(actualizarTodosICS, 15 * 60 * 1000);

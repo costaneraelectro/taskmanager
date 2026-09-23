@@ -48,13 +48,12 @@
   --verdeT:rgba(48,209,88,.14);
   --azulT:rgba(100,210,255,.09);
 
-  /* Prioridad: rojo lo que no espera, índigo lo que se planifica,
-     menta lo que pasa a otro. Solo marcan: una franja, un punto, el
-     aro del círculo. El fondo sigue neutro. */
+  /* Prioridad: rojo lo que no espera, índigo lo que se planifica.
+     Solo marcan: una franja, un punto, el aro del círculo. El fondo
+     sigue neutro. */
   --fuego:#FF7A1A; --fuegoT:rgba(255,122,26,.18);
   --urg:#FF453A;   --urgT:rgba(255,69,58,.13);
   --plan:#7D7AFF;  --planT:rgba(125,122,255,.14);
-  --dele:#63E6BE;  --deleT:rgba(99,230,190,.12);
 
   --display:Archivo, system-ui, -apple-system, sans-serif;
   --cuerpo:system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -100,7 +99,6 @@
     --fuego:#B84800; --fuegoT:rgba(184,72,0,.12);
     --urg:#D70015;  --urgT:rgba(215,0,21,.09);
     --plan:#5856D6; --planT:rgba(88,86,214,.1);
-    --dele:#0C8A6A; --deleT:rgba(12,138,106,.1);
   }
 }
 :root[data-tema="oscuro"]{color-scheme:dark}
@@ -117,7 +115,6 @@
   --fuego:#B84800; --fuegoT:rgba(184,72,0,.12);
   --urg:#D70015; --urgT:rgba(215,0,21,.09);
   --plan:#5856D6; --planT:rgba(88,86,214,.1);
-  --dele:#0C8A6A; --deleT:rgba(12,138,106,.1);
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -336,6 +333,16 @@ main{
 /* un evento o una tarea de la columna se tocan para abrirlos */
 button.cuerpo{display:block;width:100%;text-align:left;cursor:pointer}
 .bloque .tx{font-size:.94rem}
+button.libre{display:flex;justify-content:space-between;align-items:center;gap:.6rem}
+.libre-mas{font-size:.78rem;font-weight:600;color:var(--ambar)}
+.cap-fila{display:flex;gap:.5rem;align-items:flex-start}
+.cap-fila .cap-tx{flex:1;min-width:0}
+.dictar{width:2.75rem;height:2.75rem;border-radius:50%;flex:none;display:grid;place-items:center;background:var(--hueco);color:var(--tinta2);transition:transform 120ms ease-out,background .15s,color .15s}
+.dictar:active{transform:scale(.94)}
+/* Escuchando: rojo y un latido lento, lo justo para saber que oye. */
+.dictar.on{background:var(--rojoT);color:var(--rojo);animation:latido 1.4s ease-in-out infinite}
+@keyframes latido{50%{box-shadow:0 0 0 6px var(--rojoT)}}
+@media (prefers-reduced-motion: reduce){.dictar.on{animation:none}}
 
 /* ── calendario ── */
 .cal-nav{display:flex;align-items:center;gap:.35rem;padding-bottom:.15rem}
@@ -392,7 +399,6 @@ button.cuerpo{display:block;width:100%;text-align:left;cursor:pointer}
 /* ── color de prioridad ── */
 .p-urgente{--pc:var(--urg);--pcT:var(--urgT)}
 .p-planificar{--pc:var(--plan);--pcT:var(--planT)}
-.p-delegar{--pc:var(--dele);--pcT:var(--deleT)}
 .cara.fila[class*="p-"]{box-shadow:inset 3px 0 0 var(--pc)}
 [class*="p-"] .chk::before{border-color:var(--pc)}
 [class*="p-"] .chk[aria-pressed="true"]::before{border-color:var(--verde)}
@@ -402,7 +408,6 @@ button.cuerpo{display:block;width:100%;text-align:left;cursor:pointer}
 .prio button[aria-pressed="true"]{background:var(--pcT);color:var(--pc);box-shadow:inset 0 0 0 1px var(--pc)}
 .prio button[data-c="urgente"]{--pc:var(--urg);--pcT:var(--urgT)}
 .prio button[data-c="planificar"]{--pc:var(--plan);--pcT:var(--planT)}
-.prio button[data-c="delegar"]{--pc:var(--dele);--pcT:var(--deleT)}
 .suave{text-transform:none;letter-spacing:0;font-family:var(--cuerpo);font-weight:500;color:var(--tinta4)}
 a.mini{display:inline-flex;align-items:center}
 
@@ -1285,6 +1290,7 @@ const ICO = {
   tareas:'<path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 5.5l1 1 2-2M4 11.5l1 1 2-2M4 17.5l1 1 2-2"/>',
   casos: '<path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>',
   x:     '<path d="M6 6l12 12M18 6L6 18"/>',
+  compartir:'<path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/>',
   campana:'<path d="M6 16V11a6 6 0 0112 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 004 0"/>',
   lupa:  '<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>',
   copiar:'<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 012-2h8"/>',
@@ -1409,11 +1415,18 @@ function lineaDeAhora(){
 
 function tramoDe(f){
   if(f.tipo === 'libre'){
+    /* Solo lo que viene: un hueco que ya pasó no se puede llenar. */
+    const ahora = new Date().getHours() * 60 + new Date().getMinutes();
+    const util = f.min + f.largo > ahora;
+    const desde = Math.max(f.min, Math.ceil(ahora / 15) * 15);
     return '<div class="tramo">' +
       '<div class="hora">' + comoHora(f.min) + '</div>' +
-      '<div class="cuerpo libre">' +
-        '<div style="font-size:.88rem">Libre · ' + enHoras(f.largo) + '</div>' +
-      '</div></div>';
+      (util
+        ? '<button type="button" class="cuerpo libre" data-hueco="' + (f.min >= ahora ? f.min : desde) + '" data-largo="' + f.largo + '">' +
+            '<span style="font-size:.88rem">Libre · ' + enHoras(f.largo) + '</span>' +
+            '<span class="libre-mas">+ Asignar tarea</span></button>'
+        : '<div class="cuerpo libre"><div style="font-size:.88rem">Libre · ' + enHoras(f.largo) + '</div></div>') +
+      '</div>';
   }
   if(f.tipo === 'evento'){
     const e = f.dato;
@@ -1759,8 +1772,10 @@ const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7
 const sinTildes = s => String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
 const corto = (s, n) => { s = String(s||''); n = n || 42; return s.length > n ? s.slice(0, n-1).trimEnd() + '…' : s; };
 
-const CATS = {urgente:'Urgente', planificar:'Planificar', delegar:'Delegar'};
-const CAT_ORDEN = ['urgente','planificar','delegar'];
+/* Es una app personal: no hay "Delegar". Lo que venía así pasa a
+   Planificar al leerse (normalizar). */
+const CATS = {urgente:'Urgente', planificar:'Planificar'};
+const CAT_ORDEN = ['urgente','planificar'];
 const REPS = {diaria:'cada día', laboral:'días de semana', semanal:'cada semana', quincenal:'cada 2 semanas', mensual:'cada mes'};
 
 function sumarDias(iso, n){ const d = new Date(iso + 'T00:00:00'); d.setDate(d.getDate() + n); return hoyISO(d); }
@@ -2170,6 +2185,7 @@ function filaCaso(c){
           ? '<div class="acc">' +
               '<button type="button" class="btn-sec" data-ficha="' + esc(c.id) + '">Abrir caso</button>' +
               '<button type="button" class="btn-sec" data-avance="' + esc(c.id) + '">Avance</button>' +
+              '<button type="button" class="btn-sec" data-compartir-caso="' + esc(c.id) + '">Compartir</button>' +
               '<button type="button" class="btn-sec" data-finalizar="' + esc(c.id) + '">Finalizar</button>' +
             '</div>'
           : '') +
@@ -2209,13 +2225,34 @@ function desplegarCaso(id){
   cambiar(id);
 }
 
+/* Compartir un caso: arma un resumen corto y abre la hoja de compartir
+   del sistema (WhatsApp, correo, Mensajes). Si el equipo no la tiene,
+   queda copiado para pegarlo. */
+function textoDeCaso(c){
+  const q = diasDesde(c.act) || 0;
+  const estado = c.estado === 'EN ESPERA' ? 'en espera' : 'en progreso' + (q ? ', ' + enDias(q) + ' sin movimiento' : ', movido hoy');
+  const tareas = S.tareas.filter(t => !t.done && t.caso === c.id);
+  return 'Caso ' + c.id + '\n' + c.desc + '\nEstado: ' + estado +
+    (tareas.length ? '\nPendiente:\n' + tareas.map(t => '• ' + t.text).join('\n') : '');
+}
+async function compartirCaso(id){
+  const c = casoPorId(id); if(!c) return;
+  const texto = textoDeCaso(c);
+  if(navigator.share){
+    try{ await navigator.share({title:'Caso ' + c.id, text:texto}); return; }
+    catch(e){ if(e.name === 'AbortError') return; }
+  }
+  copiar(texto);
+}
+
 /* Copiar al portapapeles, con el aviso de que se hizo. */
 async function copiar(texto){
-  try{ await navigator.clipboard.writeText(texto); aviso('Copiado: ' + texto); }
+  const eco = texto.length > 30 ? 'listo para pegar' : texto;
+  try{ await navigator.clipboard.writeText(texto); aviso('Copiado: ' + eco); }
   catch(e){
     const t = document.createElement('textarea');
     t.value = texto; document.body.appendChild(t); t.select();
-    try{ document.execCommand('copy'); aviso('Copiado: ' + texto); }catch(e2){ aviso('No se pudo copiar'); }
+    try{ document.execCommand('copy'); aviso('Copiado: ' + eco); }catch(e2){ aviso('No se pudo copiar'); }
     t.remove();
   }
 }
@@ -2375,14 +2412,23 @@ function proximoDiaSemana(objetivo, incluirHoy){
   d.setDate(d.getDate() + delta);
   return hoyISO(d);
 }
+/* Al dictar, las horas llegan en palabras: "a las diez y media". */
+const HORAS_PALABRA = {una:1, dos:2, tres:3, cuatro:4, cinco:5, seis:6, siete:7, ocho:8, nueve:9, diez:10, once:11, doce:12};
+function horasEnPalabras(s){
+  return s.replace(/\ba las? (una|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|once|doce)(?: y (media|cuarto))?(?: de la (tarde|noche))?\b/gi,
+    (m, h, fr, tarde) => {
+      let n = HORAS_PALABRA[h.toLowerCase()];
+      if(tarde && n < 12) n += 12;
+      return 'a las ' + n + ':' + (fr ? (fr.toLowerCase() === 'media' ? '30' : '15') : '00');
+    });
+}
 function interpretar(entrada){
-  let s = ' ' + String(entrada||'').trim() + ' ';
+  let s = ' ' + horasEnPalabras(String(entrada||'').trim()) + ' ';
   const quitar = re => { const m = s.match(re); if(m){ s = s.replace(m[0], ' '); return m; } return null; };
   let cat = 'planificar', venc = '', hora = '', rep = '', m;
 
   let marcoCat = true;
   if(quitar(/\s(!!|!urg\w*|!u)\s/i)) cat = 'urgente';
-  else if(quitar(/\s(!del\w*|!d)\s/i)) cat = 'delegar';
   else if(quitar(/\s(!plan\w*|!p)\s/i)) cat = 'planificar';
   else if(/\burgente\b/i.test(s)) cat = 'urgente';
   else marcoCat = false;
@@ -2472,8 +2518,8 @@ function abrirCaptura(op){
     ? {modo:'editar', tipo:'tarea', paso:'texto', tid:t.tid, texto:t.text, cat:t.cat, venc:t.venc, ini:t.ini,
        rep:t.rep, caso:t.caso, notas:t.notas, tocado:{cat:1, venc:1, ini:1, caso:1, rep:1}, soltar:false, volver:op.volver || null}
     : {modo:'nueva', tipo:op.tipo || 'tarea', paso:'texto', tid:null, texto:op.texto || '', cat:op.cat || 'planificar',
-       venc:op.venc || '', ini:'', rep:'', caso:op.caso || '', notas:'',
-       tocado:Object.assign(op.caso ? {caso:1} : {}, op.venc ? {venc:1} : {}), soltar:false,
+       venc:op.venc || '', ini:op.ini || '', rep:'', caso:op.caso || '', notas:'',
+       tocado:Object.assign(op.caso ? {caso:1} : {}, op.venc ? {venc:1} : {}, op.ini ? {ini:1} : {}), soltar:false,
        num:op.num || '', det:op.det || '', volver:op.volver || null};
   abrirHoja(op.instantaneo);
   /* El foco tiene que ir dentro del mismo toque: iOS solo levanta el
@@ -2494,6 +2540,42 @@ function abrirEvento(op){
   CAP = {modo:'evento', paso:'evento', eid:op.eid || null, d:op.d || hoyISO(), texto:'', venc:'', ini:''};
   abrirHoja(op.instantaneo);
 }
+/* Un hueco libre de Hoy: elegir qué tarea hacer ahí. Primero lo
+   urgente, después lo que vence hoy o ya venció, después lo que no
+   tiene fecha. Elegir le pone esa hora y el día de hoy. */
+function abrirHueco(min, largo){
+  CAP = {modo:'hueco', paso:'hueco', hora:comoHora(min), largo:largo};
+  abrirHoja();
+}
+function candidatasHueco(){
+  const hoy = hoyISO();
+  const peso = t => (t.cat === 'urgente' ? 0 : 2) + (t.venc && t.venc <= hoy ? 0 : t.venc ? 3 : 1);
+  return S.tareas.filter(t => !t.done && !t.ini && (!t.venc || t.venc <= sumarDias(hoy, 7)))
+    .sort((a, b) => peso(a) - peso(b) || (a.venc || '9').localeCompare(b.venc || '9'));
+}
+function htmlHueco(){
+  const l = candidatasHueco();
+  return '<div class="hoja-cab"><div><div class="rotulo" id="hoja-tit">Libre desde las ' + esc(CAP.hora) + '</div>' +
+      '<div class="tit-s">¿Qué haces a las ' + esc(CAP.hora) + '?</div></div></div>' +
+    '<div class="pila" style="margin-top:.5rem">' +
+      (l.length ? l.slice(0, 20).map(t =>
+        '<button type="button" class="fila p-' + t.cat + '" data-hueco-tarea="' + esc(t.tid) + '" style="text-align:left;width:100%;background:var(--hueco)">' +
+          '<span class="chk-v" style="border-style:solid;border-color:var(--pc)"></span>' +
+          '<span class="tx"><span style="display:block">' + esc(t.text) + '</span><span class="meta">' + chipsTarea(t) + '</span></span>' +
+        '</button>').join('')
+        : '<div class="vacio" style="padding:1.2rem 1rem">No hay tareas sin hora pendientes.</div>') +
+      '<button type="button" class="plegar" data-hueco-nueva style="margin-top:0">+ Tarea nueva a las ' + esc(CAP.hora) + '</button>' +
+    '</div>';
+}
+function asignarHueco(tid){
+  const t = tareaPorId(tid); if(!t) return;
+  const antes = {ini:t.ini, venc:t.venc};
+  t.ini = CAP.hora; t.venc = hoyISO();
+  marcarRecien(t.tid);
+  hoja.cerrar(); aplicar();
+  aviso(corto(t.text, 30) + ' a las ' + t.ini, () => { Object.assign(t, antes); aplicar(); });
+}
+
 /* Después de guardar: si se vino desde la ficha de un caso, se vuelve
    a ella; si no, la hoja se cierra. */
 function terminarHoja(){
@@ -2587,8 +2669,11 @@ function htmlTexto(){
   }
   const t = editando ? tareaPorId(CAP.tid) : null;
   return h +
-    '<textarea id="cap-tx" class="cap-tx sel" rows="1" enterkeyhint="done" autocomplete="off" aria-label="Qué hay que hacer" ' +
-      'placeholder="Llamar a Gelen mañana 15:00 !urgente"></textarea>' +
+    '<div class="cap-fila">' +
+      '<textarea id="cap-tx" class="cap-tx sel" rows="1" enterkeyhint="done" autocomplete="off" aria-label="Qué hay que hacer" ' +
+        'placeholder="Llamar a Gelen mañana 15:00 !urgente"></textarea>' +
+      (Reconocer ? '<button type="button" class="dictar' + (dictado ? ' on' : '') + '" data-dictar aria-label="Dictar la tarea">' + icono('grabadora', 20, 2) + '</button>' : '') +
+    '</div>' +
     '<div id="cap-lectura"></div>' +
     '<div id="cap-detalles"></div>' +
     '<div id="cap-adjuntos">' + (t ? htmlAdjuntos(t) : '') + '</div>' +
@@ -2608,6 +2693,7 @@ function pintarHoja(){
   else if(CAP.paso === 'boceto'){   cu.innerHTML = htmlBoceto(); prepararBoceto(); }
   else if(CAP.paso === 'grabadora') cu.innerHTML = htmlGrabadora();
   else if(CAP.paso === 'ficha')     cu.innerHTML = htmlFicha();
+  else if(CAP.paso === 'hueco')     cu.innerHTML = htmlHueco();
   else{
     cu.innerHTML = htmlTexto();
     const tx = $('cap-tx');
@@ -2697,8 +2783,46 @@ function lecturaCaso(){
   return '';
 }
 
+/* ── dictar ──
+   El reconocimiento de voz del propio navegador (sin servicios): lo
+   dicho se escribe en el campo mientras hablas y pasa por el mismo
+   intérprete, así "mañana a las diez" queda con día y hora. Donde el
+   navegador no lo tiene, el botón no aparece; el micrófono del teclado
+   del teléfono sirve igual. */
+const Reconocer = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+let dictado = null;
+function alternarDictado(){
+  if(dictado){ dictado.stop(); return; }
+  const r = new Reconocer();
+  r.lang = 'es-CL'; r.interimResults = true; r.continuous = false;
+  const base = CAP.texto.trim() ? CAP.texto.trimEnd() + ' ' : '';
+  r.onresult = e => {
+    let t = '';
+    for(const x of e.results) t += x[0].transcript;
+    CAP.texto = base + t;
+    const tx = $('cap-tx');
+    if(tx){ tx.value = CAP.texto; ajustarAlto(tx); }
+    pintarLectura();
+  };
+  r.onerror = e => {
+    if(e.error === 'not-allowed' || e.error === 'service-not-allowed') aviso('Necesito permiso para usar el micrófono');
+    else if(e.error !== 'no-speech' && e.error !== 'aborted') aviso('No pude escuchar (' + e.error + ')');
+  };
+  r.onend = () => {
+    dictado = null;
+    const b = document.querySelector('[data-dictar]');
+    if(b) b.classList.remove('on');
+  };
+  try{ r.start(); }catch(e){ aviso('No pude empezar a escuchar'); return; }
+  dictado = r;
+  const b = document.querySelector('[data-dictar]');
+  if(b) b.classList.add('on');
+}
+function pararDictado(){ if(dictado){ try{ dictado.abort(); }catch(e){} dictado = null; } }
+
 /* ── guardar ── */
 function guardarCaptura(){
+  pararDictado();
   if(CAP.tipo === 'caso') return guardarCasoCaptura();
   const r = leerCaptura();
   if(!r.texto){ const f = $('cap-tx'); if(f) f.focus(); return; }
@@ -2767,6 +2891,7 @@ function htmlFicha(){
     '</div>' +
     '<div class="acc" style="margin-top:1rem">' +
       '<button type="button" class="btn-sec" data-avance="' + esc(c.id) + '">' + icono('visto', 16, 2.4) + 'Registrar avance</button>' +
+      '<button type="button" class="btn-sec" data-compartir-caso="' + esc(c.id) + '">' + icono('compartir', 16, 2.2) + 'Compartir</button>' +
       '<button type="button" class="btn-sec" data-fi-cerrar>Finalizar caso</button>' +
     '</div>' +
 
@@ -3302,6 +3427,9 @@ function clicEnHoja(e){
     pintarLectura(); return;
   }
   if((b = q('[data-cap-accion]'))){ accionCaptura(b.dataset.capAccion); return; }
+  if((b = q('[data-dictar]'))){ alternarDictado(); return; }
+  if((b = q('[data-hueco-tarea]'))){ asignarHueco(b.dataset.huecoTarea); return; }
+  if((b = q('[data-hueco-nueva]'))){ abrirCaptura({venc:hoyISO(), ini:CAP.hora}); return; }
   if((b = q('[data-cap-volver]'))){
     if(CAP.modo === 'evento') hoja.cerrar();
     else irPaso(pasoDeOrigen());
@@ -3329,8 +3457,8 @@ function clicEnHoja(e){
   if((b = q('[data-ver-adj]'))){ verAdjunto(b.dataset.verAdj, b.querySelector('img') || b); return; }
   if((b = q('[data-bajar-adj]'))){ descargarAdjunto(b.dataset.bajarAdj); return; }
   if((b = q('[data-quitar-adj]'))){ quitarAdjunto(b.dataset.quitarAdj); return; }
-  /* ficha */
-  if((b = q('[data-ficha]'))){ abrirFicha(b.dataset.ficha); return; }
+  /* ficha (data-ficha, data-avance y compartir los atiende el oyente
+     global: el clic sube hasta él también desde la hoja) */
   if((b = q('[data-ficha-listo]'))){ hoja.cerrar(); return; }
   if((b = q('[data-fi-estado]'))){
     const c = casoPorId(CAP.caso);
@@ -3349,6 +3477,7 @@ function clicEnHoja(e){
 function prepararCaptura(){
   hoja = Hoja('hoja', {alCerrar(){
     pararGrabacion(true);
+    pararDictado();
     CAP = null;
     $('hoja-cuerpo').innerHTML = '';
   }});
@@ -3898,7 +4027,9 @@ document.addEventListener('click', e => {
   if((b = q('[data-hecha]'))){ marcarHecha(b); return; }
   if((b = q('[data-editar]'))){ abrirCaptura({tid:b.dataset.editar, volver: CAP && CAP.paso === 'ficha' ? CAP.caso : null}); return; }
   if((b = q('[data-limpiar-busqueda]'))){ busca[vista] = ''; pintar(); const f = $('buscar'); if(f) f.focus(); return; }
+  if((b = q('[data-hueco]'))){ abrirHueco(+b.dataset.hueco, +b.dataset.largo); return; }
   if((b = q('[data-ficha]'))){ abrirFicha(b.dataset.ficha); return; }
+  if((b = q('[data-compartir-caso]'))){ compartirCaso(b.dataset.compartirCaso); return; }
   if((b = q('[data-copiar]'))){ copiar(b.dataset.copiar); return; }
   if((b = q('[data-desplegar]'))){ desplegarCaso(b.dataset.desplegar); return; }
   if((b = q('[data-finalizar]'))){ casoDesplegado = null; terminarCaso(b.dataset.finalizar); return; }

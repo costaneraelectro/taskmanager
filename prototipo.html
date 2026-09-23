@@ -1,0 +1,610 @@
+<title>Casos y tareas enlazados</title>
+<style>
+/* ══════════════════════════════════════════════════════════════════
+   Mismo sistema visual que la app: lo que se prueba aquí es el flujo,
+   no el aspecto. Tokens, escala y colores vienen de index.html.
+   ══════════════════════════════════════════════════════════════════ */
+:root{
+  --bg:#F6F7F9; --sur:#FFFFFF; --sur2:#F1F3F6; --sur3:#E8EBF0;
+  --brd:#E2E5EB; --brd2:#CFD4DD;
+  --txt:#14161A; --txt2:#4B525E; --mut:#79808D;
+  --ac:#4C57DE; --acbg:rgba(100,112,243,.13); --acfg:#fff;
+  --ok:#0E8F5B; --okbg:#E3F6ED;
+  --warn:#A96A00; --warnbg:#FDF1DC;
+  --dang:#D3363C; --dangbg:#FDECEC;
+  --info:#1E6FCB; --infobg:#E6F0FC;
+  --sh:0 1px 2px rgba(20,30,60,.06), 0 10px 26px -18px rgba(20,30,60,.28);
+  --shp:0 24px 60px -22px rgba(20,30,60,.35);
+  --f:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --fm:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+  --r:10px; --r-lg:14px;
+}
+:root:not([data-theme="light"]){ @media (prefers-color-scheme: dark){
+  --bg:#0B0C0E; --sur:#131519; --sur2:#191C21; --sur3:#20242B;
+  --brd:#262A31; --brd2:#333944;
+  --txt:#E9EBEF; --txt2:#A8AEB9; --mut:#767D8A;
+  --ac:#6470F3; --acbg:rgba(100,112,243,.16);
+  --ok:#3DD68C; --okbg:rgba(61,214,140,.14);
+  --warn:#F5B43F; --warnbg:rgba(245,180,63,.14);
+  --dang:#FF6369; --dangbg:rgba(255,99,105,.14);
+  --info:#62B5FF; --infobg:rgba(98,181,255,.14);
+  --sh:0 1px 2px rgba(0,0,0,.5), 0 8px 24px -12px rgba(0,0,0,.7);
+  --shp:0 20px 60px -20px rgba(0,0,0,.85);
+}}
+:root[data-theme="dark"]{
+  --bg:#0B0C0E; --sur:#131519; --sur2:#191C21; --sur3:#20242B;
+  --brd:#262A31; --brd2:#333944;
+  --txt:#E9EBEF; --txt2:#A8AEB9; --mut:#767D8A;
+  --ac:#6470F3; --acbg:rgba(100,112,243,.16);
+  --ok:#3DD68C; --okbg:rgba(61,214,140,.14);
+  --warn:#F5B43F; --warnbg:rgba(245,180,63,.14);
+  --dang:#FF6369; --dangbg:rgba(255,99,105,.14);
+  --info:#62B5FF; --infobg:rgba(98,181,255,.14);
+  --sh:0 1px 2px rgba(0,0,0,.5), 0 8px 24px -12px rgba(0,0,0,.7);
+  --shp:0 20px 60px -20px rgba(0,0,0,.85);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;height:100%}
+body{
+  background:var(--bg);color:var(--txt);font-family:var(--f);font-size:15px;line-height:1.45;
+  -webkit-font-smoothing:antialiased;min-height:100%;
+  padding:0 0 calc(74px + env(safe-area-inset-bottom,0px));
+}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;
+  touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.num{font-family:var(--fm);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+
+/* ── aviso de prototipo ── */
+.aviso{
+  background:var(--warnbg);color:var(--warn);border-bottom:1px solid var(--brd);
+  padding:9px 16px;font-size:12.5px;display:flex;gap:9px;align-items:center;
+  position:sticky;top:env(safe-area-inset-top,0px);z-index:40;
+}
+.aviso b{font-weight:700}
+
+.wrap{max-width:760px;margin:0 auto;padding:16px;padding-block:16px}
+
+/* ── cabecera ── */
+.hd{display:flex;align-items:flex-start;gap:12px;margin-bottom:16px}
+.hd h1{font-size:20px;font-weight:650;letter-spacing:-.02em}
+.hd p{font-size:13px;color:var(--mut);margin-top:2px}
+.hd .sp{margin-left:auto;display:flex;gap:6px}
+.ib{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;color:var(--txt2);
+  border:1px solid var(--brd);background:var(--sur)}
+.ib svg{width:16px;height:16px}
+
+/* ── la alerta de duplicados: el hallazgo ── */
+.hallazgo{
+  border:1px solid var(--dang);border-radius:var(--r-lg);background:var(--sur);
+  box-shadow:var(--sh);overflow:hidden;margin-bottom:16px;
+}
+.hallazgo .top{display:flex;gap:11px;padding:14px;align-items:flex-start;background:var(--dangbg)}
+.hallazgo .top svg{width:19px;height:19px;color:var(--dang);flex:none;margin-top:1px}
+.hallazgo .top b{display:block;font-size:14.5px;color:var(--dang);margin-bottom:3px}
+.hallazgo .top span{font-size:13px;color:var(--txt2);line-height:1.45}
+.par{display:flex;flex-direction:column;gap:2px;padding:11px 14px;border-top:1px solid var(--brd)}
+.par .lado{display:flex;align-items:center;gap:9px;font-size:13.5px;min-width:0}
+.par .lado i{font-style:normal;font-size:10.5px;font-weight:700;letter-spacing:.05em;
+  color:var(--mut);flex:0 0 54px;text-transform:uppercase}
+.par .lado span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.par .acc{display:flex;gap:7px;margin-top:8px;flex-wrap:wrap}
+
+/* ── piezas ── */
+.panel{background:var(--sur);border:1px solid var(--brd);border-radius:var(--r-lg);
+  box-shadow:var(--sh);overflow:hidden;margin-bottom:14px}
+.ph{display:flex;align-items:center;gap:9px;padding:12px 14px;border-bottom:1px solid var(--brd)}
+.ph h2{font-size:11.5px;font-weight:650;letter-spacing:.07em;text-transform:uppercase;color:var(--txt2)}
+.ph .ct{margin-left:auto;font-size:12px;font-family:var(--fm);color:var(--mut);font-weight:600}
+.pb{padding:6px}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  padding:7px 12px;border-radius:9px;font-size:13px;font-weight:600;
+  border:1px solid var(--brd);background:var(--sur2);color:var(--txt);
+  transition:transform .1s ease-out,background-color .13s,border-color .13s}
+.btn:active{transform:scale(.97)}
+.btn.pri{background:var(--ac);border-color:var(--ac);color:var(--acfg)}
+.btn.gho{background:transparent;border-color:transparent;color:var(--mut)}
+.btn.sm{padding:5px 10px;font-size:12.5px}
+.btn svg{width:14px;height:14px}
+
+.tag{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;
+  padding:2px 8px;border-radius:20px;background:var(--sur3);color:var(--txt2);white-space:nowrap}
+.tag.ok{background:var(--okbg);color:var(--ok)}
+.tag.warn{background:var(--warnbg);color:var(--warn)}
+.tag.dang{background:var(--dangbg);color:var(--dang)}
+.tag.ac{background:var(--acbg);color:var(--ac)}
+.tag.info{background:var(--infobg);color:var(--info)}
+.tag svg{width:11px;height:11px}
+
+/* ── fila deslizable ── */
+.swipe{position:relative;overflow:hidden;border-radius:9px;margin-bottom:1px}
+.swipe .fondo{position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;
+  padding:0 18px;font-size:12.5px;font-weight:700;letter-spacing:.03em}
+.swipe .fondo .izq{color:var(--ok)} .swipe .fondo .der{color:var(--warn)}
+.fila{position:relative;background:var(--sur);display:flex;align-items:flex-start;gap:10px;
+  padding:11px 10px;touch-action:pan-y;will-change:transform}
+.fila .marca{width:4px;align-self:stretch;border-radius:3px;flex:none;background:var(--brd2)}
+.fila .marca.dang{background:var(--dang)} .fila .marca.warn{background:var(--warn)}
+.fila .marca.ok{background:var(--ok)}
+.fila .cuerpo{flex:1;min-width:0}
+.fila .lin1{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.fila .id{font-family:var(--fm);font-size:13.5px;font-weight:650;color:var(--txt)}
+.fila .tx{font-size:15px;line-height:1.35;color:var(--txt);overflow-wrap:anywhere;
+  user-select:text;-webkit-user-select:text}
+.fila .meta{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px}
+.fila .rt{display:flex;align-items:center;gap:5px;flex:none;padding-top:1px}
+.fila.sub{padding-left:26px;background:var(--sur2)}
+.fila.sub .tx{font-size:14px;color:var(--txt2)}
+
+.vinc{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;
+  padding:2px 8px;border-radius:20px;background:var(--acbg);color:var(--ac);
+  border:1px dashed var(--ac);cursor:pointer}
+.vinc svg{width:11px;height:11px}
+
+/* ── captura con detección ── */
+.cap{position:relative;margin-bottom:14px}
+.cap input{width:100%;padding:13px 15px;border-radius:12px;background:var(--sur);
+  border:1px solid var(--brd);font-size:16px;outline:none;color:var(--txt)}
+.cap input:focus{border-color:var(--ac)}
+.cap input::placeholder{color:var(--mut)}
+.alerta{margin-top:8px;border:1px solid var(--warn);border-radius:var(--r);
+  background:var(--warnbg);padding:11px 13px;font-size:13px;color:var(--txt2);line-height:1.45}
+.alerta b{color:var(--warn)}
+.alerta .acc{display:flex;gap:7px;margin-top:9px;flex-wrap:wrap}
+
+/* ── navegación de cuatro ── */
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;
+  background:var(--sur);border-top:1px solid var(--brd);
+  padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))}
+.nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:7px 2px;color:var(--mut);font-size:10px;font-weight:650;letter-spacing:.03em;
+  border-radius:9px;position:relative}
+.nav button svg{width:20px;height:20px}
+.nav button.on{color:var(--ac)}
+.nav .bdg{position:absolute;top:2px;right:calc(50% - 20px);min-width:16px;height:16px;
+  border-radius:8px;background:var(--dang);color:#fff;font-size:9.5px;font-weight:700;
+  display:grid;place-items:center;padding:0 4px}
+
+.vacio{padding:26px 14px;text-align:center;color:var(--mut);font-size:13.5px}
+.nota{font-size:12.5px;color:var(--mut);line-height:1.5;padding:2px 4px 10px}
+.nota code{font-family:var(--fm);background:var(--sur2);border:1px solid var(--brd);
+  padding:1px 5px;border-radius:5px;font-size:11.5px}
+
+.toast{position:fixed;left:50%;transform:translate(-50%,14px);
+  bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:80;
+  background:var(--sur);border:1px solid var(--brd2);border-radius:11px;box-shadow:var(--shp);
+  padding:11px 15px;font-size:13.5px;max-width:calc(100vw - 32px);
+  opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+@media (hover:hover) and (pointer:fine){
+  .btn:hover{border-color:var(--brd2)}
+  .ib:hover{background:var(--sur2);color:var(--txt)}
+  .vinc:hover{background:var(--ac);color:var(--acfg)}
+  .fila:hover{background:var(--sur2)}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<symbol id="i-sol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+<symbol id="i-caso" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16a1 1 0 011 1v2.5a2 2 0 000 4V17a1 1 0 01-1 1H4a1 1 0 01-1-1v-2.5a2 2 0 000-4V8a1 1 0 011-1z"/><path d="M13 7v2M13 15v2"/></symbol>
+<symbol id="i-tareas" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></symbol>
+<symbol id="i-mas2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></symbol>
+<symbol id="i-enlace" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.5.6l3-3A5 5 0 0013.4 3.5l-1.7 1.7"/><path d="M14 11a5 5 0 00-7.5-.6l-3 3A10 10 0 0010.6 20.5l1.7-1.7"/></symbol>
+<symbol id="i-alerta" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/><path d="M12 9v4M12 17h.01"/></symbol>
+<symbol id="i-luna" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></symbol>
+<symbol id="i-ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></symbol>
+<symbol id="i-mas" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-avance" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></symbol>
+</svg>
+
+<div class="aviso">
+  <svg style="width:15px;height:15px;flex:none"><use href="#i-alerta"/></svg>
+  <span><b>Prototipo.</b> Nada de lo que toques aquí se guarda ni afecta tu panel real.</span>
+</div>
+
+<div class="wrap">
+  <div class="hd">
+    <div>
+      <h1 id="titulo">Lo que toca ahora</h1>
+      <p id="subtitulo">—</p>
+    </div>
+    <span class="sp">
+      <button class="ib" onclick="alternarTema()" title="Cambiar tema"><svg><use href="#i-luna"/></svg></button>
+    </span>
+  </div>
+  <div id="cuerpo"></div>
+</div>
+
+<nav class="nav">
+  <button data-v="hoy" onclick="ir('hoy')"><svg><use href="#i-sol"/></svg>HOY</button>
+  <button data-v="casos" onclick="ir('casos')"><svg><use href="#i-caso"/></svg>CASOS<span class="bdg" id="b-casos"></span></button>
+  <button data-v="tareas" onclick="ir('tareas')"><svg><use href="#i-tareas"/></svg>TAREAS<span class="bdg" id="b-tareas"></span></button>
+  <button data-v="mas" onclick="ir('mas')"><svg><use href="#i-mas2"/></svg>MÁS</button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   Datos reales sacados de las capturas de Miguel, para que la
+   demostración se reconozca de inmediato. Todo vive en memoria.
+   ══════════════════════════════════════════════════════════════════ */
+const hoy = new Date();
+const diasAtras = n => { const d=new Date(hoy); d.setDate(d.getDate()-n); return d; };
+
+let CASOS = [
+  {id:'69895839',   desc:'RECLAMO NC SILLON',                                  estado:'EN PROGRESO', dias:3},
+  {id:'70129397',   desc:'Línea inactiva Nicol, plan wom internet',            estado:'EN PROGRESO', dias:3},
+  {id:'70130030',   desc:'Cliente cobro de mandato entel por internet',        estado:'EN PROGRESO', dias:3},
+  {id:'69511601',   desc:'Línea inactiva giovanni',                            estado:'EN PROGRESO', dias:3},
+  {id:'69512247',   desc:'Línea inactiva mendez',                              estado:'EN PROGRESO', dias:3},
+  {id:'69522351',   desc:'Computador dañado gext no pareada, enviar urgente',  estado:'EN PROGRESO', dias:3},
+  {id:'20201783',   desc:'iPad ingresado MAC online',                          estado:'EN PROGRESO', dias:3},
+  {id:'4224680399', desc:'Clienta que no recibe giftcard y solicita anulación',estado:'EN PROGRESO', dias:3},
+  {id:'70129074',   desc:'Anulación de GC clienta, HACER YO TE LLAMO',         estado:'EN PROGRESO', dias:1}
+];
+
+let TAREAS = [
+  {tid:1,  tx:'69522351 caso computador dañado',                    cat:'urgente',    caso:null},
+  {tid:2,  tx:'1162545071 computador rechazado, pedir retorno',      cat:'urgente',    caso:null},
+  {tid:3,  tx:'Cobro mandato gelen',                                 cat:'urgente',    caso:null},
+  {tid:4,  tx:'Verificar si cliente de gelen le aparece el seguro',  cat:'urgente',    caso:null},
+  {tid:5,  tx:'Revisar clienta mendez, no aparece mandato',          cat:'urgente',    caso:null},
+  {tid:6,  tx:'Retirar IPAD PRO de mac online',                      cat:'urgente',    caso:null},
+  {tid:7,  tx:'Empuje tintas HP',                                    cat:'urgente',    caso:null},
+  {tid:8,  tx:'Reunión Raimundo impresoras y accesorios',            cat:'urgente',    caso:null},
+  {tid:9,  tx:'Enviar turno de apple',                               cat:'urgente',    caso:null},
+  {tid:10, tx:'Enviar inventario computación',                       cat:'urgente',    caso:null},
+  {tid:11, tx:'Pablo, transferencia a angel la dehesa',              cat:'urgente',    caso:null},
+  {tid:12, tx:'Cambio Gelen',                                        cat:'planificar', caso:null},
+  {tid:13, tx:'Cambio Vega',                                         cat:'planificar', caso:null},
+  {tid:14, tx:'Agendar mantención máquina',                          cat:'planificar', caso:null},
+  {tid:15, tx:'Evidencias no se suben',                              cat:'delegar',    caso:null}
+];
+
+/* ── Detector de duplicados ────────────────────────────────────────
+   Dos señales. La fuerte: la tarea contiene un número que ya es un
+   caso abierto. La débil: comparten un nombre propio poco común, que
+   es como aparecen los clientes en las anotaciones de Miguel.       */
+const PALABRAS_VACIAS = new Set(['caso','cliente','clienta','revisar','enviar','de','del','la','el','los','las',
+  'no','se','si','le','y','a','en','por','para','con','un','una','que','su','mas','más','pedir','verificar']);
+
+function numerosDe(t){ return (t.match(/\b\d{6,12}\b/g) || []); }
+function palabrasDe(t){
+  return t.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'')
+    .split(/[^a-z0-9]+/).filter(p => p.length > 3 && !PALABRAS_VACIAS.has(p));
+}
+function detectar(){
+  const hallazgos = [];
+  for(const t of TAREAS){
+    if(t.caso) continue;
+    for(const n of numerosDe(t.tx)){
+      const c = CASOS.find(c => c.id === n);
+      if(c){ hallazgos.push({tipo:'exacto', t, c, razon:'el número '+n+' ya es un caso abierto'}); }
+    }
+    if(hallazgos.some(h => h.t === t)) continue;
+    const pt = new Set(palabrasDe(t.tx));
+    for(const c of CASOS){
+      const comunes = palabrasDe(c.desc).filter(p => pt.has(p));
+      if(comunes.length) { hallazgos.push({tipo:'parecido', t, c, razon:'los dos hablan de “'+comunes[0]+'”'}); break; }
+    }
+  }
+  return hallazgos;
+}
+/* Números que parecen de sistema pero no corresponden a ningún caso:
+   candidatos a convertirse en caso en vez de quedar sueltos. */
+function huerfanos(){
+  return TAREAS.filter(t => !t.caso && numerosDe(t.tx).length && !CASOS.some(c => numerosDe(t.tx).includes(c.id)));
+}
+
+const tareasDe = id => TAREAS.filter(t => t.caso === id);
+const nivel = c => c.estado === 'EN ESPERA' ? 'ok' : c.dias >= 2 ? 'dang' : c.dias >= 1 ? 'warn' : 'ok';
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const escA = s => esc(s).replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+const ico = n => '<svg><use href="#i-'+n+'"></use></svg>';
+const $ = id => document.getElementById(id);
+
+let VISTA = 'hoy', BORRADOR = '';
+
+function aviso(m){
+  const t = $('toast'); t.textContent = m; t.classList.add('on');
+  clearTimeout(window._t); window._t = setTimeout(() => t.classList.remove('on'), 2600);
+}
+function alternarTema(){
+  const r = document.documentElement;
+  const oscuroAhora = r.getAttribute('data-theme') === 'dark'
+    || (!r.getAttribute('data-theme') && matchMedia('(prefers-color-scheme: dark)').matches);
+  r.setAttribute('data-theme', oscuroAhora ? 'light' : 'dark');
+}
+
+/* ── acciones ── */
+function enlazar(tid, cid){
+  const t = TAREAS.find(x => x.tid === tid);
+  t.caso = cid;
+  aviso('Enlazada al caso ' + cid);
+  pintar();
+}
+function desenlazar(tid){
+  const t = TAREAS.find(x => x.tid === tid);
+  t.caso = null; aviso('Vínculo quitado'); pintar();
+}
+function convertirEnCaso(tid){
+  const t = TAREAS.find(x => x.tid === tid);
+  const n = numerosDe(t.tx)[0];
+  CASOS.unshift({id:n, desc:t.tx.replace(n,'').replace(/^[\s,.-]+/,'').trim(), estado:'EN PROGRESO', dias:0});
+  t.caso = n;
+  aviso('Caso ' + n + ' creado y la tarea quedó colgada de él');
+  pintar();
+}
+function noEsLoMismo(tid){
+  const t = TAREAS.find(x => x.tid === tid);
+  t.ignorar = true; aviso('Entendido, no los vuelvo a juntar'); pintar();
+}
+function avance(cid){
+  const c = CASOS.find(x => x.id === cid);
+  c.dias = 0; aviso('Movimiento registrado en ' + cid); pintar();
+}
+function esperar(cid){
+  const c = CASOS.find(x => x.id === cid);
+  c.estado = c.estado === 'EN ESPERA' ? 'EN PROGRESO' : 'EN ESPERA';
+  aviso(cid + ' → ' + c.estado); pintar();
+}
+function listo(tid){
+  TAREAS = TAREAS.filter(t => t.tid !== tid); aviso('Tarea cerrada'); pintar();
+}
+function capturar(){
+  const v = $('cap-in').value.trim(); if(!v) return;
+  TAREAS.push({tid:Date.now(), tx:v, cat:'urgente', caso:null});
+  $('cap-in').value = ''; BORRADOR = '';
+  aviso('Tarea creada'); pintar();
+}
+function alEscribir(e){ BORRADOR = e.target.value; pintarSugerencia(); }
+
+/* ── deslizar ────────────────────────────────────────────────────
+   Derecha registra avance o cierra; izquierda pone en espera. Es el
+   gesto de iOS y reemplaza a tres botones de 27 px.               */
+function deslizable(el, alDerecha, alIzquierda){
+  let x0 = null, dx = 0, activo = false;
+  const fila = el.querySelector('.fila');
+  el.addEventListener('pointerdown', e => { x0 = e.clientX; dx = 0; activo = true; fila.style.transition = 'none'; });
+  el.addEventListener('pointermove', e => {
+    if(!activo) return;
+    dx = e.clientX - x0;
+    if(Math.abs(dx) > 6) fila.style.transform = 'translateX(' + Math.max(-120, Math.min(120, dx)) + 'px)';
+  });
+  const soltar = () => {
+    if(!activo) return;
+    activo = false;
+    fila.style.transition = 'transform .22s cubic-bezier(.2,.8,.2,1)';
+    fila.style.transform = 'translateX(0)';
+    if(dx > 70 && alDerecha) alDerecha();
+    else if(dx < -70 && alIzquierda) alIzquierda();
+  };
+  el.addEventListener('pointerup', soltar);
+  el.addEventListener('pointercancel', soltar);
+  el.addEventListener('pointerleave', soltar);
+}
+
+/* ── pintado ── */
+function filaCaso(c, opciones){
+  const o = opciones || {};
+  const n = nivel(c);
+  const subs = tareasDe(c.id);
+  return '<div class="swipe" data-caso="' + c.id + '">' +
+    '<div class="fondo"><span class="izq">✓ Avance</span><span class="der">Esperar ⏸</span></div>' +
+    '<div class="fila">' +
+      '<span class="marca ' + n + '"></span>' +
+      '<span class="cuerpo">' +
+        '<span class="lin1"><span class="id num">' + esc(c.id) + '</span></span>' +
+        '<span class="tx">' + esc(c.desc) + '</span>' +
+        '<span class="meta">' +
+          '<span class="tag ' + (n === 'dang' ? 'dang' : n === 'warn' ? 'warn' : '') + '">' +
+            (c.dias === 0 ? 'movido hoy' : c.dias + ' días sin mover') + '</span>' +
+          (c.estado === 'EN ESPERA' ? '<span class="tag info">EN ESPERA</span>' : '') +
+          (subs.length ? '<span class="tag ac">' + ico('enlace') + subs.length + ' tarea' + (subs.length === 1 ? '' : 's') + '</span>' : '') +
+        '</span>' +
+      '</span>' +
+    '</div></div>' +
+    (o.conTareas ? subs.map(t =>
+      '<div class="swipe"><div class="fondo"><span class="izq">✓ Lista</span><span class="der"></span></div>' +
+      '<div class="fila sub"><span class="marca"></span><span class="cuerpo">' +
+      '<span class="tx">' + esc(t.tx) + '</span></span>' +
+      '<span class="rt"><button class="btn sm gho" onclick="desenlazar(' + t.tid + ')">Soltar</button></span>' +
+      '</div></div>').join('') : '');
+}
+
+function filaTarea(t){
+  const c = t.caso ? CASOS.find(x => x.id === t.caso) : null;
+  const col = {urgente:'dang', planificar:'ac', delegar:'info'}[t.cat];
+  return '<div class="swipe" data-tarea="' + t.tid + '">' +
+    '<div class="fondo"><span class="izq">✓ Lista</span><span class="der">Posponer →</span></div>' +
+    '<div class="fila">' +
+      '<span class="marca ' + (t.cat === 'urgente' ? 'dang' : '') + '"></span>' +
+      '<span class="cuerpo">' +
+        '<span class="tx">' + esc(t.tx) + '</span>' +
+        '<span class="meta">' +
+          '<span class="tag ' + col + '">' + t.cat + '</span>' +
+          (c ? '<span class="tag ac">' + ico('enlace') + 'caso ' + esc(c.id) + '</span>'
+             : '<button class="vinc" onclick="ofrecerEnlace(' + t.tid + ')">' + ico('mas') + 'enlazar a un caso</button>') +
+        '</span>' +
+      '</span>' +
+    '</div></div>';
+}
+
+function ofrecerEnlace(tid){
+  const t = TAREAS.find(x => x.tid === tid);
+  const pt = new Set(palabrasDe(t.tx));
+  const nums = numerosDe(t.tx);
+  const orden = CASOS.slice().sort((a, b) => {
+    const pa = (nums.includes(a.id) ? 100 : 0) + palabrasDe(a.desc).filter(p => pt.has(p)).length;
+    const pb = (nums.includes(b.id) ? 100 : 0) + palabrasDe(b.desc).filter(p => pt.has(p)).length;
+    return pb - pa;
+  });
+  $('cuerpo').innerHTML =
+    '<div class="panel"><div class="ph"><h2>Enlazar a un caso</h2></div><div class="pb">' +
+      '<p class="nota">«' + esc(t.tx) + '»<br>Los más parecidos van primero.</p>' +
+      orden.slice(0, 6).map(c =>
+        '<div class="fila" style="border-radius:9px"><span class="marca ' + nivel(c) + '"></span>' +
+        '<span class="cuerpo"><span class="id num">' + esc(c.id) + '</span>' +
+        '<span class="tx" style="font-size:14px">' + esc(c.desc) + '</span></span>' +
+        '<span class="rt"><button class="btn pri sm" onclick="enlazar(' + tid + ',\'' + escA(c.id) + '\')">Enlazar</button></span></div>'
+      ).join('') +
+    '</div></div>' +
+    '<button class="btn" onclick="pintar()">Volver</button>';
+}
+
+function pintarSugerencia(){
+  const caja = $('cap-sug'); if(!caja) return;
+  const v = BORRADOR.trim();
+  if(!v){ caja.innerHTML = ''; return; }
+  const nums = numerosDe(v);
+  const ya = CASOS.find(c => nums.includes(c.id));
+  if(ya){
+    caja.innerHTML = '<div class="alerta"><b>Ese caso ya existe.</b> ' + esc(ya.id) + ' — ' + esc(ya.desc) +
+      '<div class="acc"><button class="btn pri sm" onclick="capturarEnlazada(\'' + escA(ya.id) + '\')">Colgarla de ese caso</button>' +
+      '<button class="btn sm" onclick="capturar()">Crear igual, suelta</button></div></div>';
+    return;
+  }
+  if(nums.length){
+    caja.innerHTML = '<div class="alerta"><b>Eso parece un número de caso.</b> ' + esc(nums[0]) +
+      ' no está en tus casos abiertos.<div class="acc">' +
+      '<button class="btn pri sm" onclick="capturarComoCaso(\'' + escA(nums[0]) + '\')">Crearlo como caso</button>' +
+      '<button class="btn sm" onclick="capturar()">Dejarlo como tarea</button></div></div>';
+    return;
+  }
+  caja.innerHTML = '';
+}
+function capturarEnlazada(cid){
+  TAREAS.push({tid:Date.now(), tx:$('cap-in').value.trim(), cat:'urgente', caso:cid});
+  $('cap-in').value = ''; BORRADOR = ''; aviso('Colgada del caso ' + cid); pintar();
+}
+function capturarComoCaso(n){
+  const v = $('cap-in').value.trim();
+  CASOS.unshift({id:n, desc:v.replace(n, '').replace(/^[\s,.-]+/, '').trim(), estado:'EN PROGRESO', dias:0});
+  $('cap-in').value = ''; BORRADOR = ''; aviso('Caso ' + n + ' creado'); ir('casos');
+}
+
+function ir(v){ VISTA = v; pintar(); window.scrollTo({top:0, behavior:'smooth'}); }
+
+function pintar(){
+  const detenidos = CASOS.filter(c => nivel(c) === 'dang');
+  const urg = TAREAS.filter(t => t.cat === 'urgente');
+  $('b-casos').textContent = detenidos.length || '';
+  $('b-casos').style.display = detenidos.length ? 'grid' : 'none';
+  $('b-tareas').textContent = urg.length || '';
+  $('b-tareas').style.display = urg.length ? 'grid' : 'none';
+  document.querySelectorAll('.nav button').forEach(b => b.classList.toggle('on', b.dataset.v === VISTA));
+
+  const hallazgos = detectar().filter(h => !h.t.ignorar);
+  const sueltos = huerfanos().filter(t => !t.ignorar);
+  let h = '';
+
+  if(VISTA === 'hoy'){
+    $('titulo').textContent = 'Lo que toca ahora';
+    $('subtitulo').textContent = detenidos.length + ' casos detenidos · ' + urg.length + ' tareas urgentes';
+
+    if(hallazgos.length){
+      const x = hallazgos[0];
+      h += '<div class="hallazgo">' +
+        '<div class="top">' + ico('alerta') +
+          '<span><b>Tienes lo mismo anotado dos veces</b>' +
+          '<span>Encontré ' + hallazgos.length + ' pareja' + (hallazgos.length === 1 ? '' : 's') +
+          ' donde una tarea y un caso son la misma cosa. Enlazarlas deja una sola verdad.</span></span>' +
+        '</div>' +
+        hallazgos.slice(0, 3).map(x =>
+          '<div class="par">' +
+            '<span class="lado"><i>Tarea</i><span>' + esc(x.t.tx) + '</span></span>' +
+            '<span class="lado"><i>Caso</i><span class="num" style="font-size:13px">' + esc(x.c.id) + '</span>' +
+              '<span>' + esc(x.c.desc) + '</span></span>' +
+            '<span class="nota" style="padding:6px 0 0">' +
+              (x.tipo === 'exacto' ? '✓ ' : '· ') + esc(x.razon) + '</span>' +
+            '<span class="acc">' +
+              '<button class="btn pri sm" onclick="enlazar(' + x.t.tid + ',\'' + escA(x.c.id) + '\')">' +
+                ico('enlace') + 'Enlazar</button>' +
+              '<button class="btn sm gho" onclick="noEsLoMismo(' + x.t.tid + ')">No es lo mismo</button>' +
+            '</span>' +
+          '</div>').join('') +
+        '</div>';
+    }
+
+    if(sueltos.length){
+      h += '<div class="panel"><div class="ph"><h2>Números sin caso</h2>' +
+        '<span class="ct">' + sueltos.length + '</span></div><div class="pb">' +
+        '<p class="nota">Estas tareas traen un número de sistema que no corresponde a ningún caso abierto. ' +
+        'Si lo son, conviene que lleven su reloj de antigüedad.</p>' +
+        sueltos.map(t =>
+          '<div class="fila" style="border-radius:9px"><span class="marca warn"></span>' +
+          '<span class="cuerpo"><span class="tx">' + esc(t.tx) + '</span></span>' +
+          '<span class="rt"><button class="btn sm" onclick="convertirEnCaso(' + t.tid + ')">Volverlo caso</button>' +
+          '<button class="btn sm gho" onclick="noEsLoMismo(' + t.tid + ')">No</button></span></div>').join('') +
+        '</div></div>';
+    }
+
+    const ordenados = detenidos.concat(CASOS.filter(c => nivel(c) === 'warn'));
+    h += '<div class="panel"><div class="ph"><h2>Casos detenidos</h2>' +
+      '<span class="ct">' + ordenados.length + '</span></div><div class="pb">' +
+      (ordenados.length ? ordenados.map(c => filaCaso(c, {conTareas:true})).join('')
+                        : '<div class="vacio">Ninguno detenido.</div>') + '</div></div>';
+
+    h += '<div class="panel"><div class="ph"><h2>Urgentes sin caso</h2>' +
+      '<span class="ct">' + urg.filter(t => !t.caso).length + '</span></div><div class="pb">' +
+      urg.filter(t => !t.caso).slice(0, 6).map(filaTarea).join('') + '</div></div>';
+  }
+
+  if(VISTA === 'casos'){
+    $('titulo').textContent = 'Casos';
+    $('subtitulo').textContent = CASOS.length + ' abiertos · ' + TAREAS.filter(t => t.caso).length + ' tareas colgando';
+    h += '<div class="cap"><input id="cap-in" placeholder="Escribe un número de caso o una tarea…" ' +
+      'value="' + escA(BORRADOR) + '" oninput="alEscribir(event)" ' +
+      'onkeydown="if(event.key===\'Enter\')capturar()"><div id="cap-sug"></div></div>';
+    h += '<div class="panel"><div class="pb">' +
+      CASOS.map(c => filaCaso(c, {conTareas:true})).join('') + '</div></div>';
+    h += '<p class="nota">Desliza una fila a la derecha para registrar avance, a la izquierda para ponerla en espera.</p>';
+  }
+
+  if(VISTA === 'tareas'){
+    $('titulo').textContent = 'Tareas';
+    const conCaso = TAREAS.filter(t => t.caso).length;
+    $('subtitulo').textContent = TAREAS.length + ' pendientes · ' + conCaso + ' enlazadas a un caso';
+    h += '<div class="cap"><input id="cap-in" placeholder="¿Qué hay que hacer?" ' +
+      'value="' + escA(BORRADOR) + '" oninput="alEscribir(event)" ' +
+      'onkeydown="if(event.key===\'Enter\')capturar()"><div id="cap-sug"></div></div>';
+    for(const [cat, nom] of [['urgente','Urgente'], ['planificar','Planificar'], ['delegar','Delegar']]){
+      const l = TAREAS.filter(t => t.cat === cat);
+      if(!l.length) continue;
+      h += '<div class="panel"><div class="ph"><h2>' + nom + '</h2><span class="ct">' + l.length + '</span></div>' +
+        '<div class="pb">' + l.map(filaTarea).join('') + '</div></div>';
+    }
+  }
+
+  if(VISTA === 'mas'){
+    $('titulo').textContent = 'Más';
+    $('subtitulo').textContent = 'Lo que hoy ocupa una sección propia y casi nunca abres';
+    h += '<div class="panel"><div class="pb">' +
+      ['Agenda', 'Biblioteca de enlaces', 'Métricas', 'Archivo', 'Ajustes'].map(x =>
+        '<div class="fila" style="border-radius:9px"><span class="marca"></span>' +
+        '<span class="cuerpo"><span class="tx">' + x + '</span></span></div>').join('') +
+      '</div></div>';
+    h += '<p class="nota">La idea: la barra de abajo baja de seis a cuatro. Agenda, Biblioteca y Métricas ' +
+      'pasan aquí y a la búsqueda <code>⌘K</code>, porque no son cosas que hagas varias veces al día.</p>';
+  }
+
+  $('cuerpo').innerHTML = h;
+  pintarSugerencia();
+
+  // los gestos se enganchan después de pintar
+  document.querySelectorAll('.swipe[data-caso]').forEach(el => {
+    const id = el.dataset.caso;
+    deslizable(el, () => avance(id), () => esperar(id));
+  });
+  document.querySelectorAll('.swipe[data-tarea]').forEach(el => {
+    const id = Number(el.dataset.tarea);
+    deslizable(el, () => listo(id), null);
+  });
+}
+
+pintar();
+</script>

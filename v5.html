@@ -1,0 +1,1064 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Hoy">
+<meta name="theme-color" content="#0B0F14" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#FBFBFD" media="(prefers-color-scheme: light)">
+<title>Daily Task Manager</title>
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* ══════════════════════════════════════════════════════════════════
+   1 · FICHAS — un solo acento, el ámbar, que significa tiempo.
+       Rojo, verde y azul no son decoración: son detenido, hecho y
+       calendario externo. Si algo no es ninguna de esas cosas, es
+       neutro.
+   ══════════════════════════════════════════════════════════════════ */
+:root{
+  --fondo:#0B0F14;
+  --sup:#141A21;
+  --sup2:#161D26;
+  --hueco:#13191F;
+  --tinta:#E8ECF1;
+  --tinta2:#A3ADBA;
+  --tinta3:#6E7A88;
+  --tinta4:#4F5A66;
+  --borde:rgba(232,236,241,.13);
+  --borde2:rgba(232,236,241,.07);
+  --vidrio:rgba(11,15,20,.72);
+  --vidrio2:rgba(11,15,20,.78);
+  --velo:rgba(6,9,12,.6);
+  --aro:#3A4552;
+
+  --ambar:#FF9F0A;
+  --rojo:#FF453A;
+  --verde:#30D158;
+  --azul:#64D2FF;
+
+  --ambarT:rgba(255,159,10,.14);
+  --rojoT:rgba(255,69,58,.14);
+  --verdeT:rgba(48,209,88,.14);
+  --azulT:rgba(100,210,255,.09);
+
+  --display:Archivo, system-ui, -apple-system, sans-serif;
+  --cuerpo:system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --cifra:'IBM Plex Mono', ui-monospace, monospace;
+
+  /* Un solo número gobierna toda la escala. Ajustes lo mueve y el
+     diseño entero crece con él, porque nada está en px fijos. */
+  --base:16px;
+
+  --r-ch:10px;   /* fichitas */
+  --r-fi:14px;   /* filas */
+  --r-ta:16px;   /* tarjetas */
+  --r-ho:26px;   /* hojas */
+
+  --alto:max(env(safe-area-inset-top), 12px);
+  --bajo:max(env(safe-area-inset-bottom), 14px);
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-tema="oscuro"]){
+    --fondo:#FBFBFD;
+    --sup:#FFFFFF;
+    --sup2:#FFFFFF;
+    --hueco:#F2F3F6;
+    --tinta:#0B0F14;
+    --tinta2:#4A5561;
+    --tinta3:#78838F;
+    --tinta4:#A3ADBA;
+    --borde:rgba(11,15,20,.12);
+    --borde2:rgba(11,15,20,.07);
+    --vidrio:rgba(251,251,253,.72);
+    --vidrio2:rgba(251,251,253,.8);
+    --velo:rgba(30,35,42,.32);
+    --aro:#C2CAD3;
+    --ambar:#C77700;
+    --rojo:#D70015;
+    --verde:#18893B;
+    --azul:#0A7EA4;
+    --ambarT:rgba(199,119,0,.12);
+    --rojoT:rgba(215,0,21,.1);
+    --verdeT:rgba(24,137,59,.1);
+    --azulT:rgba(10,126,164,.09);
+  }
+}
+:root[data-tema="claro"]{
+  --fondo:#FBFBFD; --sup:#FFFFFF; --sup2:#FFFFFF; --hueco:#F2F3F6;
+  --tinta:#0B0F14; --tinta2:#4A5561; --tinta3:#78838F; --tinta4:#A3ADBA;
+  --borde:rgba(11,15,20,.12); --borde2:rgba(11,15,20,.07);
+  --vidrio:rgba(251,251,253,.72); --vidrio2:rgba(251,251,253,.8);
+  --velo:rgba(30,35,42,.32); --aro:#C2CAD3;
+  --ambar:#C77700; --rojo:#D70015; --verde:#18893B; --azul:#0A7EA4;
+  --ambarT:rgba(199,119,0,.12); --rojoT:rgba(215,0,21,.1);
+  --verdeT:rgba(24,137,59,.1); --azulT:rgba(10,126,164,.09);
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   2 · PLATAFORMA — lo que separa "una web en un navegador" de algo
+       que se siente instalado. Cada regla de aquí arregla un defecto
+       concreto del teléfono.
+   ══════════════════════════════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box}
+html{
+  -webkit-text-size-adjust:100%;      /* girar el iPhone no reescala el texto */
+  overscroll-behavior:none;           /* sin rebote de recarga robando el gesto */
+  font-size:var(--base);
+}
+body{
+  margin:0;
+  font-family:var(--cuerpo);
+  font-size:1rem;
+  line-height:1.45;
+  color:var(--tinta);
+  background:var(--fondo);
+  min-height:100dvh;                  /* dvh, no vh: la barra de Safari se mueve */
+  -webkit-font-smoothing:antialiased;
+}
+button,input,textarea,select{font:inherit;color:inherit}
+button{background:none;border:none;padding:0;cursor:pointer}
+a{color:var(--ambar);text-decoration:none}
+svg{flex:none}
+
+/* El toque responde al apoyar el dedo, no al soltarlo, y nunca
+   selecciona el texto del botón por mantener apretado. */
+button,a,[role="button"],.toc{
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+  user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;
+}
+/* El texto del contenido sí se puede seleccionar y copiar. */
+.sel{user-select:text;-webkit-user-select:text;-webkit-touch-callout:default}
+
+/* Un ratón tiene puntero fino; un dedo no. El hover solo existe
+   donde hay un ratón, si no se queda pegado tras cada toque. */
+@media (hover:hover) and (pointer:fine){
+  .toc:hover{background:var(--sup2)}
+  .fila:hover{background:var(--sup2)}
+  a:hover{color:var(--ambar);filter:brightness(1.15)}
+}
+/* 16 px es el umbral bajo el cual iOS hace zoom al enfocar un campo. */
+@media (pointer:coarse){
+  input,textarea,select{font-size:16px}
+}
+
+@media (prefers-reduced-transparency: reduce){
+  .vidrio{background:var(--fondo)!important;backdrop-filter:none!important}
+}
+@media (prefers-contrast: more){
+  :root{--borde:rgba(128,138,150,.6);--borde2:rgba(128,138,150,.4)}
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   3 · TIPOGRAFÍA — el interletraje cambia con el tamaño. Un solo
+       valor para todo está mal en alguna parte: el texto grande se
+       ve suelto y el chico apretado.
+   ══════════════════════════════════════════════════════════════════ */
+.tit{
+  font-family:var(--display);
+  font-size:1.85rem;
+  font-weight:700;
+  letter-spacing:-.03em;              /* negativo al crecer */
+  line-height:1.05;
+}
+.tit-s{
+  font-family:var(--display);
+  font-size:1.25rem;
+  font-weight:600;
+  letter-spacing:-.018em;
+  line-height:1.25;
+}
+.rotulo{
+  font-family:var(--cifra);
+  font-size:.66rem;
+  font-weight:600;
+  letter-spacing:.11em;               /* positivo al encoger */
+  text-transform:uppercase;
+  color:var(--tinta3);
+}
+.cifra{font-family:var(--cifra);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.menor{font-size:.82rem;color:var(--tinta3)}
+/* Un texto de 34x19 px es un blanco imposible para un pulgar. El área
+   de toque crece a 44 px sin que crezca lo que se ve, con relleno y un
+   margen negativo que lo compensa. */
+.toque{padding:.75rem;margin:-.75rem;min-height:2.75rem;display:inline-flex;align-items:center}
+
+/* ══════════════════════════════════════════════════════════════════
+   4 · MATERIALES — la barra no es una franja opaca que se come el
+       alto: es una capa translúcida y el contenido pasa por debajo.
+   ══════════════════════════════════════════════════════════════════ */
+.vidrio{
+  background:var(--vidrio);
+  backdrop-filter:blur(24px) saturate(180%);
+  -webkit-backdrop-filter:blur(24px) saturate(180%);
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   5 · ARMAZÓN
+   ══════════════════════════════════════════════════════════════════ */
+#app{min-height:100dvh;display:flex;flex-direction:column}
+
+.cabeza{
+  position:fixed;top:0;left:0;right:0;z-index:30;
+  padding:calc(var(--alto) + 8px) 1.25rem .8rem;
+  border-bottom:1px solid var(--borde2);
+}
+.cabeza-fila{display:flex;align-items:flex-end;gap:.75rem;max-width:56rem}
+.cabeza-fila>div:first-child{flex:1;min-width:0}
+.reloj{font-family:var(--cifra);font-size:1.6rem;font-weight:600;letter-spacing:-.03em;padding-bottom:.2rem;font-variant-numeric:tabular-nums}
+
+main{
+  flex:1;
+  /* --tope lo mide el guion contra la cabecera real: si lo dejo en un
+     número fijo, cambiar el tamaño de letra abre un hueco muerto.
+     Abajo hay que despejar la barra y además el botón flotante. */
+  padding:calc(var(--tope, 8.5rem) + 1rem) 0 calc(var(--bajo) + 9rem);
+}
+.env{padding-inline:1.25rem}
+
+/* La barra de abajo: cuatro destinos con nombre propio, no un "Inicio"
+   que no dice nada. */
+.barra{
+  position:fixed;bottom:0;left:0;right:0;z-index:30;
+  display:flex;
+  padding:.6rem .5rem var(--bajo);
+  border-top:1px solid var(--borde2);
+}
+.dest{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:.25rem;
+  padding:.25rem 0;position:relative;color:var(--tinta3);
+}
+.dest[aria-current="page"]{color:var(--ambar)}
+.dest span{font-size:.62rem;font-weight:700;letter-spacing:.04em}
+.dest .glob{
+  position:absolute;top:-2px;right:calc(50% - 1.6rem);
+  min-width:1.05rem;height:1.05rem;border-radius:.6rem;
+  background:var(--rojo);color:var(--fondo);
+  font-family:var(--cifra);font-size:.6rem;font-weight:700;
+  display:flex;align-items:center;justify-content:center;padding:0 .25rem;
+}
+
+/* El botón de capturar flota sobre la barra, no dentro de ella. */
+.capturar{
+  position:fixed;right:1.1rem;bottom:calc(var(--bajo) + 4.2rem);z-index:40;
+  width:3.5rem;height:3.5rem;border-radius:50%;
+  background:var(--ambar);color:var(--fondo);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 10px 30px -6px rgba(255,159,10,.5);
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   6 · PIEZAS — caso, tarea y evento comparten forma. El borde de
+       color dice qué es sin necesidad de leer.
+   ══════════════════════════════════════════════════════════════════ */
+.tarjeta{background:var(--sup);border-radius:var(--r-ta);border:1px solid transparent}
+.fila{
+  display:flex;gap:.7rem;align-items:flex-start;
+  padding:.8rem .85rem;border-radius:var(--r-fi);background:var(--sup);
+}
+.chk{
+  width:1.25rem;height:1.25rem;border-radius:50%;
+  border:1.8px solid var(--aro);background:none;flex:none;margin-top:.1rem;
+}
+.chk[aria-pressed="true"]{background:var(--verde);border-color:var(--verde)}
+.tx{flex:1;min-width:0;font-size:.92rem;line-height:1.35}
+.ficha{
+  font-size:.66rem;font-weight:600;padding:.18rem .5rem;border-radius:1rem;
+  background:var(--ambarT);color:var(--ambar);flex:none;
+}
+.ficha.roja{background:var(--rojoT);color:var(--rojo)}
+.ficha.azul{background:var(--azulT);color:var(--azul)}
+.ficha.gris{background:var(--borde2);color:var(--tinta2)}
+
+/* ── el espinazo de Hoy: una columna de tiempo ── */
+.tramo{display:flex;gap:.75rem;align-items:flex-start;margin-bottom:.15rem}
+.tramo>.hora{
+  flex:none;width:2.7rem;text-align:right;padding-top:.8rem;
+  font-family:var(--cifra);font-size:.7rem;font-weight:500;color:var(--tinta3);
+  font-variant-numeric:tabular-nums;
+}
+.tramo>.cuerpo{flex:1;min-width:0;padding:.7rem .85rem;border-radius:var(--r-fi)}
+.ev{background:var(--azulT);border-left:3px solid var(--azul)}
+.ev .cuando{font-family:var(--cifra);font-size:.7rem;color:var(--azul);margin-top:.25rem}
+.bloque{background:var(--sup2);border:1px solid rgba(255,159,10,.34)}
+.libre{background:var(--hueco);border:1px dashed var(--borde);color:var(--tinta3)}
+
+/* la línea de ahora: el único ámbar que se mueve solo */
+.ahora{display:flex;gap:.75rem;align-items:center;margin:.55rem 0}
+.ahora .hora{flex:none;width:2.7rem;text-align:right;font-family:var(--cifra);font-size:.7rem;font-weight:700;color:var(--ambar)}
+.ahora .veta{
+  flex:1;height:2px;border-radius:2px;position:relative;
+  background:linear-gradient(90deg,var(--ambar),rgba(255,159,10,.15));
+}
+.ahora .veta::before{
+  content:"";position:absolute;left:-4px;top:-3px;
+  width:8px;height:8px;border-radius:50%;background:var(--ambar);
+}
+
+/* ── banda de presión ── */
+.presion{display:flex;gap:.55rem}
+.presion>*{flex:1;min-width:0;padding:.75rem .8rem;border-radius:var(--r-ta)}
+.pres-r{background:rgba(255,69,58,.11);border:1px solid rgba(255,69,58,.3)}
+.pres-a{background:rgba(255,159,10,.1);border:1px solid rgba(255,159,10,.28)}
+
+.vacio{padding:2.5rem 1rem;text-align:center;color:var(--tinta3);font-size:.9rem;line-height:1.5}
+
+/* ══════════════════════════════════════════════════════════════════
+   7 · CAPAS — el velo atenúa y empuja atrás lo de abajo; la hoja
+       llega como un material, no como una opacidad que sube.
+   ══════════════════════════════════════════════════════════════════ */
+#velo{
+  position:fixed;inset:0;z-index:50;background:var(--velo);
+  opacity:0;pointer-events:none;
+  backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);
+}
+#velo.on{pointer-events:auto}
+.hoja{
+  position:fixed;left:0;right:0;bottom:0;z-index:60;
+  max-height:88dvh;overflow:auto;-webkit-overflow-scrolling:touch;
+  border-radius:var(--r-ho) var(--r-ho) 0 0;
+  background:var(--sup);
+  border-top:1px solid var(--borde);
+  box-shadow:0 -24px 70px -20px rgba(0,0,0,.8);
+  padding:.6rem 1.15rem calc(var(--bajo) + 1.2rem);
+  transform:translateY(100%);
+  visibility:hidden;
+  overscroll-behavior:contain;
+}
+.hoja.on{visibility:visible}
+.asa{
+  width:2.4rem;height:4px;border-radius:3px;
+  background:var(--borde);margin:0 auto 1.1rem;
+}
+
+/* ── avisos ── */
+#avisos{
+  position:fixed;left:50%;bottom:calc(var(--bajo) + 5rem);z-index:70;
+  transform:translateX(-50%);
+  display:flex;flex-direction:column;gap:.45rem;align-items:center;
+  width:min(26rem,calc(100% - 2rem));pointer-events:none;
+}
+.aviso{
+  pointer-events:auto;width:100%;
+  display:flex;align-items:center;gap:.6rem;
+  padding:.7rem .85rem;border-radius:var(--r-fi);
+  background:var(--sup);border:1px solid var(--borde);
+  box-shadow:0 12px 34px -12px rgba(0,0,0,.7);
+  font-size:.86rem;
+}
+.aviso .txt{flex:1;min-width:0}
+.aviso button{color:var(--ambar);font-weight:700;font-size:.82rem;flex:none}
+
+/* ══════════════════════════════════════════════════════════════════
+   8 · MOVIMIENTO REDUCIDO — no significa sin respuesta: significa
+       una equivalencia suave que no mueve el mundo.
+   ══════════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce){
+  .hoja{transition:opacity .2s ease}
+  *{scroll-behavior:auto!important}
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   9 · ESCRITORIO — el Mac no es un teléfono estirado. Barra al
+       costado y dos columnas.
+   ══════════════════════════════════════════════════════════════════ */
+@media (min-width: 900px){
+  .barra{
+    top:0;bottom:0;right:auto;width:5.5rem;
+    flex-direction:column;justify-content:flex-start;gap:.35rem;
+    border-top:none;border-right:1px solid var(--borde2);
+    padding:calc(var(--alto) + 1rem) .5rem 1rem;
+  }
+  /* Sin esto, flex:1 estira cada destino hasta repartirse el alto
+     entero de la pantalla y quedan a un palmo unos de otros. */
+  .dest{flex:none;padding:.7rem 0;border-radius:var(--r-ch)}
+  .dest .glob{top:.15rem;right:calc(50% - 1.4rem)}
+  .cabeza{left:5.5rem;padding-inline:2rem}
+  main{margin-left:5.5rem;padding-bottom:3rem}
+  .env{padding-inline:2rem;max-width:56rem}
+  .capturar{left:1.1rem;right:auto;bottom:1.5rem}
+  .hoja{
+    left:50%;right:auto;bottom:auto;top:50%;
+    width:min(34rem,90vw);
+    border-radius:var(--r-ho);
+    max-height:82dvh;
+  }
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <header class="cabeza vidrio" id="cabeza"></header>
+  <main id="lienzo"></main>
+  <nav class="barra vidrio" id="barra" aria-label="Secciones"></nav>
+</div>
+
+<button class="capturar" id="btn-capturar" aria-label="Capturar algo nuevo">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+</button>
+
+<div id="velo" hidden></div>
+<div id="avisos" aria-live="polite"></div>
+
+<script>
+'use strict';
+
+/* ══════════════════════════════════════════════════════════════════
+   MOTOR DE RESORTES
+
+   Una animación de duración fija no puede responder a una entrada
+   nueva: hay que esperar a que termine. Un resorte sí — la entrada
+   nueva solo cambia la meta, y el movimiento nunca se corta.
+
+   Dos parámetros, los de Apple, no masa/rigidez:
+     respuesta      cuán rápido llega a la meta, en segundos
+     amortiguación  1 = sin rebote; menos = rebota
+
+   Regla: 1.0 para todo lo normal. 0.8 solo cuando el gesto traía
+   impulso, porque un menú que apareció solo no debe rebotar.
+   ══════════════════════════════════════════════════════════════════ */
+function Resorte(inicial, alCambiar){
+  let x = inicial, v = 0, meta = inicial;
+  let resp = .4, amor = 1, vivo = false, id = 0;
+  let alLlegar = null;
+
+  function integrar(dt){
+    /* Sub-pasos fijos: con un cuadro largo (pestaña de fondo, equipo
+       cargado) un solo paso grande hace explotar el resorte. */
+    const paso = 1/240;
+    let t = Math.min(dt, .064);
+    const w = 2*Math.PI/resp;
+    while(t > 0){
+      const h = Math.min(paso, t);
+      const a = -w*w*(x - meta) - 2*amor*w*v;
+      v += a*h;
+      x += v*h;
+      t -= h;
+    }
+  }
+  function cuadro(ant){
+    return function(ahora){
+      if(!vivo) return;
+      integrar((ahora - ant)/1000);
+      ant = ahora;
+      const quieto = Math.abs(x - meta) < .0005 && Math.abs(v) < .0015;
+      if(quieto){ x = meta; v = 0; vivo = false; alCambiar(x, v); if(alLlegar){ const f = alLlegar; alLlegar = null; f(); } return; }
+      alCambiar(x, v);
+      id = requestAnimationFrame(cuadro(ant));
+    };
+  }
+  function arrancar(){
+    if(vivo) return;
+    vivo = true;
+    id = requestAnimationFrame(cuadro(performance.now()));
+  }
+  return {
+    /* Reapuntar: el resorte sigue desde donde está y con la velocidad
+       que lleva. Eso es lo que permite agarrar algo en vuelo. */
+    a(nueva, op){
+      op = op || {};
+      meta = nueva;
+      if(op.respuesta != null) resp = op.respuesta;
+      if(op.amortiguacion != null) amor = op.amortiguacion;
+      if(op.velocidad != null) v = op.velocidad;
+      alLlegar = op.alLlegar || null;
+      if(REDUCIDO){ x = meta; v = 0; vivo = false; alCambiar(x, 0); if(op.alLlegar) op.alLlegar(); return; }
+      arrancar();
+    },
+    /* Durante un arrastre mandamos nosotros: el resorte se apaga y el
+       valor sigue al dedo uno a uno. */
+    fijar(nuevo, velocidad){
+      vivo = false; cancelAnimationFrame(id);
+      x = nuevo; if(velocidad != null) v = velocidad;
+      alCambiar(x, v);
+    },
+    get valor(){ return x; },
+    get velocidad(){ return v; },
+    get meta(){ return meta; },
+    detener(){ vivo = false; cancelAnimationFrame(id); }
+  };
+}
+
+const REDUCIDO = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* Dónde va a parar un lanzamiento. No es la fórmula de física del
+   colegio: es la caída exponencial que usa el desplazamiento de iOS.
+   Sin esto, un tirón fuerte y uno suave terminan en el mismo sitio. */
+function proyectar(velocidad, freno){
+  freno = freno == null ? .998 : freno;
+  return (velocidad/1000) * freno / (1 - freno);
+}
+
+/* En el borde no se frena en seco: se resiste cada vez más. Un tope
+   duro se lee como "se colgó"; la resistencia se lee como "responde,
+   pero aquí se acabó". */
+function gomaElastica(exceso, largo, k){
+  k = k == null ? .55 : k;
+  return (exceso * largo * k) / (largo + k * Math.abs(exceso));
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   GESTO DE ARRASTRE
+
+   Historial corto de posiciones para sacar la velocidad al soltar. La
+   velocidad instantánea del último evento es ruido; el promedio de
+   los últimos ~80 ms es lo que el dedo hizo de verdad.
+   ══════════════════════════════════════════════════════════════════ */
+function arrastrable(el, op){
+  let historial = [], activo = false, origen = 0, agarre = 0, decidido = false;
+
+  function velocidad(){
+    const ahora = performance.now();
+    const h = historial.filter(p => ahora - p.t < 80);
+    if(h.length < 2) return 0;
+    const a = h[0], b = h[h.length-1];
+    const dt = (b.t - a.t)/1000;
+    return dt > 0 ? (b.y - a.y)/dt : 0;
+  }
+
+  el.addEventListener('pointerdown', e => {
+    if(op.puedeEmpezar && !op.puedeEmpezar(e)) return;
+    activo = true; decidido = false;
+    origen = e.clientY;
+    agarre = op.valor();
+    historial = [{y:e.clientY, t:performance.now()}];
+    el.setPointerCapture(e.pointerId);
+    if(op.alTomar) op.alTomar();
+  });
+
+  el.addEventListener('pointermove', e => {
+    if(!activo) return;
+    historial.push({y:e.clientY, t:performance.now()});
+    if(historial.length > 12) historial.shift();
+    const d = e.clientY - origen;
+    /* Histéresis: hasta 10 px no se compromete a una dirección, para
+       que un toque con temblor no se lea como arrastre. */
+    if(!decidido){
+      if(Math.abs(d) < 10) return;
+      decidido = true;
+    }
+    e.preventDefault();
+    op.alMover(agarre + d, velocidad());
+  });
+
+  function soltar(e){
+    if(!activo) return;
+    activo = false;
+    try{ el.releasePointerCapture(e.pointerId); }catch(err){}
+    op.alSoltar(decidido ? velocidad() : 0, decidido);
+  }
+  el.addEventListener('pointerup', soltar);
+  el.addEventListener('pointercancel', soltar);
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   UTILIDADES
+   ══════════════════════════════════════════════════════════════════ */
+const $  = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const dosCifras = n => String(n).padStart(2,'0');
+
+const DIAS  = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
+function hoyISO(d){
+  d = d || new Date();
+  return d.getFullYear() + '-' + dosCifras(d.getMonth()+1) + '-' + dosCifras(d.getDate());
+}
+function hhmm(d){ d = d || new Date(); return dosCifras(d.getHours()) + ':' + dosCifras(d.getMinutes()); }
+function minutosDe(h){ const m = /^(\d{1,2}):(\d{2})/.exec(h||''); return m ? (+m[1])*60 + (+m[2]) : null; }
+
+function diasDesde(iso){
+  if(!iso) return null;
+  const a = new Date(iso + 'T00:00:00');
+  if(isNaN(a)) return null;
+  return Math.floor((new Date(hoyISO()+'T00:00:00') - a) / 86400000);
+}
+/* "3 días", no "3 día" ni "3 días quieto hace" */
+function enDias(n){ return n === 0 ? 'hoy' : n === 1 ? '1 día' : n + ' días'; }
+
+function saludo(h){
+  h = h == null ? new Date().getHours() : h;
+  return h < 6 ? 'Buenas noches' : h < 13 ? 'Buenos días' : h < 21 ? 'Buenas tardes' : 'Buenas noches';
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   DATOS
+
+   Misma forma que v4, mismo documento de Firestore. Abrir v5 no
+   importa nada ni convierte nada: los casos y tareas que ya existen
+   se leen tal cual. Los campos que agrego son aditivos, así que las
+   dos versiones pueden convivir mientras pruebas.
+
+     tarea  {tid, done, text, cat, notas, adj[], venc, rep, rec, ck[], creado}
+     caso   {id, desc, estado, act, rec, adj[], notas, hist[]}
+
+   Nuevo en v5, y solo esto:
+     tarea.caso   número de caso al que pertenece la tarea
+     tarea.ini    hora de inicio, para poder ponerla en la columna
+     tarea.dur    minutos que se estima que toma
+   ══════════════════════════════════════════════════════════════════ */
+const CLAVE_LOCAL = 'dtm4-data';        /* la misma que v4, a propósito */
+const CID = Math.random().toString(36).slice(2);
+
+let S = {tareas:[], tareasCerradas:[], casos:[], cerrados:[], agenda:[], enlaces:[], focos:[]};
+let ref = null, guardando = 0;
+
+function normalizar(){
+  S.tareas = (S.tareas||[]).map(t => Object.assign({
+    tid:'t'+Math.random().toString(36).slice(2),
+    done:false, text:'', cat:'', notas:'', adj:[], venc:'', rep:'', rec:'',
+    ck:[], creado:hoyISO(), caso:'', ini:'', dur:0
+  }, t));
+  S.casos = (S.casos||[]).map(c => Object.assign({
+    id:'', desc:'', estado:'abierto', act:hoyISO(), rec:'', adj:[], notas:'', hist:[]
+  }, c));
+  S.agenda  = S.agenda  || [];
+  S.enlaces = S.enlaces || [];
+  S.cerrados = S.cerrados || [];
+  S.tareasCerradas = S.tareasCerradas || [];
+}
+
+function cargarLocal(){
+  try{
+    const d = JSON.parse(localStorage.getItem(CLAVE_LOCAL) || 'null');
+    if(d) S = Object.assign(S, d);
+  }catch(e){}
+  normalizar();
+}
+
+function guardar(){
+  try{ localStorage.setItem(CLAVE_LOCAL, JSON.stringify(S)); }catch(e){}
+  if(!ref) return;
+  clearTimeout(guardando);
+  guardando = setTimeout(() => {
+    ref.set({
+      tareas:S.tareas, tareasCerradas:S.tareasCerradas, casos:S.casos, cerrados:S.cerrados,
+      agenda:S.agenda, enlaces:S.enlaces, focos:S.focos,
+      by:CID, upd:new Date().toISOString()
+    }).catch(e => aviso('No se pudo guardar en la nube: ' + e.message));
+  }, 420);
+}
+function aplicar(){ pintar(); guardar(); }
+
+/* ══════════════════════════════════════════════════════════════════
+   LECTURA DEL DÍA
+
+   Un caso "se enfría" cuando lleva días sin que nadie lo toque. Eso
+   es lo único que la pantalla grita, porque es lo único que se pierde
+   solo si nadie mira.
+   ══════════════════════════════════════════════════════════════════ */
+const UMBRAL_FRIO = 2;
+
+function casosAbiertos(){ return S.casos.filter(c => c.estado !== 'cerrado'); }
+
+function enfriandose(){
+  return casosAbiertos()
+    .map(c => Object.assign({}, c, {quieto: diasDesde(c.act)}))
+    .filter(c => c.quieto != null && c.quieto >= UMBRAL_FRIO)
+    .sort((a,b) => b.quieto - a.quieto);
+}
+
+function tareasDeHoy(){
+  const h = hoyISO();
+  return S.tareas.filter(t => !t.done && (!t.venc || t.venc <= h));
+}
+function eventosDeHoy(){
+  const h = hoyISO();
+  return (S.agenda||[]).filter(e => e.d === h).sort((a,b) => (a.hora||'').localeCompare(b.hora||''));
+}
+
+/* Lo que va en la columna de tiempo: eventos con hora, más tareas que
+   tienen hora puesta. Lo que no tiene hora no va aquí — va en Todo,
+   que es donde se elige, no donde se ejecuta. */
+function columnaDelDia(){
+  const filas = [];
+  for(const e of eventosDeHoy()){
+    const m = minutosDe(e.hora);
+    if(m == null) continue;
+    filas.push({tipo:'evento', min:m, dato:e});
+  }
+  for(const t of tareasDeHoy()){
+    const m = minutosDe(t.ini);
+    if(m == null) continue;
+    filas.push({tipo:'bloque', min:m, dato:t});
+  }
+  filas.sort((a,b) => a.min - b.min);
+
+  /* Huecos: solo los que valen la pena mencionar. Un hueco de 20
+     minutos no es una oportunidad, es ruido. */
+  const conHuecos = [];
+  for(let i = 0; i < filas.length; i++){
+    conHuecos.push(filas[i]);
+    const sig = filas[i+1];
+    if(!sig) continue;
+    const finEste = filas[i].min + duracionDe(filas[i]);
+    const largo = sig.min - finEste;
+    if(largo >= 60) conHuecos.push({tipo:'libre', min:finEste, largo:largo});
+  }
+  return conHuecos;
+}
+function duracionDe(f){
+  if(f.tipo === 'evento'){
+    const a = minutosDe(f.dato.hora), b = minutosDe(f.dato.fin);
+    return (a != null && b != null && b > a) ? b - a : 30;
+  }
+  return f.dato.dur || 45;
+}
+function comoHora(min){ return dosCifras(Math.floor(min/60)) + ':' + dosCifras(min % 60); }
+
+/* "4,8 h" no es un hueco que alguien se imagine. A media hora, sí.
+   Y en español la coma decimal, no el punto. */
+function enHoras(min){
+  if(min < 60) return min + ' min';
+  const medias = Math.round(min/30)/2;
+  const txt = Number.isInteger(medias) ? String(medias) : String(medias).replace('.', ',');
+  return txt + ' h';
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   AVISOS — confirmación con deshacer. Un error se arregla soltando,
+   no confirmando antes de cada acción.
+   ══════════════════════════════════════════════════════════════════ */
+function aviso(texto, deshacer){
+  const n = document.createElement('div');
+  n.className = 'aviso';
+  n.innerHTML = '<span class="txt"></span>';
+  n.querySelector('.txt').textContent = texto;
+  if(deshacer){
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = 'Deshacer';
+    b.addEventListener('click', () => { deshacer(); cerrar(); });
+    n.appendChild(b);
+  }
+  $('avisos').appendChild(n);
+
+  const op = Resorte(0, v => {
+    n.style.opacity = v;
+    n.style.transform = 'translateY(' + ((1-v) * 12) + 'px)';
+  });
+  op.a(1, {respuesta:.35});
+
+  let fuera = setTimeout(cerrar, deshacer ? 6000 : 3200);
+  function cerrar(){
+    clearTimeout(fuera);
+    op.a(0, {respuesta:.3, alLlegar: () => n.remove()});
+  }
+  return cerrar;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   LA HOJA
+
+   Se arrastra. Sigue al dedo uno a uno, resiste al pasarse del tope,
+   y al soltar no mira dónde quedó sino hacia dónde iba: por eso un
+   tirón corto pero rápido la cierra, y uno largo pero lento no.
+   ══════════════════════════════════════════════════════════════════ */
+function Hoja(id){
+  const el = $(id);
+  const velo = $('velo');
+  let alto = 0, abierta = false, cerrando = null;
+
+  const opac = Resorte(0, v => { velo.style.opacity = v; });
+  const pos = Resorte(1, v => {
+    el.style.transform = 'translateY(' + (v * 100) + '%)';
+  });
+
+  function abrir(){
+    alto = el.offsetHeight || 1;
+    abierta = true;
+    el.classList.add('on');
+    velo.hidden = false;
+    velo.classList.add('on');
+    opac.a(1, {respuesta:.3});
+    /* Amortiguación 0.8: la hoja llega con un poco de rebote porque
+       es un objeto que se lanza hacia arriba, no un panel que aparece. */
+    pos.a(0, {respuesta:.3, amortiguacion:.8});
+    document.body.style.overflow = 'hidden';
+  }
+  function cerrar(velocidad){
+    if(!abierta) return;
+    abierta = false;
+    opac.a(0, {respuesta:.3});
+    pos.a(1, {
+      respuesta:.3, amortiguacion:1,
+      velocidad: velocidad != null ? velocidad/alto : null,
+      alLlegar(){
+        el.classList.remove('on');
+        velo.classList.remove('on');
+        velo.hidden = true;
+        document.body.style.overflow = '';
+        if(cerrando){ const f = cerrando; cerrando = null; f(); }
+      }
+    });
+  }
+
+  arrastrable(el, {
+    puedeEmpezar(e){
+      /* Si el contenido está desplazado hacia abajo, el dedo pertenece
+         al desplazamiento, no a la hoja. */
+      if(el.scrollTop > 0) return false;
+      return !e.target.closest('input, textarea, button, a, select');
+    },
+    valor(){ return pos.valor * alto; },
+    alTomar(){ alto = el.offsetHeight || 1; },
+    alMover(px){
+      /* Hacia arriba no se abre más de lo que hay: se resiste. */
+      const y = px < 0 ? -gomaElastica(-px, alto) : px;
+      pos.fijar(y/alto);
+      velo.style.opacity = Math.max(0, 1 - (y/alto));
+    },
+    alSoltar(v, hubo){
+      if(!hubo){ pos.a(0, {respuesta:.3}); opac.a(1, {respuesta:.3}); return; }
+      /* La decisión la toma la proyección, no la posición al soltar. */
+      const donde = pos.valor*alto + proyectar(v);
+      if(donde > alto*0.35) cerrar(v);
+      else { pos.a(0, {respuesta:.3, amortiguacion:.8, velocidad:v/alto}); opac.a(1, {respuesta:.3}); }
+    }
+  });
+
+  velo.addEventListener('click', () => cerrar());
+  addEventListener('keydown', e => { if(e.key === 'Escape' && abierta) cerrar(); });
+
+  return {abrir, cerrar, get abierta(){ return abierta; }};
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   ICONOS
+   ══════════════════════════════════════════════════════════════════ */
+const ICO = {
+  hoy:   '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>',
+  semana:'<rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 10h18M8 2v4M16 2v4"/>',
+  todo:  '<path d="M4 7h16M4 12h16M4 17h10"/>',
+  mas:   '<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/>',
+  alerta:'<path d="M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/><path d="M12 9v4M12 17h.01"/>',
+  visto: '<path d="M20 6L9 17l-5-5"/>'
+};
+function icono(n, tam, grosor){
+  return '<svg width="' + (tam||21) + '" height="' + (tam||21) + '" viewBox="0 0 24 24" fill="none" ' +
+         'stroke="currentColor" stroke-width="' + (grosor||2) + '" stroke-linecap="round" ' +
+         'stroke-linejoin="round" aria-hidden="true">' + ICO[n] + '</svg>';
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   NAVEGACIÓN — nombres que dicen qué hay dentro. "Inicio" no dice
+   nada; "Hoy", "Semana" y "Todo" sí.
+   ══════════════════════════════════════════════════════════════════ */
+const VISTAS = [
+  {id:'hoy',    rotulo:'HOY',    ico:'hoy'},
+  {id:'semana', rotulo:'SEMANA', ico:'semana'},
+  {id:'todo',   rotulo:'TODO',   ico:'todo'},
+  {id:'mas',    rotulo:'MÁS',    ico:'mas'}
+];
+let vista = 'hoy';
+
+function irA(id){
+  if(vista === id) return;
+  vista = id;
+  pintar();
+  scrollTo({top:0, behavior: REDUCIDO ? 'auto' : 'smooth'});
+}
+
+function pintarBarra(){
+  const detenidos = enfriandose().length;
+  $('barra').innerHTML = VISTAS.map(v =>
+    '<button type="button" class="dest" data-ir="' + v.id + '"' +
+      (vista === v.id ? ' aria-current="page"' : '') + '>' +
+      icono(v.ico) +
+      (v.id === 'todo' && detenidos ? '<span class="glob">' + detenidos + '</span>' : '') +
+      '<span>' + v.rotulo + '</span>' +
+    '</button>'
+  ).join('');
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   HOY — el día es una columna de tiempo, no una lista de cosas.
+   ══════════════════════════════════════════════════════════════════ */
+/* La cabecera es translúcida y de alto variable: cambia con el tamaño
+   de letra y con la muesca del teléfono. Medirla es la única forma de
+   que el contenido empiece justo debajo y no a un palmo. */
+function medirCabeza(){
+  const c = $('cabeza');
+  if(!c) return;
+  document.documentElement.style.setProperty('--tope', c.offsetHeight + 'px');
+}
+
+function pintarCabezaHoy(){
+  const d = new Date();
+  $('cabeza').innerHTML =
+    '<div class="cabeza-fila">' +
+      '<div>' +
+        '<div class="rotulo">' + DIAS[d.getDay()] + ' ' + d.getDate() + ' de ' + MESES[d.getMonth()] + '</div>' +
+        '<div class="tit" style="margin-top:.15rem">' + saludo() + '</div>' +
+      '</div>' +
+      '<div class="reloj" id="reloj">' + hhmm() + '</div>' +
+    '</div>';
+}
+
+function pintarHoy(){
+  pintarCabezaHoy();
+
+  const frios = enfriandose();
+  let h = '';
+
+  if(frios.length){
+    const dos = frios.slice(0,2);
+    h += '<section class="env" style="padding-bottom:1rem">' +
+      '<div style="display:flex;align-items:center;gap:.45rem;margin-bottom:.55rem">' +
+        '<span style="color:var(--rojo);display:flex">' + icono('alerta',13,2.2) + '</span>' +
+        '<span class="rotulo" style="color:var(--rojo)">Se están enfriando</span>' +
+        '<span style="flex:1"></span>' +
+        '<button type="button" class="menor toque" data-ir="todo">ver ' + frios.length + '</button>' +
+      '</div>' +
+      '<div class="presion">' +
+        dos.map(c =>
+          '<button type="button" class="' + (c.quieto >= 3 ? 'pres-r' : 'pres-a') + '" ' +
+            'data-caso="' + esc(c.id) + '" style="text-align:left">' +
+            '<div class="cifra" style="font-size:.82rem;font-weight:600;color:var(--' + (c.quieto>=3?'rojo':'ambar') + ')">' + esc(c.id) + '</div>' +
+            '<div style="font-size:.78rem;color:var(--tinta2);margin-top:.25rem;line-height:1.35;' +
+              'display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">' + esc(c.desc) + '</div>' +
+            '<div class="cifra" style="font-size:.7rem;font-weight:600;margin-top:.45rem;color:var(--' + (c.quieto>=3?'rojo':'ambar') + ')">' +
+              enDias(c.quieto) + ' quieto</div>' +
+          '</button>'
+        ).join('') +
+      '</div>' +
+    '</section>';
+  }
+
+  const columna = columnaDelDia();
+  const ahora = new Date().getHours()*60 + new Date().getMinutes();
+  let puesta = false;
+
+  h += '<section class="env">';
+  if(!columna.length){
+    h += '<div class="vacio">Nada con hora para hoy.<br>Lo que no tiene hora vive en <b>Todo</b>.</div>';
+  }
+  for(const f of columna){
+    if(!puesta && f.min > ahora){
+      h += lineaDeAhora();
+      puesta = true;
+    }
+    h += tramoDe(f);
+  }
+  if(!puesta && columna.length) h += lineaDeAhora();
+  h += '</section>';
+
+  $('lienzo').innerHTML = h;
+}
+
+function lineaDeAhora(){
+  return '<div class="ahora"><div class="hora">' + hhmm() + '</div><div class="veta"></div></div>';
+}
+
+function tramoDe(f){
+  if(f.tipo === 'libre'){
+    return '<div class="tramo">' +
+      '<div class="hora">' + comoHora(f.min) + '</div>' +
+      '<div class="cuerpo libre">' +
+        '<div style="font-size:.88rem">Libre · ' + enHoras(f.largo) + '</div>' +
+        '<div style="font-size:.76rem;color:var(--tinta4);margin-top:.15rem">Sin nada encima</div>' +
+      '</div></div>';
+  }
+  if(f.tipo === 'evento'){
+    const e = f.dato;
+    return '<div class="tramo">' +
+      '<div class="hora">' + esc(e.hora) + '</div>' +
+      '<div class="cuerpo ev sel">' +
+        '<div style="font-size:.9rem;font-weight:600;line-height:1.3">' + esc(e.t) + '</div>' +
+        '<div class="cuando">' + esc(e.hora) + (e.fin ? '–' + esc(e.fin) : '') +
+          (e.src ? ' · ' + esc(e.src) : '') + '</div>' +
+      '</div></div>';
+  }
+  const t = f.dato;
+  return '<div class="tramo">' +
+    '<div class="hora">' + esc(t.ini) + '</div>' +
+    '<div class="cuerpo bloque">' +
+      '<div style="display:flex;align-items:center;gap:.5rem">' +
+        '<span style="width:7px;height:7px;border-radius:50%;background:var(--ambar);flex:none"></span>' +
+        '<span class="rotulo" style="color:var(--ambar);letter-spacing:.09em">Bloque de trabajo</span>' +
+      '</div>' +
+      '<div class="sel" style="font-size:.94rem;font-weight:600;margin-top:.45rem;line-height:1.3">' + esc(t.text) + '</div>' +
+      '<div style="display:flex;gap:.35rem;margin-top:.55rem;flex-wrap:wrap">' +
+        (t.caso ? '<span class="ficha roja cifra">' + esc(t.caso) + '</span>' : '') +
+        (t.dur ? '<span class="ficha gris">' + t.dur + ' min</span>' : '') +
+      '</div>' +
+    '</div></div>';
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   LAS OTRAS TRES — armazón puesto, contenido en camino.
+   ══════════════════════════════════════════════════════════════════ */
+function pintarSimple(titulo, cuerpo){
+  $('cabeza').innerHTML = '<div class="tit">' + titulo + '</div>';
+  $('lienzo').innerHTML = '<section class="env">' + cuerpo + '</section>';
+}
+
+function pintarSemana(){ pintarSimple('Semana', '<div class="vacio">El planificador llega en el siguiente tramo.</div>'); }
+function pintarTodo(){   pintarSimple('Todo',   '<div class="vacio">La lista unida de casos y tareas llega en el siguiente tramo.</div>'); }
+function pintarMas(){    pintarSimple('Más',    '<div class="vacio">Ajustes, biblioteca, métricas y archivo llegan en el siguiente tramo.</div>'); }
+
+/* ══════════════════════════════════════════════════════════════════
+   PINTAR
+   ══════════════════════════════════════════════════════════════════ */
+function pintar(){
+  pintarBarra();
+  if(vista === 'hoy') pintarHoy();
+  else if(vista === 'semana') pintarSemana();
+  else if(vista === 'todo') pintarTodo();
+  else pintarMas();
+  medirCabeza();
+}
+/* Girar el teléfono o cambiar el tamaño de letra cambia el alto de la
+   cabecera; hay que volver a medir. */
+addEventListener('resize', medirCabeza);
+
+/* Un solo oyente para toda la aplicación: los botones se repintan
+   constantemente y volver a colgarles oyentes en cada pintada es de
+   donde salen las fugas. */
+document.addEventListener('click', e => {
+  const ir = e.target.closest('[data-ir]');
+  if(ir){ irA(ir.dataset.ir); return; }
+});
+
+/* El reloj de la cabecera, al minuto y alineado con el minuto: no
+   cada 60 segundos desde que cargó, sino cuando el minuto cambia. */
+function relojEnMarcha(){
+  function tic(){
+    const r = $('reloj');
+    if(r) r.textContent = hhmm();
+    if(vista === 'hoy') pintarHoy();
+    const d = new Date();
+    setTimeout(tic, (60 - d.getSeconds())*1000 + 200);
+  }
+  const d = new Date();
+  setTimeout(tic, (60 - d.getSeconds())*1000 + 200);
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   ARRANQUE
+   ══════════════════════════════════════════════════════════════════ */
+cargarLocal();
+pintar();
+relojEnMarcha();
+
+$('btn-capturar').addEventListener('click', () => {
+  aviso('La hoja de captura llega en el siguiente tramo.');
+});
+
+/* La preferencia de tamaño que ya tenías guardada sigue valiendo. */
+try{
+  const t = localStorage.getItem('dtm4-tamano');
+  const mapa = {compacto:'13.5px', normal:'15px', comodo:'16.5px', grande:'18px', enorme:'20px'};
+  if(t && mapa[t]) document.documentElement.style.setProperty('--base', mapa[t]);
+  const modo = localStorage.getItem('dtm4-modo');
+  if(modo === 'claro' || modo === 'oscuro') document.documentElement.dataset.tema = modo;
+}catch(e){}
+</script>
+</body>
+</html>
